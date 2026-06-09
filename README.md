@@ -1,0 +1,154 @@
+# Blood Bank Management System (BBMS)
+
+## Overview
+
+The **Blood Bank Management System (BBMS)** is a web-based platform designed to streamline the management of blood donations, hospital requests, and inventory tracking. By replacing manual processes with a structured digital workflow, BBMS enables hospitals and blood banks to access real-time inventory, maintain donor records, and process blood requests efficiently.
+
+
+## The Problem
+
+Many blood banks still rely on manual documentation, scattered information, and slow communication methods. This leads to:
+
+* No real-time visibility of blood availability
+* Delays during emergency blood requirements
+* Frequent data entry errors
+* Difficulty managing donors, patients, and hospital requests
+* Lack of a centralized system connecting all operations
+
+These limitations reduce the efficiency and reliability of blood bank operations.
+
+
+## Our Solution
+
+BBMS provides an **all-in-one, centralized, and secure system** that handles all operations digitally. Key features include:
+
+* Donor registration and management
+* Hospital request creation and status tracking
+* Real-time inventory monitoring
+* Secure authentication using JWT + Firebase Google Sign-In
+* Fully structured backend APIs
+* Organized frontend interface for hospitals and staff
+
+The goal is to ensure quick response times, reduce manual errors, and improve operational workflow.
+
+## Tech Stack
+
+### Frontend
+
+* React.js
+* React Router
+* Axios
+* Tailwind CSS
+
+### Backend
+
+* Node.js
+* Express.js
+* MongoDB
+* Mongoose
+* JWT Authentication
+* bcrypt for password hashing
+
+## Environment Setup
+
+### Clone the Repository
+
+```bash
+git clone https://github.com/suraj-savle/blood-bank-management-system.git
+```
+
+### Backend Setup
+
+```bash
+cd backend
+npm install
+```
+
+Create a `.env` file:
+
+Copy `backend/.env.example` to `backend/.env`:
+
+```bash
+MONGO_URI=your_mongo_uri
+JWT_SECRET=your_jwt_secret
+PORT=5001
+CLIENT_URL=http://localhost:5173
+FIREBASE_PROJECT_ID=your-project-id
+FIREBASE_CLIENT_EMAIL=firebase-adminsdk@your-project.iam.gserviceaccount.com
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+```
+
+### Firebase Google Sign-In Setup
+
+1. Go to [Firebase Console](https://console.firebase.google.com/) → Create/select project
+2. **Authentication** → Sign-in method → Enable **Google**
+3. **Project settings** → Your apps → Add **Web** app → copy config to `frontend/.env` (`VITE_FIREBASE_*`)
+4. **Project settings** → Service accounts → **Generate new private key** → use values in `backend/.env`
+5. In Firebase Authentication → Settings → Authorized domains, ensure `localhost` is listed
+
+### Important: Seed Admin Account (First Time Setup)
+
+Before starting the backend server for the first time, you must create an admin user.
+
+### Open the file: backend/seedAdmin.js
+Update the admin credentials inside the file:
+
+### Run the seed script from the backend folder:
+
+```bash
+node seedAdmin.js
+```
+
+This will create the admin account in the database.
+
+### Start the backend server:
+
+```bash
+npm start
+```
+
+### Frontend Setup
+
+```bash
+cd ../frontend
+cp .env.example .env
+npm install
+npm run dev
+```
+
+The frontend proxies `/api` to the backend in development. Set `VITE_API_URL` if your backend runs on a different host/port.
+
+## Production Deployment
+
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for full production setup including Docker, environment variables, and security checklist.
+
+```bash
+# Quick production start
+cd frontend && npm run build
+cd ../backend && npm start
+
+# Or with Docker
+docker compose up --build
+```
+
+**Login Page**
+
+<img width="1920" height="970" alt="image" src="https://github.com/user-attachments/assets/b7796043-c68d-4dda-8203-0be6b79ee5c0" />
+
+
+**Admin Dashboard**
+
+<img width="1920" height="1257" alt="image" src="https://github.com/user-attachments/assets/08f36872-ee09-4716-a66a-316aa1c763d5" />
+
+**Donor ashboard**
+
+<img width="1732" height="1536" alt="image" src="https://github.com/user-attachments/assets/9d715e70-c930-4f00-b8f4-0e28d43ee07e" />
+
+**Manage Requests**
+
+<img width="1920" height="1518" alt="image" src="https://github.com/user-attachments/assets/7aafa2aa-d2d4-4f20-982b-136de08df71a" />
+
+
+**Inventory Overview**
+
+<img width="1920" height="1121" alt="image" src="https://github.com/user-attachments/assets/65110412-2e41-4c0f-824d-7ee9ebed91bb" />
