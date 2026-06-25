@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import {
   Bell,
@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 import { getUser, logout } from "../../utils/auth";
 import { authApi } from "../../services/api";
+import { useNotification } from "../../context/NotificationContext";
 import { toast } from "react-hot-toast";
 
 const DashboardLayout = ({ userRole = "donor" }) => {
@@ -41,14 +42,65 @@ const DashboardLayout = ({ userRole = "donor" }) => {
   const [userData, setUserData] = useState(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
+  const searchInputRef = useRef(null);
+  const notificationRef = useRef(null);
+  const [isMac, setIsMac] = useState(false);
+
+  useEffect(() => {
+    setIsMac(navigator.platform.toUpperCase().indexOf('MAC') >= 0);
+
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // Handle click outside to close notifications
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+        setShowNotifications(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const {
+    notifications,
+    unreadCount,
+    markAsRead,
+    markAllAsRead,
+  } = useNotification();
 
   const navigate = useNavigate();
   const location = useLocation();
+
+  const getGradientByRole = () => {
+    if (userRole === "donor") return "from-red-600 to-rose-600";
+    if (userRole === "hospital") return "from-blue-600 to-sky-600";
+    if (userRole === "blood-lab") return "from-emerald-600 to-teal-600";
+    if (userRole === "admin") return "from-purple-600 to-indigo-600";
+    return "from-slate-700 to-slate-900";
+  };
+
+  const renderTitle = () => {
+    const title = config.title;
+    if (!title) return null;
+    return (
+      <h1 className={`text-lg sm:text-xl font-extrabold bg-gradient-to-r ${getGradientByRole()} bg-clip-text text-transparent tracking-tight leading-tight flex items-center`}>
+        {title}
+      </h1>
+    );
+  };
 
   // Blood Bank Theme Colors
   const theme = {
@@ -195,7 +247,6 @@ const DashboardLayout = ({ userRole = "donor" }) => {
       shortTitle: "Lab",
       icon: Activity,
       color: "green",
-      stats: { label: "Samples", value: "25" },
       items: [
         {
           path: "/lab",
@@ -224,6 +275,20 @@ const DashboardLayout = ({ userRole = "donor" }) => {
           icon: Calendar,
           badge: null,
           description: "Organize camps",
+        },
+        {
+          path: "/lab/camp-donations",
+          label: "Camp Donations",
+          icon: Heart,
+          badge: "Vitals",
+          description: "Check-in registered camp donors",
+        },
+        {
+          path: "/lab/testing",
+          label: "Testing & Screening",
+          icon: Shield,
+          badge: "Mandatory",
+          description: "Mandatory screening tests on bags",
         },
         {
           path: "/lab/requests",
@@ -288,71 +353,55 @@ const DashboardLayout = ({ userRole = "donor" }) => {
     },
   };
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      setIsLoading(true);
+  const fetchUserData = useCallback(async () => {
+    setIsLoading(true);
 
-      const user = getUser();
-      if (!user) {
+    const user = getUser();
+    if (!user) {
+      logout();
+      navigate("/login");
+      return;
+    }
+
+    try {
+      // Fetch fresh user data
+      const response = await authApi.getProfile();
+      const data = response.data;
+      const profileData = data.data || data;
+      const user = profileData.user || profileData;
+
+      if (
+        !user?.role ||
+        user.role.toLowerCase() !== userRole.toLowerCase()
+      ) {
+        toast.error("Unauthorized access");
         logout();
         navigate("/login");
         return;
       }
 
-      try {
-        // Fetch fresh user data
-        const response = await authApi.getProfile();
-        const data = response.data;
-        const profileData = data.data || data;
-        const user = profileData.user || profileData;
-
-        if (
-          !user?.role ||
-          user.role.toLowerCase() !== userRole.toLowerCase()
-        ) {
-          toast.error("Unauthorized access");
-          logout();
-          navigate("/login");
-          return;
-        }
-
-        setUserData(user);
-
-        // Mock notifications - replace with real API
-        setNotifications([
-          {
-            id: 1,
-            message: "New blood donation camp near you",
-            read: false,
-            time: "5 min ago",
-            type: "info",
-          },
-          {
-            id: 2,
-            message: "Your donation request has been approved",
-            read: false,
-            time: "1 hour ago",
-            type: "success",
-          },
-          {
-            id: 3,
-            message: "Low stock alert for O+ blood type",
-            read: false,
-            time: "2 hours ago",
-            type: "warning",
-          },
-        ]);
-        setUnreadCount(2);
-      } catch (error) {
-        console.error("Failed to fetch user data:", error);
-        toast.error("Failed to load user data");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchUserData();
+      setUserData(user);
+    } catch (error) {
+      console.error("Failed to fetch user data:", error);
+      toast.error("Failed to load user data");
+    } finally {
+      setIsLoading(false);
+    }
   }, [userRole, navigate]);
+
+  useEffect(() => {
+    fetchUserData();
+  }, [fetchUserData]);
+
+  useEffect(() => {
+    const handleUserUpdate = () => {
+      fetchUserData();
+    };
+    window.addEventListener("user-profile-updated", handleUserUpdate);
+    return () => {
+      window.removeEventListener("user-profile-updated", handleUserUpdate);
+    };
+  }, [fetchUserData]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -377,17 +426,19 @@ const DashboardLayout = ({ userRole = "donor" }) => {
     navigate("/login");
   };
 
-  const markNotificationAsRead = (id) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n)),
-    );
-    setUnreadCount((prev) => Math.max(0, prev - 1));
-  };
+  const formatTimeAgo = (dateStr) => {
+    if (!dateStr) return "";
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
 
-  const markAllAsRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-    setUnreadCount(0);
-    toast.success("All notifications marked as read");
+    if (diffMins < 1) return "just now";
+    if (diffMins < 60) return `${diffMins} min ago`;
+    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
+    return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
   };
 
   const getBadgeColor = (badge) => {
@@ -432,122 +483,129 @@ const DashboardLayout = ({ userRole = "donor" }) => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-red-50 to-white">
-      {/* Header */}
       <header
-        className={`flex justify-between items-center bg-white/95 backdrop-blur-md shadow-sm border-b border-red-100 px-4 sm:px-6 py-3 sticky top-0 z-50 transition-all duration-300 ${
-          isScrolled ? "shadow-lg" : "shadow-sm"
+        className={`flex justify-between items-center bg-white/70 backdrop-blur-xl border-b border-slate-100/80 px-4 sm:px-6 py-4 sticky top-0 z-50 transition-all duration-300 ${
+          isScrolled ? "shadow-[0_4px_20px_rgba(239,68,68,0.03)] border-red-100/50 bg-white/80" : "shadow-sm shadow-slate-100/20"
         }`}
       >
         {/* Left Section */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3.5">
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="lg:hidden p-2 rounded-lg hover:bg-red-100 transition-all"
-            style={{ color: theme.primary[600] }}
+            className="lg:hidden p-2 rounded-xl hover:bg-red-50/80 hover:text-red-600 border border-slate-100 transition-all"
           >
-            {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
+            {sidebarOpen ? <X size={18} /> : <Menu size={18} />}
           </button>
-
+ 
           {/* Logo and Title */}
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-red-100 shadow-sm">
-              <config.icon size={20} className="text-red-600" />
+            <div className="p-2.5 rounded-xl bg-gradient-to-br from-red-500 via-rose-500 to-rose-600 text-white shadow-md shadow-red-500/10">
+              <config.icon size={18} />
             </div>
             <div className="hidden sm:block">
-              <h1
-                className="text-lg sm:text-xl font-bold"
-                style={{ color: theme.primary[700] }}
-              >
-                {config.title}
-              </h1>
-              <p
-                className="text-xs sm:text-sm"
-                style={{ color: theme.secondary[500] }}
-              >
+              {renderTitle()}
+              <p className={`text-[10px] font-semibold tracking-wide mt-0.5 ${
+                userRole === "donor" ? "text-rose-500/70" :
+                userRole === "hospital" ? "text-sky-500/70" :
+                userRole === "blood-lab" ? "text-teal-500/70" :
+                userRole === "admin" ? "text-indigo-500/70" :
+                "text-slate-400"
+              }`}>
                 {config.subtitle}
               </p>
             </div>
           </div>
         </div>
-
+ 
         {/* Right Section */}
-        <div className="flex items-center gap-2 sm:gap-4">
+        <div className="flex items-center gap-2 sm:gap-3.5">
           {/* Search */}
-          <div className="hidden md:block relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <div className="hidden md:block relative group">
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4 transition-colors duration-300 group-focus-within:text-red-500 z-10" />
             <input
+              ref={searchInputRef}
               type="text"
-              placeholder="Search..."
+              placeholder="Search anything..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 w-64"
+              className="pl-11 pr-12 py-2.5 bg-slate-50/80 backdrop-blur-xl border border-slate-200/80 hover:border-slate-300 hover:bg-white rounded-2xl text-sm font-medium text-slate-700 placeholder-slate-400 focus:bg-white focus:ring-[3px] focus:ring-red-500/15 focus:border-red-400 focus:outline-none w-64 focus:w-96 transition-all duration-300 shadow-sm hover:shadow"
             />
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center pointer-events-none transition-opacity duration-300 group-focus-within:opacity-0">
+              <kbd className="hidden sm:inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold text-slate-400 bg-white/80 border border-slate-200 rounded-md shadow-sm">
+                {isMac ? <span className="text-xs">⌘</span> : <span className="text-[9px] font-medium mr-[1px]">Ctrl</span>}K
+              </kbd>
+            </div>
           </div>
-
+ 
           {/* Mobile Search Toggle */}
           <button
             onClick={() => setShowSearch(!showSearch)}
-            className="md:hidden p-2 rounded-lg hover:bg-red-100 transition-colors"
+            className="md:hidden p-2.5 rounded-xl border border-slate-200/80 bg-slate-50/80 backdrop-blur-xl text-slate-500 hover:text-red-600 hover:bg-white hover:shadow-sm hover:border-slate-300 focus:ring-[3px] focus:ring-red-500/15 focus:border-red-400 transition-all duration-300 shadow-sm"
           >
-            <Search size={20} className="text-red-600" />
+            <Search size={18} />
           </button>
-
+ 
           {/* Notifications */}
-          <div className="relative">
+          <div className="relative" ref={notificationRef}>
             <button
               onClick={() => setShowNotifications(!showNotifications)}
-              className="relative p-2 rounded-lg hover:bg-red-100 transition-colors"
+              className="relative p-2.5 rounded-xl border border-slate-100/80 bg-slate-50/30 hover:bg-red-50/40 hover:border-red-100/50 text-slate-500 hover:text-red-600 transition-all duration-300 hover:scale-105 cursor-pointer"
             >
-              <Bell size={20} className="text-red-600" />
+              <Bell size={18} />
               {unreadCount > 0 && (
-                <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center animate-pulse">
+                <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 bg-gradient-to-r from-red-500 to-rose-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white shadow-md shadow-red-500/20 animate-pulse">
                   {unreadCount}
                 </span>
               )}
             </button>
-
+ 
             {/* Notifications Dropdown */}
             {showNotifications && (
-              <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden z-50">
-                <div className="p-3 bg-red-50 border-b border-red-100 flex justify-between items-center">
-                  <h3 className="font-semibold text-gray-800">Notifications</h3>
+              <div className="absolute right-0 mt-3 w-80 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-100 overflow-hidden z-50 origin-top-right animate-scale-in">
+                <div className="p-3.5 bg-red-50/50 border-b border-red-100/60 flex justify-between items-center">
+                  <h3 className="font-bold text-slate-800 text-sm">Notifications</h3>
                   {unreadCount > 0 && (
                     <button
                       onClick={markAllAsRead}
-                      className="text-xs text-red-600 hover:text-red-700"
+                      className="text-xs font-semibold text-red-600 hover:text-red-700 transition-colors"
                     >
                       Mark all as read
                     </button>
                   )}
                 </div>
-                <div className="max-h-96 overflow-y-auto">
+                <div className="max-h-80 overflow-y-auto p-1.5 space-y-1">
                   {notifications.length > 0 ? (
                     notifications.map((notif) => {
                       const Icon = getNotificationIcon(notif.type);
                       return (
                         <div
-                          key={notif.id}
-                          className={`p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors ${
-                            !notif.read ? "bg-blue-50" : ""
+                          key={notif._id || notif.id}
+                          className={`p-3 rounded-xl hover:bg-slate-50 cursor-pointer transition-all duration-200 ${
+                            !notif.read ? "bg-red-50/30 border border-red-50/20" : "border border-transparent"
                           }`}
-                          onClick={() => markNotificationAsRead(notif.id)}
+                          onClick={() => markAsRead(notif._id || notif.id)}
                         >
                           <div className="flex gap-3">
-                            <Icon
-                              className={`w-5 h-5 flex-shrink-0 ${
-                                notif.type === "success"
-                                  ? "text-green-500"
-                                  : notif.type === "warning"
-                                    ? "text-yellow-500"
-                                    : "text-blue-500"
-                              }`}
-                            />
-                            <div>
-                              <p className="text-sm text-gray-800">
+                            <div className={`p-1.5 rounded-lg ${
+                              notif.type === "success" ? "bg-green-50" : notif.type === "warning" ? "bg-yellow-50" : "bg-blue-50"
+                            }`}>
+                              <Icon
+                                className={`w-4 h-4 ${
+                                  notif.type === "success"
+                                    ? "text-green-600"
+                                    : notif.type === "warning"
+                                      ? "text-yellow-600"
+                                      : "text-blue-600"
+                                }`}
+                              />
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-sm font-medium text-slate-700">
                                 {notif.message}
                               </p>
-                              <p className="text-xs text-gray-500 mt-1">
-                                {notif.time}
+                              <p className="text-xs text-slate-400 mt-1 flex items-center gap-1.5">
+                                <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+                                {formatTimeAgo(notif.createdAt) || notif.time}
                               </p>
                             </div>
                           </div>
@@ -555,7 +613,7 @@ const DashboardLayout = ({ userRole = "donor" }) => {
                       );
                     })
                   ) : (
-                    <div className="p-4 text-center text-gray-500">
+                    <div className="p-8 text-center text-slate-400 text-sm font-medium">
                       No notifications
                     </div>
                   )}
@@ -563,45 +621,35 @@ const DashboardLayout = ({ userRole = "donor" }) => {
               </div>
             )}
           </div>
-
+ 
           {/* User Profile */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div
-              className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white font-bold shadow-lg border-2 border-white cursor-pointer hover:scale-105 transition-transform"
-              style={{
-                background: `linear-gradient(135deg, ${theme.primary[500]}, ${theme.primary[600]})`,
-              }}
-              onClick={() => navigate(`/${userRole}/profile`)}
-            >
-              {userData?.name?.charAt(0)?.toUpperCase() ||
-                userData?.fullName?.charAt(0)?.toUpperCase() ||
-                "U"}
+          <div 
+            onClick={() => navigate(`/${userRole}/profile`)}
+            className="flex items-center gap-2.5 p-1 pr-3 rounded-xl border border-slate-100/80 bg-slate-50/30 hover:bg-red-50/30 hover:border-red-100/50 cursor-pointer transition-all duration-300 group"
+          >
+            <div className="relative">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-red-500 via-rose-500 to-rose-600 flex items-center justify-center text-white font-black text-xs shadow-md shadow-red-500/15">
+                {(userData?.name || userData?.fullName || "U").charAt(0).toUpperCase()}
+              </div>
+              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full" />
             </div>
-            <div className="hidden lg:block">
-              <span
-                className="font-medium block text-sm"
-                style={{ color: theme.primary[700] }}
-              >
+            <div className="hidden lg:block text-left">
+              <span className="font-bold block text-xs text-slate-700 group-hover:text-red-600 transition-colors leading-tight">
                 {userData?.name || userData?.fullName || "User"}
               </span>
-              <span
-                className="text-xs capitalize flex items-center gap-1"
-                style={{ color: theme.secondary[500] }}
-              >
-                <Shield className="w-3 h-3" />
-                {userRole.replace("_", " ")}
+              <span className="text-[9px] uppercase font-black text-slate-400 tracking-wider flex items-center gap-1 mt-0.5">
+                {userRole.replace("-", " ")}
               </span>
             </div>
           </div>
-
+ 
           {/* Logout Button */}
           <button
             onClick={handleLogout}
-            className="p-2 rounded-lg hover:bg-red-100 transition-all hidden sm:block"
-            style={{ color: theme.primary[600] }}
+            className="p-2.5 rounded-xl border border-slate-100 bg-slate-50/30 text-slate-400 hover:text-red-600 hover:bg-red-50/40 hover:border-red-100/50 transition-all duration-300 hover:scale-105 hidden sm:block cursor-pointer"
             title="Logout"
           >
-            <LogOut size={20} />
+            <LogOut size={18} />
           </button>
         </div>
       </header>
@@ -634,7 +682,7 @@ const DashboardLayout = ({ userRole = "donor" }) => {
           } bg-white shadow-xl border-r border-red-100 transition-all duration-300 ease-in-out flex flex-col transform lg:transform-none`}
         >
           {/* Sidebar Header */}
-          <div className="flex items-center justify-between p-4 border-b border-red-100">
+          <div className={`flex items-center ${sidebarCollapsed ? "justify-center p-2" : "justify-between p-4"} border-b border-red-100`}>
             {!sidebarCollapsed && (
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-red-100">
@@ -678,21 +726,23 @@ const DashboardLayout = ({ userRole = "donor" }) => {
                 </div>
                 <div>
                   <p className="font-medium text-gray-800 text-sm">
-                    {userData.name}
+                     {userData.name}
                   </p>
-                  <p className="text-xs text-gray-500">
-                    {config.stats?.label}:{" "}
-                    <span className="font-semibold text-red-600">
-                      {config.stats?.value}
-                    </span>
-                  </p>
+                  {config.stats && (
+                    <p className="text-xs text-gray-500">
+                      {config.stats.label}:{" "}
+                      <span className="font-semibold text-red-600">
+                        {config.stats.value}
+                      </span>
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
           )}
 
           {/* Navigation Menu */}
-          <nav className="flex-1 p-4 overflow-y-auto">
+          <nav className={`flex-1 ${sidebarCollapsed ? "p-2" : "p-4"} overflow-y-auto`}>
             <div className="flex flex-col gap-1">
               {config.items.map((item) => {
                 const Icon = item.icon;
@@ -704,7 +754,9 @@ const DashboardLayout = ({ userRole = "donor" }) => {
                         navigate(item.path);
                         setSidebarOpen(false);
                       }}
-                      className={`flex items-center gap-3 w-full p-3 min-h-[44px] rounded-xl transition-all duration-200 ${
+                      className={`flex items-center ${
+                        sidebarCollapsed ? "justify-center p-2.5" : "gap-3 p-3"
+                      } w-full min-h-[44px] rounded-xl transition-all duration-200 ${
                         isActive
                           ? "shadow-md transform scale-[1.02] text-white"
                           : "hover:shadow-md hover:transform hover:scale-[1.02] hover:bg-red-50 text-gray-700 hover:text-red-700"
@@ -739,21 +791,21 @@ const DashboardLayout = ({ userRole = "donor" }) => {
                       )}
                       {sidebarCollapsed && item.badge && (
                         <span
-                          className={`absolute top-1 right-1 w-2 h-2 rounded-full ${getBadgeColor(item.badge).replace("text-white", "")}`}
+                          className={`absolute top-1.5 right-1.5 w-2 h-2 rounded-full ${getBadgeColor(item.badge).replace("text-white", "")}`}
                         />
                       )}
                     </button>
 
                     {/* Tooltip for collapsed sidebar */}
                     {sidebarCollapsed && (
-                      <div className="absolute left-full ml-2 px-3 py-2 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-50 shadow-lg">
-                        <div className="font-medium">{item.label}</div>
-                        <div className="text-xs opacity-75">
+                      <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 px-3 py-2 bg-slate-900 text-white text-xs rounded-xl opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-200 pointer-events-none whitespace-nowrap z-50 shadow-xl border border-slate-800">
+                        <div className="font-semibold">{item.label}</div>
+                        <div className="text-[10px] opacity-75 mt-0.5">
                           {item.description}
                         </div>
                         {item.badge && (
                           <div
-                            className={`mt-1 text-xs ${getBadgeColor(item.badge)} inline-block px-2 py-0.5 rounded`}
+                            className={`mt-1.5 text-[10px] ${getBadgeColor(item.badge)} inline-block px-1.5 py-0.5 rounded font-bold`}
                           >
                             {item.badge}
                           </div>
@@ -788,8 +840,22 @@ const DashboardLayout = ({ userRole = "donor" }) => {
             {/* Page Header with Breadcrumb */}
             <div className="mb-6">
               <div className="flex items-center gap-2 text-sm text-gray-500">
-                <Home className="w-4 h-4" />
-                <span>{config.title}</span>
+                <button
+                  onClick={() => navigate("/")}
+                  className="flex items-center gap-1.5 hover:text-red-600 transition-colors focus:outline-none cursor-pointer"
+                  title="Back to Main Home Page"
+                >
+                  <Home className="w-4 h-4" />
+                  <span>Home</span>
+                </button>
+                <ChevronRight className="w-3 h-3" />
+                <button
+                  onClick={() => navigate(`/${userRole}`)}
+                  className="hover:text-red-600 transition-colors focus:outline-none cursor-pointer"
+                  title={`Back to ${config.title} Dashboard`}
+                >
+                  {config.title}
+                </button>
                 <ChevronRight className="w-3 h-3" />
                 <span className="text-red-600 font-medium">
                   {config.items.find((item) => item.path === location.pathname)

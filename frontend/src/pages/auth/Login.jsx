@@ -181,7 +181,7 @@ export default function Login() {
   return (
     <>
       <Header />
-      <div className="min-h-screen bg-gradient-to-br from-red-50 to-white flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-gradient-to-br from-red-50 to-white flex items-center justify-center pt-28 pb-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full">
           {/* Logo and Title */}
           <div className="text-center mb-8">
@@ -380,7 +380,7 @@ export default function Login() {
                 </div>
                 <div className="relative flex justify-center text-sm">
                   <span className="px-2 bg-white text-gray-500">
-                    New to BloodConnect?
+                    New to LifeDrop?
                   </span>
                 </div>
               </div>
@@ -394,11 +394,11 @@ export default function Login() {
                   Donor
                 </Link>
                 <Link
-                  to="/register/faculty"
+                  to="/register/facility"
                   className="flex justify-center items-center gap-2 py-3 px-4 border border-red-300 rounded-xl shadow-sm text-sm font-medium text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all transform hover:scale-[1.02]"
                 >
                   <Shield className="w-4 h-4" />
-                  Faculty
+                  Facility
                 </Link>
               </div>
             </div>

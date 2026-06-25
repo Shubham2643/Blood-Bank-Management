@@ -226,8 +226,8 @@ const Terms = () => {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: "BloodConnect Terms of Service",
-          text: "Review our terms of service for using the BloodConnect platform",
+          title: "LifeDrop Terms of Service",
+          text: "Review our terms of service for using the LifeDrop platform",
           url: window.location.href,
         });
       } catch (error) {
@@ -432,14 +432,14 @@ const Terms = () => {
                 defaultExpanded={true}
               >
                 <p>
-                  By accessing or using the BloodConnect platform, you agree to
+                  By accessing or using the LifeDrop platform, you agree to
                   be bound by these Terms of Service and all applicable laws and
                   regulations. If you do not agree with any part of these terms,
                   you may not use our services.
                 </p>
                 <p>
                   These terms constitute a legally binding agreement between you
-                  and BloodConnect regarding your use of the platform.
+                  and LifeDrop regarding your use of the platform.
                 </p>
                 <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                   <p className="text-sm text-blue-700">
@@ -659,7 +659,7 @@ const Terms = () => {
               <TermsSection title="Medical Terms and Disclaimers" icon={Heart}>
                 <div className="space-y-4">
                   <p>
-                    <strong>No Medical Advice:</strong> BloodConnect does not
+                    <strong>No Medical Advice:</strong> LifeDrop does not
                     provide medical advice. All medical decisions should be made
                     in consultation with qualified healthcare professionals.
                   </p>
@@ -685,7 +685,7 @@ const Terms = () => {
                   <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
                     <p className="text-sm text-yellow-700">
                       <AlertTriangle className="w-4 h-4 inline mr-1" />
-                      BloodConnect is not a medical facility and does not
+                      LifeDrop is not a medical facility and does not
                       provide medical treatment. Always seek medical attention
                       in emergencies.
                     </p>
@@ -698,7 +698,7 @@ const Terms = () => {
             <div id="liability">
               <TermsSection title="Limitation of Liability" icon={Shield}>
                 <p>
-                  To the maximum extent permitted by law, BloodConnect shall not
+                  To the maximum extent permitted by law, LifeDrop shall not
                   be liable for:
                 </p>
 
@@ -776,10 +776,10 @@ const Terms = () => {
                   <div className="flex items-center gap-3">
                     <Mail className="w-5 h-5 text-red-600" />
                     <a
-                      href="mailto:legal@bloodconnect.org"
+                      href="mailto:legal@lifedrop.org"
                       className="hover:text-red-600"
                     >
-                      legal@bloodconnect.org
+                      legal@lifedrop.org
                     </a>
                   </div>
                   <div className="flex items-center gap-3">

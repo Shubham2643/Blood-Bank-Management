@@ -568,21 +568,21 @@ const Cookies = () => {
     necessary: [
       {
         name: "session_id",
-        provider: "BloodConnect",
+        provider: "LifeDrop",
         purpose: "Maintains user session and authentication state",
         duration: "Session",
         type: "Necessary",
       },
       {
         name: "csrf_token",
-        provider: "BloodConnect",
+        provider: "LifeDrop",
         purpose: "Prevents cross-site request forgery attacks",
         duration: "Session",
         type: "Necessary",
       },
       {
         name: "security_token",
-        provider: "BloodConnect",
+        provider: "LifeDrop",
         purpose: "Ensures secure form submissions",
         duration: "24 hours",
         type: "Necessary",
@@ -591,21 +591,21 @@ const Cookies = () => {
     functional: [
       {
         name: "user_preferences",
-        provider: "BloodConnect",
+        provider: "LifeDrop",
         purpose: "Stores user interface preferences and settings",
         duration: "1 year",
         type: "Functional",
       },
       {
         name: "language",
-        provider: "BloodConnect",
+        provider: "LifeDrop",
         purpose: "Remembers your language preference",
         duration: "1 year",
         type: "Functional",
       },
       {
         name: "location",
-        provider: "BloodConnect",
+        provider: "LifeDrop",
         purpose: "Stores your preferred location for nearby camps",
         duration: "30 days",
         type: "Functional",
@@ -644,7 +644,7 @@ const Cookies = () => {
       },
       {
         name: "PERF",
-        provider: "BloodConnect",
+        provider: "LifeDrop",
         purpose: "Monitors site performance metrics",
         duration: "Session",
         type: "Performance",
@@ -660,7 +660,7 @@ const Cookies = () => {
       },
       {
         name: "ads_prefs",
-        provider: "BloodConnect",
+        provider: "LifeDrop",
         purpose: "Stores advertising preferences",
         duration: "1 year",
         type: "Marketing",
@@ -714,15 +714,25 @@ const Cookies = () => {
   };
 
   const handleDownload = () => {
-    toast.success("Cookie Policy PDF downloaded");
+    const content = `LifeDrop Cookie Policy\nLast Updated: March 2024\n\nWe use cookies to help improve your experience on our website.\n\nYour Current Cookie Preferences:\n- Necessary: Accepted\n- Analytics: ${preferences.analytics ? 'Accepted' : 'Declined'}\n- Functional: ${preferences.functional ? 'Accepted' : 'Declined'}\n- Performance: ${preferences.performance ? 'Accepted' : 'Declined'}\n- Marketing: ${preferences.marketing ? 'Accepted' : 'Declined'}\n\nThank you for choosing LifeDrop.`;
+    const blob = new Blob([content], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "lifedrop_cookie_policy.txt";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    toast.success("Cookie Policy downloaded!");
   };
 
   const handleShare = async () => {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: "BloodConnect Cookie Policy",
-          text: "Learn about how we use cookies on the BloodConnect platform",
+          title: "LifeDrop Cookie Policy",
+          text: "Learn about how we use cookies on the LifeDrop platform",
           url: window.location.href,
         });
       } catch (error) {
@@ -735,7 +745,7 @@ const Cookies = () => {
   };
 
   const clearAllCookies = () => {
-    // Clear all BloodConnect cookies
+    // Clear all LifeDrop cookies
     document.cookie.split(";").forEach((c) => {
       document.cookie = c
         .replace(/^ +/, "")
@@ -913,7 +923,7 @@ const Cookies = () => {
                 the website owners.
               </p>
               <p className="text-gray-600">
-                At BloodConnect, we use cookies to enhance your experience,
+                At LifeDrop, we use cookies to enhance your experience,
                 remember your preferences, and help us understand how you use
                 our platform so we can continuously improve.
               </p>
@@ -1182,18 +1192,18 @@ const Cookies = () => {
               </p>
               <div className="flex flex-wrap gap-6">
                 <a
-                  href="mailto:privacy@bloodconnect.org"
+                  href="mailto:privacy@lifedrop.org"
                   className="flex items-center gap-2 text-red-600 hover:text-red-700"
                 >
                   <Mail className="w-4 h-4" />
-                  cookie@bloodconnect.org
+                  privacy@lifedrop.org
                 </a>
                 <a
-                  href="tel:+15551234567"
+                  href="tel:18002566369"
                   className="flex items-center gap-2 text-red-600 hover:text-red-700"
                 >
                   <Phone className="w-4 h-4" />
-                  +91 9876543210
+                  1800-256-6369
                 </a>
               </div>
             </div>

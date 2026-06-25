@@ -56,7 +56,7 @@ const LabManageRequests = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-red-50 to-white p-6">
+      <div className="space-y-6">
         <div className="max-w-6xl mx-auto">
           <div className="flex justify-center items-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
@@ -68,7 +68,7 @@ const LabManageRequests = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 to-white p-6">
+    <div className="space-y-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">

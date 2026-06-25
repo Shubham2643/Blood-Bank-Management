@@ -51,7 +51,8 @@ export default function ForgotPassword() {
       }
     } catch (err) {
       console.error(err);
-      setError("Network error. Please check your connection and try again.");
+      const errMsg = err.response?.data?.message || err.message || "Network error. Please check your connection and try again.";
+      setError(errMsg);
     } finally {
       setIsLoading(false);
     }

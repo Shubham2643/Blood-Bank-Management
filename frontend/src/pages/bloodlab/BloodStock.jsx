@@ -92,7 +92,7 @@ const BloodStock = () => {
   const lowStockItems = stock.filter(item => item.quantity < 10);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 to-white p-6">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8">
         <div>

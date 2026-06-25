@@ -480,7 +480,7 @@ const Privacy = () => {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: "BloodConnect Privacy Policy",
+          title: "LifeDrop Privacy Policy",
           text: "Read our privacy policy to understand how we protect your data",
           url: window.location.href,
         });
@@ -660,7 +660,7 @@ const Privacy = () => {
                 defaultExpanded={true}
               >
                 <p>
-                  At BloodConnect, we are committed to protecting your privacy
+                  At LifeDrop, we are committed to protecting your privacy
                   and ensuring the security of your personal information. This
                   Privacy Policy explains how we collect, use, disclose, and
                   safeguard your information when you use our blood bank
@@ -1034,7 +1034,7 @@ const Privacy = () => {
                 <div className="mt-4 space-y-3">
                   <div className="flex items-center gap-3">
                     <Mail className="w-5 h-5 text-red-600" />
-                    <span>privacy@bloodconnect.org</span>
+                    <span>privacy@lifedrop.org</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <Phone className="w-5 h-5 text-red-600" />

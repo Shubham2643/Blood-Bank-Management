@@ -1,6 +1,8 @@
-// src/pages/footer/DonationProcess.jsx
 import React from "react";
 import { Helmet } from "react-helmet";
+import { useNavigate } from "react-router-dom";
+import Header from "../../components/Header";
+import Footer from "../../components/Footer";
 import {
   Heart,
   ClipboardList,
@@ -16,6 +18,7 @@ import {
 } from "lucide-react";
 
 const DonationProcess = () => {
+  const navigate = useNavigate();
   // Scroll to top on page load
   React.useEffect(() => {
     window.scrollTo(0, 0);
@@ -145,20 +148,20 @@ const DonationProcess = () => {
   ];
 
   return (
-    <>
+    <div className="min-h-screen flex flex-col bg-gray-50">
       <Helmet>
         <title>
-          Blood Donation Process | How to Donate Blood | BloodConnect
+          Blood Donation Process | How to Donate Blood | LifeDrop
         </title>
         <meta
           name="description"
           content="Learn about the blood donation process step by step. From registration to recovery, understand what happens during blood donation."
         />
       </Helmet>
-
-      <div className="min-h-screen bg-gray-50">
+      <Header />
+      <main className="flex-grow">
         {/* Hero Section */}
-        <div className="bg-gradient-to-r from-red-600 to-red-700 text-white">
+        <div className="bg-gradient-to-r from-red-600 to-red-700 text-white pt-20">
           <div className="container mx-auto px-4 py-16">
             <div className="max-w-3xl mx-auto text-center">
               <h1 className="text-4xl md:text-5xl font-bold mb-6">
@@ -369,14 +372,14 @@ const DonationProcess = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button
-                onClick={() => (window.location.href = "/register/donor")}
+                onClick={() => navigate("/register/donor")}
                 className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-red-600 font-semibold rounded-xl hover:bg-gray-100 transition-all duration-300 hover:scale-105 shadow-lg"
               >
                 <Heart className="w-5 h-5" />
                 Register as Donor
               </button>
               <button
-                onClick={() => (window.location.href = "/camps")}
+                onClick={() => navigate("/camps")}
                 className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-transparent border-2 border-white text-white font-semibold rounded-xl hover:bg-white/10 transition-all duration-300 hover:scale-105"
               >
                 <Users className="w-5 h-5" />
@@ -385,8 +388,9 @@ const DonationProcess = () => {
             </div>
           </div>
         </div>
-      </div>
-    </>
+      </main>
+      <Footer />
+    </div>
   );
 };
 

@@ -1,6 +1,8 @@
-// src/pages/footer/DonorBenefits.jsx
 import React, { useState } from "react";
 import { Helmet } from "react-helmet";
+import { useNavigate } from "react-router-dom";
+import Header from "../../components/Header";
+import Footer from "../../components/Footer";
 import {
   Heart,
   Award,
@@ -13,20 +15,19 @@ import {
   TrendingUp,
   Brain,
   Zap,
-  Thermometer,
-  Scissors,
-  BookOpen,
-  Calendar,
-  Star,
-  CheckCircle,
+  Stethoscope,
   ChevronRight,
-  Flame,
   Sparkles,
   Ambulance,
-  Stethoscope,
+  CheckCircle,
+  Flame,
+  Star,
+  Calendar,
+  BookOpen,
 } from "lucide-react";
 
 const DonorBenefits = () => {
+  const navigate = useNavigate();
   // Scroll to top on page load
   React.useEffect(() => {
     window.scrollTo(0, 0);
@@ -285,9 +286,9 @@ const DonorBenefits = () => {
   ];
 
   return (
-    <>
+    <div className="min-h-screen flex flex-col bg-gray-50">
       <Helmet>
-        <title>Blood Donor Benefits | Why Donate Blood | BloodConnect</title>
+        <title>Blood Donor Benefits | Why Donate Blood | LifeDrop</title>
         <meta
           name="description"
           content="Discover the amazing benefits of becoming a blood donor. From free health check-ups to community recognition and emergency priority services."
@@ -297,10 +298,10 @@ const DonorBenefits = () => {
           content="blood donor benefits, why donate blood, donor rewards, health benefits of blood donation"
         />
       </Helmet>
-
-      <div className="min-h-screen bg-gray-50">
+      <Header />
+      <main className="flex-grow">
         {/* Hero Section */}
-        <div className="bg-gradient-to-r from-red-600 via-red-700 to-red-800 text-white relative overflow-hidden">
+        <div className="bg-gradient-to-r from-red-600 via-red-700 to-red-800 text-white relative overflow-hidden pt-20">
           {/* Background Pattern */}
           <div className="absolute inset-0 opacity-10">
             <div className="absolute top-0 left-0 w-64 h-64 bg-white rounded-full filter blur-3xl"></div>
@@ -320,7 +321,7 @@ const DonorBenefits = () => {
               </h1>
               <p className="text-xl text-red-100 mb-8 max-w-2xl mx-auto">
                 When you give the gift of life, you receive so much more in
-                return. Discover the amazing benefits of being a BloodConnect
+                return. Discover the amazing benefits of being a LifeDrop
                 donor.
               </p>
 
@@ -737,7 +738,7 @@ const DonorBenefits = () => {
                       Emergency Helpline
                     </div>
                     <div className="text-lg font-bold mt-2">
-                      1-800-BLOOD-NOW
+                      1800-256-6369
                     </div>
                   </div>
                 </div>
@@ -756,14 +757,14 @@ const DonorBenefits = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button
-                onClick={() => (window.location.href = "/register/donor")}
+                onClick={() => navigate("/register/donor")}
                 className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl transition-all duration-300 hover:scale-105 shadow-lg"
               >
                 <Heart className="w-5 h-5" />
                 Register as Donor
               </button>
               <button
-                onClick={() => (window.location.href = "/eligibility")}
+                onClick={() => navigate("/eligibility")}
                 className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-transparent border-2 border-white text-white font-semibold rounded-xl hover:bg-white/10 transition-all duration-300 hover:scale-105"
               >
                 <CheckCircle className="w-5 h-5" />
@@ -772,8 +773,9 @@ const DonorBenefits = () => {
             </div>
           </div>
         </div>
-      </div>
-    </>
+      </main>
+      <Footer />
+    </div>
   );
 };
 

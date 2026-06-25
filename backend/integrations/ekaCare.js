@@ -146,7 +146,7 @@ const normalizeProviderToPseudoCamp = ({
 
     // UI organizers:
     hospital: { name },
-    faculty: { name },
+    facility: { name },
 
     // UI filters:
     bloodTypesNeeded: bloodGroup ? [bloodGroup] : [],
@@ -177,7 +177,7 @@ const searchBloodBank = async ({
   }
 
   const body = {
-    search_type: searchType, // "location" supported by schema; "location" also used for nearest
+    search_type: searchType, 
     blood_component: bloodComponent,
     blood_group: bloodGroup,
   };

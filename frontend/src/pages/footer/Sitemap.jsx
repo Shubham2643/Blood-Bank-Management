@@ -130,10 +130,12 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { API_BASE_URL } from "../../config/env.js";
+import Header from "../../components/Header";
+import Footer from "../../components/Footer";
 
 // ==================== Configuration ====================
 const CONFIG = {
-  APP_NAME: "BloodConnect",
+  APP_NAME: "LifeDrop",
   API_VERSION: "2.1.0",
   BASE_URL: API_BASE_URL,
   COLORS: {
@@ -524,149 +526,7 @@ const generateApiEndpoints = () => [
 
 // ==================== Components ====================
 
-// Header Component
-const Header = () => (
-  <header className="bg-white shadow-sm sticky top-0 z-50">
-    <div className="container mx-auto px-4 py-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-red-500 rounded-xl flex items-center justify-center">
-            <Heart className="w-6 h-6 text-white" />
-          </div>
-          <span className="text-xl font-bold text-gray-900">
-            {CONFIG.APP_NAME}
-          </span>
-        </div>
-        <nav className="hidden md:flex items-center gap-6">
-          <a
-            href="/"
-            className="text-gray-600 hover:text-red-500 transition-colors"
-          >
-            Home
-          </a>
-          <a
-            href="/about"
-            className="text-gray-600 hover:text-red-500 transition-colors"
-          >
-            About
-          </a>
-          <a
-            href="/contact"
-            className="text-gray-600 hover:text-red-500 transition-colors"
-          >
-            Contact
-          </a>
-          <a
-            href="/camps"
-            className="text-gray-600 hover:text-red-500 transition-colors"
-          >
-            Camps
-          </a>
-        </nav>
-        <div className="flex items-center gap-3">
-          <button className="px-4 py-2 text-gray-600 hover:text-red-500 transition-colors">
-            Login
-          </button>
-          <button className="px-4 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors shadow-lg shadow-red-500/30">
-            Sign Up
-          </button>
-        </div>
-      </div>
-    </div>
-  </header>
-);
-
-// Footer Component
-const Footer = () => (
-  <footer className="bg-gray-900 text-white mt-20">
-    <div className="container mx-auto px-4 py-12">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-        <div>
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-red-500 rounded-xl flex items-center justify-center">
-              <Heart className="w-6 h-6 text-white" />
-            </div>
-            <span className="text-xl font-bold">{CONFIG.APP_NAME}</span>
-          </div>
-          <p className="text-gray-400 text-sm">
-            Saving lives through blood donation
-          </p>
-        </div>
-        <div>
-          <h4 className="font-semibold mb-4">Quick Links</h4>
-          <ul className="space-y-2 text-gray-400">
-            <li>
-              <a href="/about" className="hover:text-white transition-colors">
-                About Us
-              </a>
-            </li>
-            <li>
-              <a href="/contact" className="hover:text-white transition-colors">
-                Contact
-              </a>
-            </li>
-            <li>
-              <a href="/camps" className="hover:text-white transition-colors">
-                Find Camps
-              </a>
-            </li>
-            <li>
-              <a href="/faq" className="hover:text-white transition-colors">
-                FAQ
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div>
-          <h4 className="font-semibold mb-4">Legal</h4>
-          <ul className="space-y-2 text-gray-400">
-            <li>
-              <a href="/privacy" className="hover:text-white transition-colors">
-                Privacy Policy
-              </a>
-            </li>
-            <li>
-              <a href="/terms" className="hover:text-white transition-colors">
-                Terms of Service
-              </a>
-            </li>
-            <li>
-              <a href="/cookies" className="hover:text-white transition-colors">
-                Cookie Policy
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div>
-          <h4 className="font-semibold mb-4">Follow Us</h4>
-          <div className="flex gap-4">
-            <a
-              href="#"
-              className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-red-500 transition-colors"
-            >
-              <span className="sr-only">Facebook</span>F
-            </a>
-            <a
-              href="#"
-              className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-red-500 transition-colors"
-            >
-              <span className="sr-only">Twitter</span>T
-            </a>
-            <a
-              href="#"
-              className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-red-500 transition-colors"
-            >
-              <span className="sr-only">Instagram</span>I
-            </a>
-          </div>
-        </div>
-      </div>
-      <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-        <p>&copy; 2024 {CONFIG.APP_NAME}. All rights reserved.</p>
-      </div>
-    </div>
-  </footer>
-);
+// Global Header & Footer imported from components
 
 // Search Bar Component
 const SearchBar = ({ value, onChange, onFocus, placeholder = "Search..." }) => {

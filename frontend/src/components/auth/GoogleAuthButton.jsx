@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { signInWithPopup } from "firebase/auth";
+import { useState, useEffect, useCallback } from "react";
+import { signInWithPopup, signInWithRedirect, getRedirectResult } from "firebase/auth";
 import { Loader2 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
@@ -14,6 +14,119 @@ export default function GoogleAuthButton({ onNeedsProfile }) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
+  const handleError = useCallback((error) => {
+    const code = error.code;
+    if (code === "auth/popup-closed-by-user") {
+      toast.error("Sign-in cancelled");
+    } else if (code === "auth/configuration-not-found") {
+      toast.error(
+        "Enable Firebase Authentication and Google sign-in in Firebase Console.",
+        { duration: 8000 },
+      );
+    } else if (code === "auth/unauthorized-domain") {
+      const hostname = window.location.hostname;
+      if (hostname === "localhost" || hostname === "127.0.0.1") {
+        toast.error(
+          "Add localhost to Firebase → Authentication → Authorized domains.",
+          { duration: 8000 },
+        );
+      } else if (/^[0-9.]+$/.test(hostname)) {
+        toast.error(
+          `Unauthorized Domain: Firebase doesn't support authorizing IP addresses (${hostname}). To test Google Sign-in on mobile, connect via USB and run 'adb reverse tcp:5173 tcp:5173' to access via 'localhost:5173', or use a tunneling service (like ngrok).`,
+          { duration: 12000 },
+        );
+      } else {
+        toast.error(
+          `Unauthorized Domain: Add '${hostname}' to Firebase → Authentication → Authorized domains.`,
+          { duration: 10000 },
+        );
+      }
+    } else {
+      toast.error(
+        error.response?.data?.message ||
+          error.message ||
+          "Google sign-in failed. Please try again.",
+      );
+    }
+  }, []);
+
+  const handleAuthPayload = useCallback(async (user, idToken) => {
+    const { data } = await authApi.firebaseAuth(idToken);
+
+    if (data.needsProfile) {
+      const profile = data.firebaseProfile || {
+        firebaseUid: user.uid,
+        email: user.email,
+        name: user.displayName,
+        avatar: user.photoURL,
+      };
+
+      if (onNeedsProfile) {
+        onNeedsProfile({ ...profile, idToken });
+      } else {
+        navigate("/auth/firebase/complete", {
+          state: { firebaseProfile: profile, idToken },
+        });
+      }
+      return;
+    }
+
+    if (!data.token || !data.user?.role) {
+      throw new Error("Invalid server response. Please try again.");
+    }
+
+    persistAuthSession(data);
+    toast.success("Signed in with Google!");
+    navigate(getDashboardPath(data.user.role), { replace: true });
+  }, [onNeedsProfile, navigate]);
+
+  // Check redirect result on mount
+  useEffect(() => {
+    if (!isFirebaseConfigured()) return;
+
+    const checkRedirectResult = async () => {
+      try {
+        setLoading(true);
+        const result = await getRedirectResult(auth);
+        if (result?.user) {
+          const idToken = await result.user.getIdToken(true);
+          await handleAuthPayload(result.user, idToken);
+        }
+      } catch (error) {
+        console.error("Redirect sign-in error:", error);
+        handleError(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkRedirectResult();
+  }, [handleAuthPayload, handleError]);
+
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    try {
+      // Detect if user is on mobile/tablet to choose redirect vs popup
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      );
+
+      if (isMobile) {
+        // Redirect flow is recommended and works much better on mobile browsers
+        await signInWithRedirect(auth, googleProvider);
+      } else {
+        // Popup flow for desktop
+        const result = await signInWithPopup(auth, googleProvider);
+        const idToken = await result.user.getIdToken(true);
+        await handleAuthPayload(result.user, idToken);
+      }
+    } catch (error) {
+      console.error("Google sign-in error:", error);
+      handleError(error);
+      setLoading(false);
+    }
+  };
+
   if (!isFirebaseConfigured()) {
     return (
       <p className="text-xs text-center text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-3">
@@ -22,65 +135,6 @@ export default function GoogleAuthButton({ onNeedsProfile }) {
       </p>
     );
   }
-
-  const handleGoogleSignIn = async () => {
-    setLoading(true);
-    try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const idToken = await result.user.getIdToken(true);
-
-      const { data } = await authApi.firebaseAuth(idToken);
-
-      if (data.needsProfile) {
-        const profile = data.firebaseProfile || {
-          firebaseUid: result.user.uid,
-          email: result.user.email,
-          name: result.user.displayName,
-          avatar: result.user.photoURL,
-        };
-
-        if (onNeedsProfile) {
-          onNeedsProfile({ ...profile, idToken });
-        } else {
-          navigate("/auth/firebase/complete", {
-            state: { firebaseProfile: profile, idToken },
-          });
-        }
-        return;
-      }
-
-      if (!data.token || !data.user?.role) {
-        throw new Error("Invalid server response. Please try again.");
-      }
-
-      persistAuthSession(data);
-      toast.success("Signed in with Google!");
-      navigate(getDashboardPath(data.user.role), { replace: true });
-    } catch (error) {
-      const code = error.code;
-      if (code === "auth/popup-closed-by-user") {
-        toast.error("Sign-in cancelled");
-      } else if (code === "auth/configuration-not-found") {
-        toast.error(
-          "Enable Firebase Authentication and Google sign-in in Firebase Console.",
-          { duration: 8000 },
-        );
-      } else if (code === "auth/unauthorized-domain") {
-        toast.error(
-          "Add localhost to Firebase → Authentication → Authorized domains.",
-          { duration: 8000 },
-        );
-      } else {
-        toast.error(
-          error.response?.data?.message ||
-            error.message ||
-            "Google sign-in failed. Please try again.",
-        );
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <button

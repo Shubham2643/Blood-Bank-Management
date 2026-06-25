@@ -47,16 +47,56 @@ const donorSchema = new mongoose.Schema(
   donationHistory: [
     {
       donationDate: { type: Date, default: Date.now },
-      faculty: { type: mongoose.Schema.Types.ObjectId, ref: "faculty" },
+      facility: { type: mongoose.Schema.Types.ObjectId, ref: "facility" },
       bloodGroup: String,
       quantity: { type: Number, default: 1 },
       verified: { type: Boolean, default: false },
     },
   ],
   isEligible: { type: Boolean, default: true },
+  coordinates: {
+    lat: { type: Number },
+    lng: { type: Number },
+  },
   },
   { timestamps: true },
 );
+
+donorSchema.pre("save", function (next) {
+  if (!this.coordinates || !this.coordinates.lat || !this.coordinates.lng) {
+    const city = (this.address?.city || "").trim().toLowerCase();
+    if (city.includes("ahmedabad")) {
+      const latOffset = (Math.random() - 0.5) * 0.08;
+      const lngOffset = (Math.random() - 0.5) * 0.08;
+      this.coordinates = {
+        lat: 23.0225 + latOffset,
+        lng: 72.5714 + lngOffset,
+      };
+    } else if (city.includes("surat")) {
+      const latOffset = (Math.random() - 0.5) * 0.08;
+      const lngOffset = (Math.random() - 0.5) * 0.08;
+      this.coordinates = {
+        lat: 21.1702 + latOffset,
+        lng: 72.8311 + lngOffset,
+      };
+    } else if (city.includes("vadodara") || city.includes("baroda")) {
+      const latOffset = (Math.random() - 0.5) * 0.08;
+      const lngOffset = (Math.random() - 0.5) * 0.08;
+      this.coordinates = {
+        lat: 22.3072 + latOffset,
+        lng: 73.1812 + lngOffset,
+      };
+    } else {
+      const latOffset = (Math.random() - 0.5) * 0.08;
+      const lngOffset = (Math.random() - 0.5) * 0.08;
+      this.coordinates = {
+        lat: 23.0225 + latOffset,
+        lng: 72.5714 + lngOffset,
+      };
+    }
+  }
+  next();
+});
 
 donorSchema.index({ email: 1 });
 donorSchema.index({ bloodGroup: 1 });

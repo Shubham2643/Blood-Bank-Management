@@ -4,12 +4,12 @@ const bloodRequestSchema = new mongoose.Schema(
   {
     hospitalId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "faculty",
+      ref: "facility",
       required: true,
     },
     labId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "faculty",
+      ref: "facility",
       required: true,
     },
     bloodType: {
@@ -35,7 +35,18 @@ const bloodRequestSchema = new mongoose.Schema(
     notes: String,
     requestedAt: { type: Date, default: Date.now },
     processedAt: Date,
-    processedBy: { type: mongoose.Schema.Types.ObjectId, ref: "faculty" },
+    processedBy: { type: mongoose.Schema.Types.ObjectId, ref: "facility" },
+    geofencedAlerts: {
+      donorCount: { type: Number, default: 0 },
+      notifiedDonors: [
+        {
+          name: String,
+          phone: String,
+          distance: Number,
+          notifiedAt: { type: Date, default: Date.now },
+        },
+      ],
+    },
   },
   { timestamps: true },
 );

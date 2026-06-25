@@ -44,7 +44,7 @@ export const sendEmail = async (options) => {
     const html = generateTemplate(template, data);
 
     const mailOptions = {
-      from: `"BloodConnect" <${process.env.EMAIL_FROM || process.env.EMAIL_USER}>`,
+      from: `"LifeDrop" <${process.env.EMAIL_FROM || process.env.EMAIL_USER}>`,
       to: email,
       subject,
       html,
@@ -87,11 +87,11 @@ const generateTemplate = (template, data) => {
         <body>
           <div class="container">
             <div class="header">
-              <h1>Welcome to BloodConnect! 🩸</h1>
+              <h1>Welcome to LifeDrop! 🩸</h1>
             </div>
             <div class="content">
               <h2>Hello ${data.name || "there"},</h2>
-              <p>Thank you for joining BloodConnect as a <strong>${data.role || "member"}</strong>!</p>
+              <p>Thank you for joining LifeDrop as a <strong>${data.role || "member"}</strong>!</p>
               <p>Your account has been successfully created. Here's what you can do:</p>
               <ul>
                 <li>✅ Access your personalized dashboard</li>
@@ -101,10 +101,10 @@ const generateTemplate = (template, data) => {
               </ul>
               <a href="${process.env.CLIENT_URL || "http://localhost:5173"}/login" class="button">Login to Your Account</a>
               <p style="margin-top: 30px;">If you have any questions, feel free to contact our support team.</p>
-              <p>Best regards,<br>The BloodConnect Team</p>
+              <p>Best regards,<br>The LifeDrop Team</p>
             </div>
             <div class="footer">
-              <p>&copy; ${new Date().getFullYear()} BloodConnect. All rights reserved.</p>
+              <p>&copy; ${new Date().getFullYear()} LifeDrop. All rights reserved.</p>
               <p>This email was sent to ${data.email || "you"}. Please do not reply to this email.</p>
             </div>
           </div>
@@ -135,10 +135,10 @@ const generateTemplate = (template, data) => {
               </ul>
               <a href="${data.loginUrl || process.env.CLIENT_URL + "/login"}" class="button">Login Now</a>
               <p style="margin-top: 30px;">Welcome aboard! We're excited to have you as part of our blood donation network.</p>
-              <p>Best regards,<br>The BloodConnect Team</p>
+              <p>Best regards,<br>The LifeDrop Team</p>
             </div>
             <div class="footer">
-              <p>&copy; ${new Date().getFullYear()} BloodConnect. All rights reserved.</p>
+              <p>&copy; ${new Date().getFullYear()} LifeDrop. All rights reserved.</p>
             </div>
           </div>
         </body>
@@ -163,12 +163,12 @@ const generateTemplate = (template, data) => {
                 <p style="margin: 10px 0 0;">${data.reason || "Verification documents did not meet our requirements."}</p>
               </div>
               <p>You can reapply after addressing the above issues. If you believe this is a mistake or need clarification, please contact our support team:</p>
-              <p>📧 <a href="mailto:${data.supportEmail || "support@bloodconnect.org"}">${data.supportEmail || "support@bloodconnect.org"}</a></p>
-              <p>We appreciate your interest in joining BloodConnect and hope to work with you in the future.</p>
-              <p>Best regards,<br>The BloodConnect Team</p>
+              <p>📧 <a href="mailto:${data.supportEmail || "support@lifedrop.org"}">${data.supportEmail || "support@lifedrop.org"}</a></p>
+              <p>We appreciate your interest in joining LifeDrop and hope to work with you in the future.</p>
+              <p>Best regards,<br>The LifeDrop Team</p>
             </div>
             <div class="footer">
-              <p>&copy; ${new Date().getFullYear()} BloodConnect. All rights reserved.</p>
+              <p>&copy; ${new Date().getFullYear()} LifeDrop. All rights reserved.</p>
             </div>
           </div>
         </body>
@@ -203,11 +203,11 @@ const generateTemplate = (template, data) => {
                   : "<p>Your request has been rejected. Please try requesting from another blood lab.</p>"
               }
               <a href="${process.env.CLIENT_URL}/dashboard/requests" class="button">View Request Details</a>
-              <p style="margin-top: 30px;">Thank you for using BloodConnect!</p>
-              <p>Best regards,<br>The BloodConnect Team</p>
+              <p style="margin-top: 30px;">Thank you for using LifeDrop!</p>
+              <p>Best regards,<br>The LifeDrop Team</p>
             </div>
             <div class="footer">
-              <p>&copy; ${new Date().getFullYear()} BloodConnect. All rights reserved.</p>
+              <p>&copy; ${new Date().getFullYear()} LifeDrop. All rights reserved.</p>
             </div>
           </div>
         </body>
@@ -238,10 +238,10 @@ const generateTemplate = (template, data) => {
               <p>Find a blood donation camp near you and save lives!</p>
               <a href="${process.env.CLIENT_URL}/donor/camps" class="button">Find Camps Near Me</a>
               <p style="margin-top: 30px;">Thank you for being a lifesaver! 🏆</p>
-              <p>Best regards,<br>The BloodConnect Team</p>
+              <p>Best regards,<br>The LifeDrop Team</p>
             </div>
             <div class="footer">
-              <p>&copy; ${new Date().getFullYear()} BloodConnect. All rights reserved.</p>
+              <p>&copy; ${new Date().getFullYear()} LifeDrop. All rights reserved.</p>
             </div>
           </div>
         </body>
@@ -257,15 +257,15 @@ const generateTemplate = (template, data) => {
         <body>
           <div class="container">
             <div class="header">
-              <h1>BloodConnect Notification</h1>
+              <h1>LifeDrop Notification</h1>
             </div>
             <div class="content">
               <h2>Hello,</h2>
-              <p>${data.message || "This is an automated notification from BloodConnect."}</p>
-              <p>Best regards,<br>The BloodConnect Team</p>
+              <p>${data.message || "This is an automated notification from LifeDrop."}</p>
+              <p>Best regards,<br>The LifeDrop Team</p>
             </div>
             <div class="footer">
-              <p>&copy; ${new Date().getFullYear()} BloodConnect. All rights reserved.</p>
+              <p>&copy; ${new Date().getFullYear()} LifeDrop. All rights reserved.</p>
             </div>
           </div>
         </body>

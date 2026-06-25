@@ -51,7 +51,7 @@ import {
   MessageCircle,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { toast } from "react-hot-toast";
 import useCampRealtime from "../hooks/useCampRealtime.js";
 import Header from "../components/Header";
@@ -188,14 +188,14 @@ const QuickActionMenu = ({ isOpen, onClose }) => {
         </button>
 
         <button
-          onClick={() => handleNavigation("/register/faculty")}
+          onClick={() => handleNavigation("/register/facility")}
           className="w-full flex items-center gap-3 p-3 hover:bg-red-50 rounded-lg transition-colors text-left"
         >
           <div className="p-2 bg-blue-100 rounded-lg">
             <Building2 className="w-4 h-4 text-blue-600" />
           </div>
           <div>
-            <p className="font-medium text-gray-900">Register Faculty</p>
+            <p className="font-medium text-gray-900">Register Facility</p>
             <p className="text-xs text-gray-500">Hospital or Blood Lab</p>
           </div>
         </button>
@@ -214,7 +214,7 @@ const QuickActionMenu = ({ isOpen, onClose }) => {
         </button>
 
         <button
-          onClick={() => handleNavigation("/emergency")}
+          onClick={() => handleNavigation("/blood-request")}
           className="w-full flex items-center gap-3 p-3 hover:bg-red-50 rounded-lg transition-colors text-left"
         >
           <div className="p-2 bg-red-100 rounded-lg">
@@ -318,7 +318,7 @@ const EmergencyRequestModal = ({ isOpen, onClose }) => {
         toast.success("Nearby donors and hospitals have been notified!");
         onClose();
         if (response.requestId) {
-          navigate("/emergency/track/" + response.requestId);
+          navigate("/blood-request");
         }
       } else {
         toast.error(response?.message || "Failed to submit request");
@@ -482,9 +482,9 @@ const EmergencyRequestModal = ({ isOpen, onClose }) => {
                     required
                   >
                     <option value="critical">Critical - Within 1 hour</option>
-                    <option value="urgent">Urgent - Within 3 hours</option>
-                    <option value="moderate">Moderate - Within 6 hours</option>
-                    <option value="routine">Routine - Within 24 hours</option>
+                    <option value="emergency">Urgent - Within 3 hours</option>
+                    <option value="high">Moderate - Within 6 hours</option>
+                    <option value="normal">Routine - Within 24 hours</option>
                   </select>
                 </div>
 
@@ -830,6 +830,54 @@ const FindCampsModal = ({ isOpen, onClose }) => {
     }
   };
 
+  const filteredCamps = useMemo(() => {
+    return camps.filter((camp) => {
+      // 1. Filter by City (case-insensitive substring match)
+      if (filters.city) {
+        const cityQuery = filters.city.toLowerCase().trim();
+        const campCity = (camp.location?.city || "").toLowerCase();
+        const campVenue = (camp.location?.venue || "").toLowerCase();
+        const campAddress = (camp.location?.address || "").toLowerCase();
+        if (
+          !campCity.includes(cityQuery) &&
+          !campVenue.includes(cityQuery) &&
+          !campAddress.includes(cityQuery)
+        ) {
+          return false;
+        }
+      }
+
+      // 2. Filter by Date (YYYY-MM-DD vs camp.date)
+      if (filters.date) {
+        const filterDate = new Date(filters.date);
+        const campDate = new Date(camp.date);
+        if (
+          filterDate.getFullYear() !== campDate.getFullYear() ||
+          filterDate.getMonth() !== campDate.getMonth() ||
+          filterDate.getDate() !== campDate.getDate()
+        ) {
+          return false;
+        }
+      }
+
+      // 3. Filter by Blood Type
+      if (filters.bloodType) {
+        if (
+          Array.isArray(camp.bloodTypesNeeded) &&
+          camp.bloodTypesNeeded.length > 0
+        ) {
+          if (!camp.bloodTypesNeeded.includes(filters.bloodType)) {
+            return false;
+          }
+        } else {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [camps, filters]);
+
   if (!isOpen) return null;
 
   return (
@@ -934,7 +982,7 @@ const FindCampsModal = ({ isOpen, onClose }) => {
             <div className="flex justify-center py-12">
               <Loader2 className="w-8 h-8 text-red-600 animate-spin" />
             </div>
-          ) : camps.length === 0 ? (
+          ) : filteredCamps.length === 0 ? (
             <div className="text-center py-12">
               <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">
@@ -946,7 +994,7 @@ const FindCampsModal = ({ isOpen, onClose }) => {
             </div>
           ) : (
             <div className="space-y-4">
-              {camps.map((camp) => (
+              {filteredCamps.map((camp) => (
                 <div
                   key={camp._id}
                   className="border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow"
@@ -1602,7 +1650,6 @@ const LiveStats = ({ target, label, suffix = "" }) => {
 const UpcomingCamps = () => {
   const [camps, setCamps] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [currentIndex, setCurrentIndex] = useState(0);
   const navigate = useNavigate();
 
   const loadCamps = useCallback(async ({ silent = false } = {}) => {
@@ -1612,7 +1659,7 @@ const UpcomingCamps = () => {
     try {
       const data = await apiService.getUpcomingCamps();
       if (data?.camps) {
-        setCamps(data.camps.slice(0, 5));
+        setCamps(data.camps.slice(0, 3));
       }
     } finally {
       if (!silent) {
@@ -1649,119 +1696,128 @@ const UpcomingCamps = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center py-8">
-        <Loader2 className="w-6 h-6 text-red-600 animate-spin" />
+      <div className="flex justify-center py-12">
+        <Loader2 className="w-8 h-8 text-red-600 animate-spin" />
       </div>
     );
   }
 
   if (camps.length === 0) {
     return (
-      <div className="text-center py-8 text-gray-500">
-        No upcoming camps at the moment
+      <div className="text-center py-12 bg-slate-50 rounded-3xl border border-dashed border-slate-200 text-slate-400 max-w-md mx-auto">
+        <Calendar className="w-10 h-10 mx-auto mb-3 text-slate-300" />
+        <span className="font-semibold text-slate-600 block mb-1">No Camps Scheduled</span>
+        <span className="text-xs">Check back soon for upcoming donation drives.</span>
       </div>
     );
   }
 
+  const userStr = localStorage.getItem("user");
+  let currentUser = null;
+  if (userStr) {
+    try {
+      currentUser = JSON.parse(userStr);
+    } catch (error) {
+      console.warn("Failed to parse user from localStorage:", error);
+    }
+  }
+  const currentDonorId = currentUser?._id;
+
   return (
-    <div className="relative">
-      <div className="overflow-hidden">
-        <div
-          className="flex transition-transform duration-500 ease-in-out"
-          style={{ transform: `translateX(-${currentIndex * 100}%)` }}
-        >
-          {camps.map((camp) => (
-            <div key={camp._id} className="w-full flex-shrink-0 px-4">
-              <div className="bg-white rounded-2xl shadow-lg p-6 border border-red-100">
-                <h4 className="text-xl font-semibold text-gray-900 mb-2">
-                  {camp.title}
-                </h4>
-                <div className="space-y-2 text-sm text-gray-600 mb-4">
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-red-500" />
-                    <span>
-                      {camp.location?.venue}, {camp.location?.city}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-red-500" />
-                    <span>{new Date(camp.date).toLocaleDateString()}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-red-500" />
-                    <span>
-                      {camp.time?.start} - {camp.time?.end}
-                    </span>
-                  </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto px-4">
+      {camps.map((camp) => {
+        const isRegistered = currentDonorId && camp.registeredDonors?.some(
+          (reg) =>
+            (reg.donor && reg.donor.toString() === currentDonorId.toString()) ||
+            (reg._id && reg._id.toString() === currentDonorId.toString())
+        );
+
+        return (
+          <div
+            key={camp._id}
+            className="bg-white rounded-3xl border border-slate-100 p-6 shadow-md hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 relative overflow-hidden flex flex-col justify-between"
+          >
+            {/* Red accent top-line */}
+            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-red-500 to-rose-600"></div>
+
+            <div className="flex-grow">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-50 border border-red-100 text-red-600 text-xs font-bold uppercase tracking-wider mb-4">
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
+                Active Drive
+              </span>
+              
+              <h4 className="text-lg font-bold text-slate-800 mb-2 line-clamp-2 min-h-[56px] leading-snug">
+                {camp.title}
+              </h4>
+              
+              <p className="text-slate-500 text-xs line-clamp-2 mb-6 min-h-[32px] leading-relaxed">
+                {camp.description || "Join our emergency blood donation campaign to support local hospitals and save critical lives."}
+              </p>
+
+              {/* Details List */}
+              <div className="space-y-3.5 text-sm text-slate-600 border-t border-slate-100 pt-5 mb-6">
+                <div className="flex items-start gap-3">
+                  <MapPin className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
+                  <span className="line-clamp-2 leading-tight">
+                    {camp.location?.venue}, {camp.location?.city}
+                  </span>
                 </div>
-                <button
-                  onClick={() => handleRegisterForCamp(camp)}
-                  className="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg transition-colors"
-                >
-                  Register to Donate
-                </button>
+                <div className="flex items-center gap-3">
+                  <Calendar className="w-4 h-4 text-red-500 flex-shrink-0" />
+                  <span className="font-semibold text-slate-700">
+                    {new Date(camp.date).toLocaleDateString("en-IN", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric"
+                    })}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Clock className="w-4 h-4 text-red-500 flex-shrink-0" />
+                  <span className="text-slate-500">
+                    {camp.time?.start} - {camp.time?.end}
+                  </span>
+                </div>
               </div>
             </div>
-          ))}
-        </div>
-      </div>
 
-      {camps.length > 1 && (
-        <div className="flex justify-center gap-2 mt-4">
-          {camps.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentIndex(index)}
-              className={`w-2 h-2 rounded-full transition-all ${
-                index === currentIndex ? "w-6 bg-red-600" : "bg-gray-300"
-              }`}
-              aria-label={`Go to slide ${index + 1}`}
-            />
-          ))}
-        </div>
-      )}
+            {/* Action Button */}
+            <div>
+              {isRegistered ? (
+                <div className="w-full flex items-center justify-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 font-bold py-3.5 px-6 rounded-2xl text-sm transition-all shadow-sm">
+                  <CheckCircle className="w-4 h-4 text-emerald-600" />
+                  Already Registered
+                </div>
+              ) : (
+                <button
+                  onClick={() => handleRegisterForCamp(camp)}
+                  className="w-full bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-bold py-3.5 px-6 rounded-2xl text-sm transition-all shadow-lg shadow-red-500/10 hover:shadow-red-500/20 hover:scale-[1.02] active:scale-95 cursor-pointer flex items-center justify-center gap-2"
+                >
+                  <Heart className="w-4 h-4" />
+                  Register to Donate
+                </button>
+              )}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 };
 
 // Emergency needs with real-time updates
 const EmergencyNeeds = () => {
-  const [needs, setNeeds] = useState([]);
-  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const loadNeeds = async () => {
-      const data = await apiService.getEmergencyNeeds();
-      if (data?.needs) {
-        setNeeds(data.needs);
-      }
-      setLoading(false);
-    };
-    loadNeeds();
-
-    // Poll for updates every 30 seconds
-    const interval = setInterval(loadNeeds, 30000);
-    return () => clearInterval(interval);
-  }, []);
 
   const handleEmergencyRequest = (needType) => {
     const token = localStorage.getItem("token");
     if (token) {
-      navigate(`/emergency/request?type=${encodeURIComponent(needType)}`);
+      navigate(`/blood-request?type=${encodeURIComponent(needType)}`);
     } else {
       toast.error("Please login to make an emergency request");
       navigate("/login");
     }
   };
-
-  if (loading) {
-    return (
-      <div className="flex justify-center py-8">
-        <Loader2 className="w-6 h-6 text-red-600 animate-spin" />
-      </div>
-    );
-  }
 
   const defaultNeeds = [
     {
@@ -1790,11 +1846,9 @@ const EmergencyNeeds = () => {
     },
   ];
 
-  const displayNeeds = needs.length > 0 ? needs : defaultNeeds;
-
   return (
     <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 max-w-6xl mx-auto">
-      {displayNeeds.map((need, index) => {
+      {defaultNeeds.map((need, index) => {
         const Icon = need.icon;
         const colorClasses = {
           red: "bg-red-100 text-red-600",
@@ -1870,6 +1924,254 @@ const ImpactMetrics = () => {
   );
 };
 
+// Dynamic Blood Needs Component with Compatibility Matrix & Live Stats
+const BloodNeeds = () => {
+  const [needs, setNeeds] = useState([
+    { type: "A+", need: "High", donors: "32%", requestedUnits: 12, requestsCount: 3 },
+    { type: "A-", need: "Critical", donors: "8%", requestedUnits: 18, requestsCount: 4 },
+    { type: "B+", need: "Medium", donors: "12%", requestedUnits: 6, requestsCount: 2 },
+    { type: "B-", need: "High", donors: "3%", requestedUnits: 10, requestsCount: 2 },
+    { type: "O+", need: "High", donors: "35%", requestedUnits: 14, requestsCount: 3 },
+    { type: "O-", need: "Critical", donors: "5%", requestedUnits: 22, requestsCount: 5 },
+    { type: "AB+", need: "Low", donors: "4%", requestedUnits: 0, requestsCount: 0 },
+    { type: "AB-", need: "Medium", donors: "1%", requestedUnits: 4, requestsCount: 1 },
+  ]);
+  const [loading, setLoading] = useState(true);
+  const [selectedType, setSelectedType] = useState(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const loadNeeds = async () => {
+      try {
+        const response = await publicApi.getEmergencyNeeds();
+        if (response.data?.success && response.data.needs?.length > 0) {
+          setNeeds(response.data.needs);
+        }
+      } catch (error) {
+        console.error("Failed to load blood needs:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadNeeds();
+    const interval = setInterval(loadNeeds, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const compatibility = {
+    "O-": { receive: ["O-"], give: ["O-", "O+", "A-", "A+", "B-", "B+", "AB-", "AB+"], desc: "Universal Donor. Critical in emergency situations as it can be transfused to any patient." },
+    "O+": { receive: ["O-", "O+"], give: ["O+", "A+", "B+", "AB+"], desc: "Most common blood group. High demand because it is compatible with all positive blood types." },
+    "A-": { receive: ["O-", "A-"], give: ["A-", "A+", "AB-", "AB+"], desc: "Rare blood type. Very important for emergency trauma units." },
+    "A+": { receive: ["O-", "O+", "A-", "A+"], give: ["A+", "AB+"], desc: "Highly active in the community. Frequently requested for elective and urgent surgeries." },
+    "B-": { receive: ["O-", "B-"], give: ["B-", "B+", "AB-", "AB+"], desc: "Extremely rare blood group. Critical need for patients with chronic blood conditions." },
+    "B+": { receive: ["O-", "O+", "B-", "B+"], give: ["B+", "AB+"], desc: "Common in South Asia. Fulfillable by wide range of donors, but constantly needed." },
+    "AB-": { receive: ["O-", "A-", "B-", "AB-"], give: ["AB-", "AB+"], desc: "Second rarest blood type. Plasma from AB- is highly valuable and versatile." },
+    "AB+": { receive: ["O-", "O+", "A-", "A+", "B-", "B+", "AB-", "AB+"], give: ["AB+"], desc: "Universal Recipient. Can receive blood cells from any blood group during transfusion." },
+  };
+
+  const handleAction = (type, path) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.error("Please login to proceed");
+      navigate("/login");
+      return;
+    }
+    navigate(path);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-8">
+        <Loader2 className="w-6 h-6 text-red-600 animate-spin" />
+      </div>
+    );
+  }
+
+
+
+  return (
+    <div className="max-w-6xl mx-auto px-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+        {needs.map((blood, index) => {
+          const isCritical = blood.need === "Critical";
+          const isHigh = blood.need === "High";
+          const isMedium = blood.need === "Medium";
+          
+          let cardBg = "from-slate-50 to-white";
+          let borderStyle = "border-slate-100 hover:border-slate-300";
+          let badgeColor = "bg-sky-50 text-sky-700 border-sky-100/60";
+          let liquidColor = "bg-gradient-to-r from-sky-400 to-indigo-500";
+          let glowLight = "rgba(14,165,233,0.03)";
+          let urgencyPct = "15%";
+
+          if (isCritical) {
+            cardBg = "from-red-50/20 to-white";
+            borderStyle = "border-red-100 hover:border-red-300";
+            badgeColor = "bg-red-50 text-red-700 border-red-100";
+            liquidColor = "bg-gradient-to-r from-red-500 to-rose-600 animate-pulse";
+            glowLight = "rgba(239,68,68,0.08)";
+            urgencyPct = "90%";
+          } else if (isHigh) {
+            cardBg = "from-amber-50/25 to-white";
+            borderStyle = "border-amber-100 hover:border-amber-300";
+            badgeColor = "bg-amber-50 text-amber-700 border-amber-100";
+            liquidColor = "bg-gradient-to-r from-amber-500 to-orange-500";
+            glowLight = "rgba(245,158,11,0.06)";
+            urgencyPct = "65%";
+          } else if (isMedium) {
+            cardBg = "from-emerald-50/15 to-white";
+            borderStyle = "border-emerald-100 hover:border-emerald-200";
+            badgeColor = "bg-emerald-50 text-emerald-700 border-emerald-100";
+            liquidColor = "bg-gradient-to-r from-emerald-500 to-teal-500";
+            glowLight = "rgba(16,185,129,0.04)";
+            urgencyPct = "40%";
+          }
+
+          return (
+            <div
+              key={index}
+              className={`bg-gradient-to-br ${cardBg} border ${borderStyle} rounded-3xl p-5 text-left transition-all duration-500 hover:shadow-2xl hover:-translate-y-1.5 cursor-pointer relative overflow-hidden group`}
+              style={{
+                boxShadow: `0 10px 30px -10px rgba(0,0,0,0.04), inset 0 0 40px ${glowLight}`,
+              }}
+              onClick={() => setSelectedType(blood.type)}
+            >
+              <div className="absolute -right-10 -top-10 w-24 h-24 bg-red-500/5 rounded-full blur-2xl group-hover:bg-red-500/10 transition-all duration-500" />
+              
+              <div className="flex justify-between items-start mb-4">
+                <div className={`text-4xl font-extrabold tracking-tight ${
+                  isCritical ? "text-red-600" : isHigh ? "text-amber-600" : isMedium ? "text-emerald-600" : "text-sky-600"
+                }`}>
+                  {blood.type}
+                </div>
+                <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full border ${badgeColor}`}>
+                  {blood.need}
+                </span>
+              </div>
+
+              <div className="space-y-1.5 mb-4">
+                <div className="flex justify-between text-[9px] font-extrabold text-slate-400 tracking-wider">
+                  <span>DEPLETED</span>
+                  <span>{urgencyPct} URGENT</span>
+                </div>
+                <div className="w-full h-2.5 bg-slate-100/80 rounded-full overflow-hidden relative border border-slate-200/40 p-0.5">
+                  <div
+                    className={`h-full rounded-full transition-all duration-1000 ${liquidColor}`}
+                    style={{ width: urgencyPct }}
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-between items-center text-xs font-bold text-slate-500 pt-2 border-t border-slate-100">
+                <span className="flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+                  {blood.donors} Share
+                </span>
+                {blood.requestsCount > 0 && (
+                  <span className="bg-red-500/10 text-red-600 px-2 py-0.5 rounded-md text-[10px] font-black animate-pulse">
+                    {blood.requestsCount} Alert{blood.requestsCount > 1 ? "s" : ""}
+                  </span>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {selectedType && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 origin-center animate-fade-in">
+          <div className="bg-white rounded-[32px] max-w-lg w-full overflow-hidden shadow-2xl border border-slate-100 relative p-6 sm:p-8 animate-scale-in">
+            <button
+              onClick={() => setSelectedType(null)}
+              className="absolute top-5 right-5 p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center text-white text-3xl font-black shadow-lg shadow-red-500/20">
+                {selectedType}
+              </div>
+              <div>
+                <h3 className="text-2xl font-black text-slate-800">
+                  Type {selectedType} Compatibility
+                </h3>
+                <p className="text-sm font-bold text-red-500 uppercase tracking-wider">
+                  Live Needs: {needs.find(n => n.type === selectedType)?.need} Demand
+                </p>
+              </div>
+            </div>
+
+            <p className="text-slate-600 text-sm leading-relaxed mb-6 bg-slate-50/60 p-4 rounded-2xl border border-slate-100/50">
+              {compatibility[selectedType]?.desc}
+            </p>
+
+            <div className="grid grid-cols-2 gap-4 mb-8">
+              <div className="bg-red-50/30 border border-red-100/50 rounded-2xl p-4">
+                <h4 className="text-xs font-black text-red-700 uppercase tracking-wider mb-2">
+                  Can Receive From:
+                </h4>
+                <div className="flex flex-wrap gap-1.5">
+                  {compatibility[selectedType]?.receive.map((t) => (
+                    <span
+                      key={t}
+                      className="bg-white text-slate-800 text-xs font-bold px-2.5 py-1 rounded-lg border border-red-100 shadow-sm"
+                    >
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="bg-emerald-50/30 border border-emerald-100/50 rounded-2xl p-4">
+                <h4 className="text-xs font-black text-emerald-700 uppercase tracking-wider mb-2">
+                  Can Donate To:
+                </h4>
+                <div className="flex flex-wrap gap-1.5">
+                  {compatibility[selectedType]?.give.map((t) => (
+                    <span
+                      key={t}
+                      className="bg-white text-slate-800 text-xs font-bold px-2.5 py-1 rounded-lg border border-emerald-100 shadow-sm"
+                    >
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between text-xs font-bold text-slate-400 mb-6 bg-slate-50/50 border border-slate-100 px-4 py-3 rounded-2xl">
+              <span>HOSPITAL REQUESTS: {needs.find(n => n.type === selectedType)?.requestsCount || 0}</span>
+              <span>UNITS NEEDED: {needs.find(n => n.type === selectedType)?.requestedUnits || 0} UNITS</span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3.5">
+              <button
+                onClick={() => {
+                  setSelectedType(null);
+                  handleAction(selectedType, "/camps");
+                }}
+                className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-red-500/10 hover:shadow-red-500/20 text-center transition-all duration-300 text-sm"
+              >
+                Donate for {selectedType}
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedType(null);
+                  handleAction(selectedType, `/blood-request?type=${selectedType}`);
+                }}
+                className="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-3 rounded-xl text-center transition-all duration-300 text-sm"
+              >
+                Request Type {selectedType}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // Main Landing Page Component
 const LandingPage = () => {
   const [showQuickMenu, setShowQuickMenu] = useState(false);
@@ -1941,16 +2243,7 @@ const LandingPage = () => {
     },
   ];
 
-  const bloodTypes = [
-    { type: "A+", need: "High", donors: "32%" },
-    { type: "A-", need: "Critical", donors: "8%" },
-    { type: "B+", need: "Medium", donors: "12%" },
-    { type: "B-", need: "High", donors: "3%" },
-    { type: "O+", need: "High", donors: "35%" },
-    { type: "O-", need: "Critical", donors: "5%" },
-    { type: "AB+", need: "Low", donors: "4%" },
-    { type: "AB-", need: "Medium", donors: "1%" },
-  ];
+
 
   const donationFacts = [
     {
@@ -2021,10 +2314,9 @@ const LandingPage = () => {
       name: "Rahul Mehta",
       role: "Regular Donor",
       quote:
-        "I've been donating blood for 5 years now. BloodConnect made it so easy to find camps and track my impact. Knowing I've helped save over 15 lives keeps me motivated.",
+        "I've been donating blood for 5 years now. LifeDrop made it so easy to find camps and track my impact. Knowing I've helped save over 15 lives keeps me motivated.",
       donations: 15,
-      image:
-        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop",
+      image: "/testimonials/rahul_mehta.png",
     },
     {
       name: "Priya Sharma",
@@ -2032,8 +2324,7 @@ const LandingPage = () => {
       quote:
         "The process was so smooth and the staff was incredibly supportive. I was nervous at first, but they made me feel comfortable throughout. Can't wait to donate again!",
       donations: 1,
-      image:
-        "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop",
+      image: "/testimonials/priya_sharma.png",
     },
     {
       name: "Dr. Anjali Desai",
@@ -2041,8 +2332,7 @@ const LandingPage = () => {
       quote:
         "The real-time inventory and emergency request system has been a game-changer for our hospital. We can now get blood units within hours instead of days.",
       hospital: "City General Hospital",
-      image:
-        "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&h=100&fit=crop",
+      image: "/testimonials/anjali_desai.png",
     },
   ];
 
@@ -2131,7 +2421,7 @@ const LandingPage = () => {
   const handleBecomeDonor = () => {
     const token = localStorage.getItem("token");
     if (token) {
-      navigate("/donor/register");
+      navigate("/register/donor");
     } else {
       setRegistrationType("donor");
       setShowRegistrationModal(true);
@@ -2215,10 +2505,9 @@ const LandingPage = () => {
         </button>
       )}
 
-      {/* Hero Section */}
       <section
         id="home"
-        className="relative overflow-hidden bg-gradient-to-r from-red-700 to-red-900 text-white pt-20"
+        className="relative overflow-hidden bg-gradient-to-r from-red-700 to-red-900 text-white mt-16 sm:mt-20 pt-16"
       >
         <div className="absolute inset-0 opacity-10">
           <svg
@@ -2314,8 +2603,14 @@ const LandingPage = () => {
                 </button>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-white">99.8%</div>
-                <div className="text-sm text-red-200">Safety Rate</div>
+                <div className="text-2xl font-bold text-white">Live</div>
+                <div className="text-sm text-red-200">Stock Availability</div>
+                <button
+                  onClick={() => navigate("/stock-search")}
+                  className="mt-2 text-xs text-red-200 hover:text-white underline"
+                >
+                  Search Directory →
+                </button>
               </div>
             </div>
           </div>
@@ -2435,49 +2730,7 @@ const LandingPage = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4 max-w-4xl mx-auto">
-            {bloodTypes.map((blood, index) => (
-              <div
-                key={index}
-                className="bg-white rounded-xl shadow-lg p-3 sm:p-4 text-center hover:shadow-xl transition-all duration-300 border border-gray-200 hover:-translate-y-1 cursor-pointer"
-                onClick={() => {
-                  const token = localStorage.getItem("token");
-                  if (token) {
-                    navigate(`/blood-type/${blood.type}`);
-                  } else {
-                    toast.error("Please login to view blood type details");
-                    navigate("/login");
-                  }
-                }}
-              >
-                <div
-                  className={`text-2xl font-bold mb-2 ${
-                    blood.need === "Critical"
-                      ? "text-red-600"
-                      : blood.need === "High"
-                        ? "text-orange-500"
-                        : "text-green-500"
-                  }`}
-                >
-                  {blood.type}
-                </div>
-                <div
-                  className={`text-sm font-medium px-2 py-1 rounded-full ${
-                    blood.need === "Critical"
-                      ? "bg-red-100 text-red-700"
-                      : blood.need === "High"
-                        ? "bg-orange-100 text-orange-700"
-                        : "bg-green-100 text-green-700"
-                  }`}
-                >
-                  {blood.need} Need
-                </div>
-                <div className="text-xs text-gray-500 mt-2">
-                  {blood.donors} Donors
-                </div>
-              </div>
-            ))}
-          </div>
+          <BloodNeeds />
         </div>
       </section>
 

@@ -34,23 +34,27 @@ const BloodLabDonor = () => {
   });
 
   // Search donors
-  const searchDonors = async () => {
-    if (!term.trim()) {
+  const searchDonors = async (searchTerm = term, isInitial = false) => {
+    const actualTerm = typeof searchTerm === "string" ? searchTerm : term;
+
+    if (!isInitial && !actualTerm.trim()) {
       toast.error("Please enter search term");
       return;
     }
 
     setLoading(true);
     try {
-      const res = await bloodLabApi.searchDonors(term);
+      const res = await bloodLabApi.searchDonors(actualTerm);
 
       setResults(res.data.donors || []);
-      if (res.data.donors.length === 0) {
+      if (!isInitial && res.data.donors.length === 0) {
         toast.error("No donors found");
       }
     } catch (err) {
       console.error("Search error:", err);
-      toast.error("Search failed");
+      if (!isInitial) {
+        toast.error("Search failed");
+      }
     } finally {
       setLoading(false);
     }
@@ -69,6 +73,7 @@ const BloodLabDonor = () => {
 
   useEffect(() => {
     loadRecentDonations();
+    searchDonors("", true);
   }, []);
 
   // Open donation form
@@ -139,7 +144,7 @@ const BloodLabDonor = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 to-white p-6">
+    <div className="space-y-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -189,7 +194,7 @@ const BloodLabDonor = () => {
                 Search Donors
               </h2>
 
-              <div className="flex gap-3 mb-4">
+              <div className="flex flex-col sm:flex-row gap-3 mb-4">
                 <div className="flex-1 relative">
                   <Search
                     className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
@@ -225,9 +230,9 @@ const BloodLabDonor = () => {
                     key={donor._id}
                     className="bg-gray-50 rounded-lg p-4 border border-gray-200"
                   >
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                      <div className="flex-1 w-full">
+                        <div className="flex flex-wrap items-center gap-3 mb-2">
                           <h3 className="font-semibold text-gray-800 text-lg">
                             {donor.fullName}
                           </h3>
@@ -262,7 +267,7 @@ const BloodLabDonor = () => {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-gray-600">
                           <div className="flex items-center gap-2">
                             <Mail size={14} className="text-red-500" />
-                            <span>{donor.email}</span>
+                            <span className="break-all">{donor.email}</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <Phone size={14} className="text-red-500" />
@@ -285,11 +290,11 @@ const BloodLabDonor = () => {
                         </div>
                       </div>
 
-                      <div className="flex gap-2 ml-4">
+                      <div className="flex gap-2 w-full sm:w-auto sm:ml-4 justify-start sm:justify-end">
                         <button
                           onClick={() => quickDonation(donor._id)}
                           disabled={!canDonate(donor.lastDonationDate)}
-                          className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white px-3 py-2 rounded-lg transition-colors flex items-center gap-1 text-sm"
+                          className="flex-1 sm:flex-initial bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white px-3 py-2 rounded-lg transition-colors flex items-center justify-center gap-1 text-sm"
                           title="Quick donation (1 unit)"
                         >
                           <Droplet size={14} />
@@ -298,7 +303,7 @@ const BloodLabDonor = () => {
                         <button
                           onClick={() => openDonationForm(donor)}
                           disabled={!canDonate(donor.lastDonationDate)}
-                          className="bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2 text-sm"
+                          className="flex-1 sm:flex-initial bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm"
                         >
                           <Plus size={16} />
                           Donate

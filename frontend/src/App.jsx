@@ -1,6 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import { Toaster, toast } from "react-hot-toast";
-import { useEffect } from "react";
+import { Toaster } from "react-hot-toast";
 import Login from "./pages/auth/Login";
 import LandingPage from "./pages/Landing";
 import DonorRegister from "./pages/auth/DonorRegister";
@@ -8,15 +7,15 @@ import DonorDashboard from "./pages/donor/DonorDashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import DashboardLayout from "./components/layouts/DashboardLayout";
 import DonorProfile from "./pages/donor/DonorProfile";
-import FacultyRegister from "./pages/auth/FacultyRegister";
+import FacilityRegister from "./pages/auth/FacilityRegister";
 import AdminDashboard from "./pages/admin/AdminDashboard";
-import AdminFaculties from "./pages/admin/AdminFaculties";
+import AdminFacilities from "./pages/admin/AdminFacilities";
 import HospitalDashboard from "./pages/hospital/HospitalDashboard";
 import BloodCamps from "./pages/bloodlab/BloodCamps";
 import BloodlabDashboard from "./pages/bloodlab/BloodlabDashboard";
 import BloodStock from "./pages/bloodlab/BloodStock";
 import LabProfile from "./pages/bloodlab/LabProfile";
-import GetAllFaculties from "./pages/admin/GetAllFaculties";
+import GetAllFacilities from "./pages/admin/GetAllFacilities";
 import GetAllDonors from "./pages/admin/GetAllDonors";
 import DonorCampsList from "./pages/donor/DonorCampsList";
 import LabManageRequests from "./pages/bloodlab/LabManageRequests";
@@ -30,8 +29,7 @@ import Contact from "./components/contact/Contact";
 import DonorDonationHistory from "./pages/donor/DonorDonationHistory";
 import Register from "./pages/auth/Signup";
 import ForgotPassword from "./pages/ForgotPassword";
-import { getAuthToken } from "./utils/auth";
-import { SocketManager } from "./utils/socket";
+import { NotificationProvider } from "./context/NotificationContext";
 import News from "./pages/footer/News";
 import Blog from "./pages/footer/Blog";
 import Privacy from "./pages/footer/Privacy";
@@ -49,41 +47,14 @@ import EmergencyProtocol from "./pages/footer/EmergencyProtocol";
 import FAQs from "./pages/footer/FAQs";
 import PartnerWithUs from "./pages/footer/PartnerWithUs";
 import GoogleCompleteProfile from "./pages/auth/GoogleCompleteProfile";
+import CentralStockDirectory from "./pages/public/CentralStockDirectory";
+import BloodTestingAndComponents from "./pages/bloodlab/BloodTestingAndComponents";
+import CampDonationsManager from "./pages/bloodlab/CampDonationsManager";
+import DonorCertificates from "./pages/donor/DonorCertificates";
 
 function App() {
-  useEffect(() => {
-    const token = getAuthToken();
-    if (token) {
-      const ws = new SocketManager(
-        token,
-        (data) => {
-          // Handle incoming messages
-          console.log("WebSocket message:", data);
-          console.log("Notifications:", data);
-          
-          // Show toast for important notifications
-          if (data.type === "alert" || data.type === "emergency") {
-            toast[data.severity || "info"](data.message, {
-              duration: 5001,
-              position: "top-right",
-            });
-          }
-        },
-        (error) => {
-          console.error("WebSocket error:", error);
-        },
-      );
-
-      ws.connect();
-
-      return () => {
-        ws.disconnect();
-      };
-    }
-  }, []);
-
   return (
-    <>
+    <NotificationProvider>
       <Toaster
         position="top-right"
         toastOptions={{
@@ -113,7 +84,7 @@ function App() {
         {/* Public Routes */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/register/donor" element={<DonorRegister />} />
-        <Route path="/register/faculty" element={<FacultyRegister />} />
+        <Route path="/register/facility" element={<FacilityRegister />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Register />} />
         <Route path="/about" element={<About />} />
@@ -124,7 +95,9 @@ function App() {
           element={<GoogleCompleteProfile />}
         />
         <Route path="/news" element={<News />} />
+        <Route path="/news/:id" element={<News />} />
         <Route path="/blog" element={<Blog />} />
+        <Route path="/blog/:id" element={<Blog />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/cookies" element={<Cookies />} />
@@ -139,6 +112,7 @@ function App() {
         <Route path="/inventory-management" element={<InventoryManagement />} />
         <Route path="/emergency-protocol" element={<EmergencyProtocol />} />
         <Route path="/faqs" element={<FAQs />} />
+        <Route path="/stock-search" element={<CentralStockDirectory />} />
 
         {/* Donor Routes */}
         <Route
@@ -153,6 +127,7 @@ function App() {
           <Route path="profile" element={<DonorProfile />} />
           <Route path="camps" element={<DonorCampsList />} />
           <Route path="history" element={<DonorDonationHistory />} />
+          <Route path="certificates" element={<DonorCertificates />} />
         </Route>
 
         {/* Hospital Routes */}
@@ -193,6 +168,8 @@ function App() {
           <Route path="profile" element={<LabProfile />} />
           <Route path="requests" element={<LabManageRequests />} />
           <Route path="donor" element={<BloodLabDonor />} />
+          <Route path="testing" element={<BloodTestingAndComponents />} />
+          <Route path="camp-donations" element={<CampDonationsManager />} />
         </Route>
 
         {/* Admin Routes */}
@@ -205,15 +182,15 @@ function App() {
           }
         >
           <Route index element={<AdminDashboard />} />
-          <Route path="verification" element={<AdminFaculties />} />
+          <Route path="verification" element={<AdminFacilities />} />
           <Route path="donors" element={<GetAllDonors />} />
-          <Route path="facilities" element={<GetAllFaculties />} />
+          <Route path="facilities" element={<GetAllFacilities />} />
         </Route>
 
         {/* Fallback Route */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </>
+    </NotificationProvider>
   );
 }
 

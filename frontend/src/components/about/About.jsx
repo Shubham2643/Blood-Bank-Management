@@ -16,8 +16,6 @@ import {
   TrendingUp,
   Calendar,
   CheckCircle,
-  Play,
-  X,
   MessageCircle,
   ThumbsUp,
 } from "lucide-react";
@@ -51,7 +49,6 @@ const FAQItem = ({ question, answer }) => {
 
 const AboutUs = () => {
   const [activeTestimonial, setActiveTestimonial] = useState(0);
-  const [showVideo, setShowVideo] = useState(false);
   const [stats, setStats] = useState({
     livesSaved: 50010,
     donations: 100000,
@@ -167,19 +164,17 @@ const AboutUs = () => {
 
   const team = [
     {
-      name: "Dr. Sarah Chen",
+      name: "Dr. Shalini Verma",
       role: "Medical Director",
-      image:
-        "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=200&h=200&fit=crop&crop=face",
+      image: "/team/dr_shalini_verma.png",
       bio: "15+ years in hematology and transfusion medicine",
       expertise: ["Hematology", "Transfusion Medicine", "Research"],
       social: { linkedin: "#", twitter: "#" },
     },
     {
-      name: "Michael Rodriguez",
+      name: "Rohan Gupta",
       role: "Operations Head",
-      image:
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face",
+      image: "/team/rohan_gupta.png",
       bio: "Expert in healthcare logistics and camp management",
       expertise: ["Logistics", "Supply Chain", "Emergency Response"],
       social: { linkedin: "#", twitter: "#" },
@@ -187,17 +182,15 @@ const AboutUs = () => {
     {
       name: "Priya Sharma",
       role: "Community Manager",
-      image:
-        "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=200&h=200&fit=crop&crop=face",
+      image: "/team/priya_sharma_team.png",
       bio: "Dedicated to building donor relationships and awareness",
       expertise: ["Community Outreach", "Donor Relations", "Awareness"],
       social: { linkedin: "#", twitter: "#" },
     },
     {
-      name: "David Kim",
+      name: "Deepak Sen",
       role: "Technology Lead",
-      image:
-        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop&crop=face",
+      image: "/team/deepak_sen.png",
       bio: "Ensuring seamless digital experience for donors and recipients",
       expertise: ["Full Stack", "Security", "UX Design"],
       social: { linkedin: "#", twitter: "#" },
@@ -208,18 +201,16 @@ const AboutUs = () => {
     {
       name: "Rahul Mehta",
       role: "Regular Donor",
-      image:
-        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop",
+      image: "/testimonials/rahul_mehta.png",
       quote:
-        "I've been donating blood for 5 years now. BloodConnect made it so easy to find camps and track my impact. Knowing I've helped save over 15 lives keeps me motivated.",
+        "I've been donating blood for 5 years now. LifeDrop made it so easy to find camps and track my impact. Knowing I've helped save over 15 lives keeps me motivated.",
       rating: 5,
       donations: 15,
     },
     {
       name: "Dr. Anjali Desai",
       role: "Hospital Administrator",
-      image:
-        "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&h=100&fit=crop",
+      image: "/testimonials/anjali_desai.png",
       quote:
         "The real-time inventory and emergency request system has been a game-changer for our hospital. We can now get blood units within hours instead of days.",
       rating: 5,
@@ -228,21 +219,20 @@ const AboutUs = () => {
     {
       name: "Kavita Singh",
       role: "Recipient",
-      image:
-        "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop",
+      image: "/testimonials/kavita_singh.png",
       quote:
-        "When I needed blood for my surgery, BloodConnect connected me with donors within hours. I'm forever grateful to the donors and this platform.",
+        "When I needed blood for my surgery, LifeDrop connected me with donors within hours. I'm forever grateful to the donors and this platform.",
       rating: 5,
       experience: "Life-saving support",
     },
   ];
 
   const milestones = [
-    { year: 2023, event: "BloodConnect Founded", icon: Heart },
-    { year: 2024, event: "First 10,000 Donations", icon: Droplet },
-    { year: 2024, event: "Launched Emergency Response", icon: Clock },
+    { year: 2024, event: "LifeDrop Founded", icon: Heart },
+    { year: 2025, event: "First 10,000 Donations", icon: Droplet },
+    { year: 2025, event: "Launched Emergency Response", icon: Clock },
     { year: 2025, event: "100+ Partner Hospitals", icon: Users },
-    { year: 2025, event: "50,000 Lives Saved", icon: Award },
+    { year: 2026, event: "50,000 Lives Saved", icon: Award },
     { year: 2026, event: "Nationwide Network", icon: Globe },
   ];
 
@@ -313,38 +303,8 @@ const AboutUs = () => {
             >
               Join Our Mission
             </Link>
-            <button
-              onClick={() => setShowVideo(true)}
-              className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white/10 transition-all transform hover:scale-105 flex items-center justify-center gap-2"
-            >
-              <Play className="w-5 h-5" />
-              Watch Our Story
-            </button>
           </div>
         </div>
-
-        {/* Video Modal */}
-        {showVideo && (
-          <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-            <div className="relative max-w-4xl w-full bg-black rounded-2xl overflow-hidden">
-              <button
-                onClick={() => setShowVideo(false)}
-                className="absolute top-4 right-4 text-white hover:text-gray-300 z-10"
-              >
-                <X className="w-6 h-6" />
-              </button>
-              <div className="aspect-video">
-                <iframe
-                  src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1"
-                  title="About BloodConnect"
-                  className="w-full h-full"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                ></iframe>
-              </div>
-            </div>
-          </div>
-        )}
       </section>
 
       {/* Stats Section with Animation */}
@@ -815,9 +775,7 @@ const AboutUs = () => {
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 Emergency Helpline
               </h3>
-              <p className="text-red-600 font-bold text-xl">
-                +1 (555) 123-4357
-              </p>
+              <p className="text-red-600 font-bold text-xl">+91 1234 567 890</p>
               <p className="text-gray-600">24/7 Available</p>
             </div>
             <div className="text-center group">
@@ -827,9 +785,9 @@ const AboutUs = () => {
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 Email Us
               </h3>
-              <p className="text-red-600 font-medium">help@bloodconnect.org</p>
+              <p className="text-red-600 font-medium">help@lifedrop.org</p>
               <p className="text-red-600 font-medium">
-                support@bloodconnect.org
+                support@lifedrop.org
               </p>
             </div>
             <div className="text-center group">
@@ -840,7 +798,7 @@ const AboutUs = () => {
                 Headquarters
               </h3>
               <p className="text-gray-600">123 Healthcare Ave</p>
-              <p className="text-gray-600">Medical District, City 12345</p>
+              <p className="text-gray-600">Ahmedabad, Gujarat, India</p>
             </div>
           </div>
 
@@ -848,7 +806,7 @@ const AboutUs = () => {
           <div className="rounded-2xl overflow-hidden shadow-lg border border-gray-200">
             <iframe
               title="Office Location"
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d193595.15830869428!2d-74.119763973046!3d40.69766374874431!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c24fa5d33f083b%3A0xc80b8f06e177fe62!2sNew%20York%2C%20NY%2C%20USA!5e0!3m2!1sen!2sin!4v1698776543210!5m2!1sen!2sin"
+              src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d14689.083338423976!2d72.65059545!3d23.013825949999998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2sin!4v1781514952116!5m2!1sen!2sin"
               className="w-full h-64"
               style={{ border: 0 }}
               allowFullScreen

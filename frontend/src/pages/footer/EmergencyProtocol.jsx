@@ -1,6 +1,9 @@
 // src/pages/footer/EmergencyProtocol.jsx
 import React, { useState } from "react";
 import { Helmet } from "react-helmet";
+import { useNavigate } from "react-router-dom";
+import Header from "../../components/Header";
+import Footer from "../../components/Footer";
 import {
   AlertTriangle,
   Phone,
@@ -42,6 +45,7 @@ import {
 import { toast } from "react-hot-toast";
 
 const EmergencyProtocol = () => {
+  const navigate = useNavigate();
   React.useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -82,7 +86,7 @@ const EmergencyProtocol = () => {
       color: "from-red-500 to-red-600",
       description: "Immediately contact emergency services",
       details: [
-        "Dial emergency helpline: 1-800-BLOOD-NOW",
+        "Dial emergency helpline: 1800-256-6369",
         "Call local blood bank: 102 (India)",
         "Contact nearest hospital emergency",
         "Provide clear location details",
@@ -90,7 +94,7 @@ const EmergencyProtocol = () => {
       emergencyNumbers: [
         {
           service: "Blood Emergency",
-          number: "1-800-BLOOD-NOW",
+          number: "1800-256-6369",
           availability: "24/7",
         },
         { service: "Ambulance", number: "102", availability: "24/7" },
@@ -113,7 +117,7 @@ const EmergencyProtocol = () => {
       ],
       actions: [
         "Trigger emergency SMS to registered donors",
-        "Post urgent request on BloodConnect",
+        "Post urgent request on LifeDrop",
         "Contact nearby blood banks directly",
         "Mobilize emergency transport",
       ],
@@ -239,8 +243,27 @@ const EmergencyProtocol = () => {
       );
       // Play sound if enabled
       if (soundEnabled) {
-        // In a real app, you would play an alert sound here
-        console.log("Playing emergency alert sound");
+        try {
+          const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          const playBeep = (time, freq, duration) => {
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(freq, time);
+            gainNode.gain.setValueAtTime(0.2, time);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, time + duration);
+            osc.start(time);
+            osc.stop(time + duration);
+          };
+          const now = audioCtx.currentTime;
+          playBeep(now, 880, 0.15);
+          playBeep(now + 0.25, 880, 0.15);
+          playBeep(now + 0.5, 880, 0.3);
+        } catch (audioError) {
+          console.error("Audio beep failed:", audioError);
+        }
       }
     } else {
       toast.success("Emergency mode deactivated");
@@ -267,20 +290,38 @@ const EmergencyProtocol = () => {
     }
   };
 
+  // Download kit items checklist
+  const handleDownloadChecklist = (kit) => {
+    const textContent = `LifeDrop Emergency Protocol - Checklist\nCategory: ${kit.name}\n\nItems:\n` +
+      kit.items.map((item, i) => `[ ] ${i + 1}. ${item}`).join("\n") +
+      "\n\nGenerated on: " + new Date().toLocaleString() + "\nSave lives through technology.";
+
+    const blob = new Blob([textContent], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${kit.name.toLowerCase().replace(/\s+/g, "_")}_checklist.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    toast.success(`${kit.name} Checklist download started!`);
+  };
+
   return (
-    <>
+    <div className="min-h-screen flex flex-col bg-gray-50">
       <Helmet>
-        <title>Emergency Blood Protocol | BloodConnect</title>
+        <title>Emergency Blood Protocol | LifeDrop</title>
         <meta
           name="description"
           content="Emergency protocol for blood emergencies. Step-by-step guide for handling urgent blood requirements and coordinating donors."
         />
       </Helmet>
-
-      <div className="min-h-screen bg-gray-50">
+      <Header />
+      <main className="flex-grow">
         {/* Emergency Header */}
         <div
-          className={`${emergencyMode ? "bg-red-700" : "bg-gradient-to-r from-red-600 via-red-700 to-red-800"} text-white transition-colors duration-500`}
+          className={`${emergencyMode ? "bg-red-700" : "bg-gradient-to-r from-red-600 via-red-700 to-red-800"} text-white transition-colors duration-500 pt-20`}
         >
           <div className="container mx-auto px-4 py-8">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
@@ -341,11 +382,19 @@ const EmergencyProtocol = () => {
         {emergencyMode && (
           <div className="bg-red-600 text-white py-3 animate-pulse">
             <div className="container mx-auto px-4">
-              <div className="flex items-center justify-center gap-3">
-                <AlertTriangle className="w-5 h-5" />
-                <span className="font-semibold">
-                  EMERGENCY MODE ACTIVE - Follow protocol immediately
-                </span>
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <AlertTriangle className="w-5 h-5" />
+                  <span className="font-semibold text-center sm:text-left">
+                    EMERGENCY MODE ACTIVE - Follow protocol immediately
+                  </span>
+                </div>
+                <button
+                  onClick={() => navigate("/blood-request")}
+                  className="px-4 py-1.5 bg-white text-red-700 rounded-lg text-sm font-semibold hover:bg-gray-100 transition-colors shadow-sm"
+                >
+                  Request Urgent Blood
+                </button>
               </div>
             </div>
           </div>
@@ -612,7 +661,10 @@ const EmergencyProtocol = () => {
                     </li>
                   ))}
                 </ul>
-                <button className="mt-4 w-full px-4 py-2 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors text-sm font-semibold flex items-center justify-center gap-2">
+                <button
+                  onClick={() => handleDownloadChecklist(kit)}
+                  className="mt-4 w-full px-4 py-2 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors text-sm font-semibold flex items-center justify-center gap-2"
+                >
                   <Download className="w-4 h-4" />
                   Download Checklist
                 </button>
@@ -672,8 +724,9 @@ const EmergencyProtocol = () => {
             </button>
           </div>
         </div>
-      </div>
-    </>
+      </main>
+      <Footer />
+    </div>
   );
 };
 

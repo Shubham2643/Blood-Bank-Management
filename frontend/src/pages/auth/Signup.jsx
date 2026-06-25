@@ -71,7 +71,7 @@ export default function Register() {
     setServerError("");
 
     const destination =
-      formData.role === "donor" ? "/register/donor" : "/register/faculty";
+      formData.role === "donor" ? "/register/donor" : "/register/facility";
     navigate(destination, {
       state: {
         name: formData.name,
@@ -86,7 +86,7 @@ export default function Register() {
   return (
     <>
       <Header />
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 pt-28 pb-12">
         <div className="bg-white shadow-xl rounded-xl p-8 w-full max-w-md border border-gray-200">
           <h2 className="text-2xl font-bold text-center text-gray-900 mb-4">
             Create an Account

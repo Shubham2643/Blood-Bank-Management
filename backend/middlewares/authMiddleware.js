@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import User from "../models/UserModel.js";
 import Donor from "../models/donorModel.js";
 import Admin from "../models/adminModel.js";
-import Faculty from "../models/facultyModel.js";
+import Facility from "../models/facilityModel.js";
 
 export const protect = async (req, res, next) => {
   let token;

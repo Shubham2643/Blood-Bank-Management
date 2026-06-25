@@ -13,8 +13,6 @@ import {
   Clock,
   Droplet,
   Weight,
-  Users,
-  Filter,
   Search,
   ChevronDown,
   ChevronUp
@@ -46,7 +44,7 @@ function GetAllDonors() {
         console.log("🔄 Fetching donors...");
 
         const res = await adminApi.getDonors();
-        const data = res.data;
+        const data = res.data?.data || res.data;
         console.log("✅ Donors data:", data);
         setDonors(data.donors || []);
 
@@ -62,7 +60,7 @@ function GetAllDonors() {
       }
     },
     [],
-  ); // Add dependencies used inside
+  );
 
   useEffect(() => {
     fetchAllDonors();
@@ -71,26 +69,32 @@ function GetAllDonors() {
   // Filter and sort donors
   const filteredDonors = donors
     .filter(donor => {
+      const donorName = donor.fullName || donor.user?.name || '';
+      const donorEmail = donor.email || donor.user?.email || '';
+      
       const matchesSearch = !filters.search || 
-        donor.fullName?.toLowerCase().includes(filters.search.toLowerCase()) ||
-        donor.email?.toLowerCase().includes(filters.search.toLowerCase()) ||
+        donorName.toLowerCase().includes(filters.search.toLowerCase()) ||
+        donorEmail.toLowerCase().includes(filters.search.toLowerCase()) ||
         donor.phone?.includes(filters.search);
       
       const matchesBloodGroup = filters.bloodGroup === 'all' || donor.bloodGroup === filters.bloodGroup;
       
       const matchesEligibility = filters.eligibility === 'all' || 
-        (filters.eligibility === 'eligible' && donor.eligibleToDonate) ||
-        (filters.eligibility === 'ineligible' && !donor.eligibleToDonate);
+        (filters.eligibility === 'eligible' && donor.isEligible) ||
+        (filters.eligibility === 'ineligible' && !donor.isEligible);
       
       return matchesSearch && matchesBloodGroup && matchesEligibility;
     })
     .sort((a, b) => {
       let aValue, bValue;
       
+      const aName = a.fullName || a.user?.name || '';
+      const bName = b.fullName || b.user?.name || '';
+
       switch (filters.sortBy) {
         case 'name':
-          aValue = a.fullName?.toLowerCase();
-          bValue = b.fullName?.toLowerCase();
+          aValue = aName.toLowerCase();
+          bValue = bName.toLowerCase();
           break;
         case 'donations':
           aValue = a.donationHistory?.length || 0;
@@ -101,8 +105,8 @@ function GetAllDonors() {
           bValue = b.age || 0;
           break;
         default:
-          aValue = a.fullName?.toLowerCase();
-          bValue = b.fullName?.toLowerCase();
+          aValue = aName.toLowerCase();
+          bValue = bName.toLowerCase();
       }
       
       if (filters.sortOrder === 'desc') {
@@ -111,20 +115,13 @@ function GetAllDonors() {
       return aValue > bValue ? 1 : -1;
     });
 
-  // Helper to use the schema field: eligibleToDonate
+  // Helper to use the schema field: isEligible
   const getEligibilityBadge = (isEligible) => {
-    if (isEligible === undefined) {
-      return (
-        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border bg-gray-100 text-gray-800 border-gray-200">
-          <Clock size={12} /> Unknown
-        </span>
-      );
-    }
     return (
       <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border ${
-        isEligible
-          ? "bg-green-100 text-green-800 border-green-200"
-          : "bg-red-100 text-red-800 border-red-200"
+        isEligible 
+          ? 'bg-green-50 text-green-700 border-green-200' 
+          : 'bg-red-50 text-red-700 border-red-200'
       }`}>
         {isEligible ? <CheckCircle size={12} /> : <XCircle size={12} />}
         {isEligible ? "Eligible" : "Ineligible"}
@@ -134,8 +131,8 @@ function GetAllDonors() {
 
   const getBloodGroupBadge = (bloodGroup) => {
     return (
-      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold bg-red-50 text-red-700 border border-red-200">
-        <Droplet size={10} />
+      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-red-50 text-red-700 border border-red-200">
+        <Droplet size={12} className="fill-current" />
         {bloodGroup}
       </span>
     );
@@ -143,10 +140,10 @@ function GetAllDonors() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-red-50 to-white flex items-center justify-center">
+      <div className="space-y-6">
         <div className="text-center">
           <div className="animate-pulse mb-4">
-            <Users className="w-12 h-12 text-red-500 mx-auto" />
+            <User className="w-12 h-12 text-red-500 mx-auto" />
           </div>
           <h2 className="text-xl font-semibold text-gray-700 mb-2">
             Loading Donor Database
@@ -157,8 +154,14 @@ function GetAllDonors() {
     );
   }
 
+  // Count for stats card
+  const totalCount = donors.length;
+  const eligibleCount = donors.filter(d => d.isEligible).length;
+  const ineligibleCount = donors.filter(d => !d.isEligible).length;
+  const totalDonations = donors.reduce((sum, d) => sum + (d.donationHistory?.length || 0), 0);
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 to-white p-6">
+    <div className="space-y-6">
       <div className="max-w-7xl mx-auto">
         
         {/* Header */}
@@ -166,7 +169,7 @@ function GetAllDonors() {
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
             <div className="flex items-center gap-4">
               <div className="p-2 bg-red-100 rounded-xl">
-                <Users className="w-6 h-6 text-red-600" />
+                <User className="w-6 h-6 text-red-600" />
               </div>
               <div>
                 <h1 className="text-3xl font-bold text-gray-800">Blood Donors</h1>
@@ -187,34 +190,28 @@ function GetAllDonors() {
           </div>
 
           {/* Stats Card */}
-          <div className="bg-white rounded-2xl shadow-lg border border-red-100 p-6">
+          <div className="bg-white rounded-2xl shadow-lg border border-red-100 p-6 mb-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-gray-800">{donors.length}</div>
+              <div className="text-center border-r border-gray-100 last:border-0">
+                <div className="text-2xl font-bold text-gray-800">{totalCount}</div>
                 <div className="text-sm text-gray-600">Total Donors</div>
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">
-                  {donors.filter(d => d.eligibleToDonate).length}
-                </div>
+              <div className="text-center border-r border-gray-100 last:border-0">
+                <div className="text-2xl font-bold text-green-600">{eligibleCount}</div>
                 <div className="text-sm text-gray-600">Eligible</div>
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-red-600">
-                  {donors.filter(d => !d.eligibleToDonate).length}
-                </div>
+              <div className="text-center border-r border-gray-100 last:border-0">
+                <div className="text-2xl font-bold text-red-600">{ineligibleCount}</div>
                 <div className="text-sm text-gray-600">Ineligible</div>
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">
-                  {donors.reduce((sum, donor) => sum + (donor.donationHistory?.length || 0), 0)}
-                </div>
+              <div className="text-center last:border-0">
+                <div className="text-2xl font-bold text-blue-600">{totalDonations}</div>
                 <div className="text-sm text-gray-600">Total Donations</div>
               </div>
             </div>
           </div>
         </div>
-
+        
         {/* Filters */}
         <div className="bg-white rounded-2xl shadow-lg border border-red-100 p-6 mb-6">
           <div className="flex flex-col lg:flex-row gap-4">
@@ -236,9 +233,9 @@ function GetAllDonors() {
               onChange={(e) => setFilters(prev => ({ ...prev, bloodGroup: e.target.value }))}
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
             >
-              <option value="all">All Blood Types</option>
-              {bloodGroups.map(group => (
-                <option key={group} value={group}>{group}</option>
+              <option value="all">All Blood Groups</option>
+              {bloodGroups.map(bg => (
+                <option key={bg} value={bg}>{bg}</option>
               ))}
             </select>
             
@@ -247,7 +244,7 @@ function GetAllDonors() {
               onChange={(e) => setFilters(prev => ({ ...prev, eligibility: e.target.value }))}
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
             >
-              <option value="all">All Status</option>
+              <option value="all">All Eligibility</option>
               <option value="eligible">Eligible Only</option>
               <option value="ineligible">Ineligible Only</option>
             </select>
@@ -277,7 +274,7 @@ function GetAllDonors() {
         {/* Results Info */}
         <div className="mb-4 flex justify-between items-center">
           <p className="text-gray-600">
-            Showing {filteredDonors.length} of {donors.length} donors
+            Showing <span className="font-semibold">{filteredDonors.length}</span> of <span className="font-semibold">{donors.length}</span> donors
           </p>
           {filters.search && (
             <p className="text-sm text-red-600">
@@ -286,7 +283,7 @@ function GetAllDonors() {
           )}
         </div>
 
-        {/* Donor Grid */}
+        {/* Donors Grid */}
         {filteredDonors.length === 0 ? (
           <div className="text-center py-16 bg-white rounded-2xl shadow-lg border border-red-100">
             <User className="w-16 h-16 text-gray-400 mx-auto mb-4" />
@@ -296,7 +293,7 @@ function GetAllDonors() {
             <p className="text-gray-600">
               {donors.length === 0 
                 ? 'The blood donor database is currently empty.' 
-                : 'No donors match your current filters.'}
+                : 'No donors match your current search criteria.'}
             </p>
             {filters.search && (
               <button
@@ -318,12 +315,12 @@ function GetAllDonors() {
                 <div className="flex items-start justify-between mb-4 pb-4 border-b border-gray-100">
                   <div className="flex-1 min-w-0">
                     <h3 className="text-lg font-bold text-gray-800 line-clamp-1 group-hover:text-red-600 transition-colors">
-                      {donor.fullName}
+                      {donor.fullName || donor.user?.name || "Unknown Donor"}
                     </h3>
-                    <p className="text-sm text-gray-500 mt-1">{donor.email}</p>
+                    <p className="text-sm text-gray-500 mt-1 line-clamp-1">{donor.email || donor.user?.email || "No Email"}</p>
                   </div>
                   <div className="flex flex-col gap-2 items-end">
-                    {getEligibilityBadge(donor.eligibleToDonate)}
+                    {getEligibilityBadge(donor.isEligible)}
                     {getBloodGroupBadge(donor.bloodGroup)}
                   </div>
                 </div>

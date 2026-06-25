@@ -1,6 +1,9 @@
 // src/pages/footer/FAQs.jsx
 import React, { useState } from "react";
 import { Helmet } from "react-helmet";
+import { useNavigate } from "react-router-dom";
+import Header from "../../components/Header";
+import Footer from "../../components/Footer";
 import {
   Search,
   ChevronDown,
@@ -37,6 +40,7 @@ import {
 import { toast } from "react-hot-toast";
 
 const FAQs = () => {
+  const navigate = useNavigate();
   React.useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -44,7 +48,14 @@ const FAQs = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [openItems, setOpenItems] = useState([]);
-  const [helpfulFeedback, setHelpfulFeedback] = useState({});
+  const [helpfulFeedback, setHelpfulFeedback] = useState(() => {
+    try {
+      const saved = localStorage.getItem("faq_feedback");
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
 
   // FAQ Categories
   const categories = [
@@ -218,7 +229,7 @@ const FAQs = () => {
       id: 15,
       question: "How can I track my donation history?",
       answer:
-        "You can track your donation history through your BloodConnect account dashboard. It shows donation dates, locations, blood type, and recognition badges. You can also download donation certificates and view your lifetime contribution statistics. This history is important for tracking your eligibility for future donations.",
+        "You can track your donation history through your LifeDrop account dashboard. It shows donation dates, locations, blood type, and recognition badges. You can also download donation certificates and view your lifetime contribution statistics. This history is important for tracking your eligibility for future donations.",
       category: "technical",
       icon: TrendingUp,
       helpful: 112,
@@ -249,10 +260,12 @@ const FAQs = () => {
 
   // Handle helpful feedback
   const handleHelpful = (id, isHelpful) => {
-    setHelpfulFeedback((prev) => ({
-      ...prev,
+    const updated = {
+      ...helpfulFeedback,
       [id]: isHelpful,
-    }));
+    };
+    setHelpfulFeedback(updated);
+    localStorage.setItem("faq_feedback", JSON.stringify(updated));
 
     toast.success(
       isHelpful
@@ -269,20 +282,18 @@ const FAQs = () => {
   };
 
   return (
-    <>
+    <div className="min-h-screen flex flex-col bg-gray-50">
       <Helmet>
-        <title>
-          Frequently Asked Questions about Blood Donation | BloodConnect
-        </title>
+        <title>Frequently Asked Questions (FAQs) | LifeDrop</title>
         <meta
           name="description"
-          content="Find answers to frequently asked questions about blood donation, eligibility, process, aftercare, benefits, and more."
+          content="Find answers to frequently asked questions about blood donation, eligibility, requirements, safety, and donor benefits."
         />
       </Helmet>
-
-      <div className="min-h-screen bg-gray-50">
+      <Header />
+      <main className="flex-grow">
         {/* Hero Section */}
-        <div className="bg-gradient-to-r from-red-600 via-red-700 to-red-800 text-white">
+        <div className="bg-gradient-to-r from-red-600 via-red-700 to-red-800 text-white pt-20">
           <div className="container mx-auto px-4 py-16">
             <div className="max-w-3xl mx-auto text-center">
               <h1 className="text-4xl md:text-5xl font-bold mb-6">
@@ -374,7 +385,7 @@ const FAQs = () => {
                     </button>
                     <button
                       onClick={() =>
-                        (window.location.href = "mailto:help@bloodconnect.org")
+                        (window.location.href = "mailto:help@lifedrop.org")
                       }
                       className="w-full px-4 py-3 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors flex items-center gap-3"
                     >
@@ -464,7 +475,8 @@ const FAQs = () => {
                           </div>
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
-                              <span className="text-xs font-medium text-gray-500 px-2 py-1 bg-gray-100 rounded-full">
+                              <span className="text-xs font-medium text-gray-500 px-2 py-1 bg-gray-100 rounded-full flex items-center gap-1.5 w-fit">
+                                {getCategoryIcon(faq.category)}
                                 {
                                   categories.find((c) => c.id === faq.category)
                                     ?.name
@@ -539,7 +551,7 @@ const FAQs = () => {
                                 >
                                   <ThumbsUp className="w-4 h-4" />
                                   <span className="text-sm">
-                                    Yes ({faq.helpful})
+                                    Yes ({feedback === true ? faq.helpful + 1 : faq.helpful})
                                   </span>
                                 </button>
                                 <button
@@ -552,7 +564,7 @@ const FAQs = () => {
                                 >
                                   <ThumbsDown className="w-4 h-4" />
                                   <span className="text-sm">
-                                    No ({faq.notHelpful})
+                                    No ({feedback === false ? faq.notHelpful + 1 : faq.notHelpful})
                                   </span>
                                 </button>
                               </div>
@@ -586,7 +598,7 @@ const FAQs = () => {
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     <button
-                      onClick={() => (window.location.href = "/contact")}
+                      onClick={() => navigate("/contact")}
                       className="px-6 py-3 bg-white text-red-600 rounded-xl hover:bg-gray-100 transition-colors font-semibold inline-flex items-center gap-2"
                     >
                       <MessageSquare className="w-5 h-5" />
@@ -594,7 +606,7 @@ const FAQs = () => {
                     </button>
                     <button
                       onClick={() =>
-                        (window.location.href = "mailto:help@bloodconnect.org")
+                        (window.location.href = "mailto:help@lifedrop.org")
                       }
                       className="px-6 py-3 bg-transparent border-2 border-white text-white rounded-xl hover:bg-white/10 transition-colors font-semibold inline-flex items-center gap-2"
                     >
@@ -607,8 +619,9 @@ const FAQs = () => {
             </div>
           </div>
         </div>
-      </div>
-    </>
+      </main>
+      <Footer />
+    </div>
   );
 };
 

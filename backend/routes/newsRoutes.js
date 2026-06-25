@@ -1,5 +1,5 @@
 import express from "express";
-import { protect } from "../middlewares/authMiddleware.js";
+import { protect, authorize } from "../middlewares/authMiddleware.js";
 import {
   getAllNews,
   getNewsById,
@@ -7,6 +7,10 @@ import {
   getBreakingNews,
   likeNews,
   saveNews,
+  commentOnNews,
+  createNews,
+  updateNews,
+  deleteNews,
 } from "../controllers/newsController.js";
 
 const router = express.Router();
@@ -18,5 +22,10 @@ router.get("/:id", getNewsById);
 
 router.post("/:id/like", protect, likeNews);
 router.post("/:id/save", protect, saveNews);
+router.post("/:id/comment", protect, commentOnNews);
+
+router.post("/create", protect, authorize("admin"), createNews);
+router.put("/:id", protect, authorize("admin"), updateNews);
+router.delete("/:id", protect, authorize("admin"), deleteNews);
 
 export default router;

@@ -4,7 +4,7 @@ const bloodCampSchema = new mongoose.Schema(
   {
     hospital: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "faculty",
+      ref: "facility",
       required: true,
     },
     title: {
@@ -40,6 +40,9 @@ const bloodCampSchema = new mongoose.Schema(
     coordinates: {
       lat: { type: Number },
       lng: { type: Number },
+    },
+    image: {
+      type: String,
     },
     registeredDonors: [
       {

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import Header from "../../components/Header";
+import Footer from "../../components/Footer";
 import {
   Heart,
   Share2,
@@ -81,16 +83,16 @@ const successStoriesData = [
     },
     media: {
       images: [
-        "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80", // Hospital surgery
-        "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80", // Doctor consultation
-        "https://images.unsplash.com/photo-1579684385127-1ef15d508118?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80", // Patient recovery
+        "https://images.unsplash.com/photo-1524721696987-b9527df9e512?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80", // Blood bag / Transfusion
+        "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80", // Pre-donation checkup
+        "https://images.unsplash.com/photo-1576091160550-2173dba999ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80", // Professional blood draw prep
       ],
       video: "https://example.com/video1",
       testimonial: "https://example.com/testimonial1",
     },
     story: `When 58-year-old Arun Mehta was diagnosed with severe aortic stenosis, his family's world turned upside down. The complex heart surgery required multiple blood transfusions, but with a rare blood type and high demand, finding donors became a race against time.
 
-    Rahul Sharma, a regular donor from BloodConnect, received the emergency alert on his phone at 2 AM. Without hesitation, he rushed to the hospital. His timely donation, along with three other donors mobilized through our platform, enabled the 6-hour surgery to proceed successfully.
+    Rahul Sharma, a regular donor from LifeDrop, received the emergency alert on his phone at 2 AM. Without hesitation, he rushed to the hospital. His timely donation, along with three other donors mobilized through our platform, enabled the 6-hour surgery to proceed successfully.
 
     Today, Arun is back to his favorite hobby - gardening, and both families share an unbreakable bond.`,
     impact:
@@ -137,9 +139,9 @@ const successStoriesData = [
     },
     media: {
       images: [
-        "https://images.unsplash.com/photo-1551076805-e1869033e561?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80", // Children's hospital
-        "https://images.unsplash.com/photo-1581594693702-fbdc51b2763b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80", // Medical research
-        "https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80", // Happy child
+        "https://images.unsplash.com/photo-1615461066841-6116e61058f4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80", // Blood bag drawing / Donation
+        "https://images.unsplash.com/photo-1629909613654-28e377c37b09?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80", // Sorting blood samples
+        "https://images.unsplash.com/photo-1579154204601-01588f351e67?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80", // Lab analysis tubes
       ],
       video: "https://example.com/video2",
     },
@@ -193,9 +195,9 @@ const successStoriesData = [
     },
     media: {
       images: [
-        "https://images.unsplash.com/photo-1516627145497-ae6968895b74?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80", // Mother and baby
-        "https://images.unsplash.com/photo-1559598467-f8b76c8155d0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80", // Newborn twins
-        "https://images.unsplash.com/photo-1544717297-fa95b6ee9643?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80", // Happy family
+        "https://images.unsplash.com/photo-1582560475093-ba66accbc424?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80", // Blood draw setup / needles
+        "https://images.unsplash.com/photo-1524721696987-b9527df9e512?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80", // Blood bag
+        "https://images.unsplash.com/photo-1536856788636-e8b516f848e3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80", // Heart care / Donation care
       ],
     },
     story: `Meera's joy of becoming a mother to twins turned into a nightmare when severe bleeding started hours after delivery. With only 2 units of AB- blood in the hospital bank, an SOS was sent out.
@@ -247,13 +249,13 @@ const successStoriesData = [
     },
     media: {
       images: [
-        "https://images.unsplash.com/photo-1576091160550-2173dba999ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1532938911079-1b06ac7ceec7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1579154204601-01588f351e67?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80", // Blood testing tubes
+        "https://images.unsplash.com/photo-1629909613654-28e377c37b09?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80", // Sorting blood samples
+        "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80", // Blood pressure prep
       ],
       video: "https://example.com/video4",
     },
-    story: `What started as a small initiative in Mumbai has become India's largest corporate blood donation drive. TCS, in partnership with BloodConnect, organized a 2-week mega drive across 45 cities.
+    story: `What started as a small initiative in Mumbai has become India's largest corporate blood donation drive. TCS, in partnership with LifeDrop, organized a 2-week mega drive across 45 cities.
 
     With 15,000 units collected, this single drive supplies blood for 10,000 thalassemia children for a full month. Employees not only donated but also volunteered, creating a movement that has spread to 200+ other corporations.`,
     impact:
@@ -324,10 +326,27 @@ for (let i = 5; i <= 156; i++) {
     },
     media: {
       images: [
-        "https://images.unsplash.com/photo-1615461066841-6116e61058f4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-      ],
+        [
+          "https://images.unsplash.com/photo-1615461066841-6116e61058f4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+          "https://images.unsplash.com/photo-1524721696987-b9527df9e512?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+          "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+        ],
+        [
+          "https://images.unsplash.com/photo-1524721696987-b9527df9e512?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+          "https://images.unsplash.com/photo-1579154204601-01588f351e67?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+          "https://images.unsplash.com/photo-1629909613654-28e377c37b09?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+        ],
+        [
+          "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+          "https://images.unsplash.com/photo-1582560475093-ba66accbc424?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+          "https://images.unsplash.com/photo-1536856788636-e8b516f848e3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+        ],
+        [
+          "https://images.unsplash.com/photo-1579154204601-01588f351e67?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+          "https://images.unsplash.com/photo-1576091160550-2173dba999ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+          "https://images.unsplash.com/photo-1615461066841-6116e61058f4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+        ]
+      ][i % 4],
     },
     story: `This is an inspiring story of how blood donation saved a life. The donor selflessly came forward to help someone in need, demonstrating the true spirit of humanity.`,
     impact: "This donation saved multiple lives and inspired others to donate.",
@@ -496,9 +515,11 @@ const handleDownload = (story) => {
 };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      <Header />
+      <main className="flex-grow">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-r from-red-600 to-red-700 text-white overflow-hidden">
+      <section className="relative bg-gradient-to-r from-red-600 to-red-700 text-white overflow-hidden pt-20">
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="absolute inset-0">
           <img
@@ -819,9 +840,11 @@ const handleDownload = (story) => {
           isLoading={isLoading}
         />
       )}
+      </main>
+      <Footer />
     </div>
   );
-};;;
+};
 
 // Story Card Component
 const StoryCard = ({ story, onClick }) => {

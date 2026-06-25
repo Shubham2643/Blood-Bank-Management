@@ -15,11 +15,12 @@ import { fileURLToPath } from "url";
 import connectDB from "./config/db.js";
 import { errorHandler } from "./utils/errorHandler.js";
 import { initializeSocket } from "./socket/index.js";
+import { seedCampsIfEmpty } from "./controllers/publicController.js";
 
 import authRoutes from "./routes/authRoutes.js";
 import donorRoutes from "./routes/donorRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
-import facultyRoutes from "./routes/facultyRoutes.js";
+import facilityRoutes from "./routes/facilityRoutes.js";
 import hospitalRoutes from "./routes/hospitalRoutes.js";
 import bloodLabRoutes from "./routes/bloodLabRoutes.js";
 import publicRoutes from "./routes/publicRoutes.js";
@@ -34,7 +35,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 dotenv.config();
 
-connectDB();
+connectDB().then(() => {
+  // Seed camp data on startup if DB is empty
+  seedCampsIfEmpty();
+});
 
 const app = express();
 const server = http.createServer(app);
@@ -91,7 +95,7 @@ app.use("/api", globalLimiter);
 app.use("/api/auth", authLimiter, authRoutes);
 app.use("/api/donor", donorRoutes);
 app.use("/api/admin", adminRoutes);
-app.use("/api/faculty", facultyRoutes);
+app.use("/api/facility", facilityRoutes);
 app.use("/api/hospital", hospitalRoutes);
 app.use("/api/blood-lab", bloodLabRoutes);
 app.use("/api/public", publicRoutes);

@@ -1,6 +1,9 @@
 // src/pages/footer/PartnerWithUs.jsx
 import React, { useState } from "react";
 import { Helmet } from "react-helmet";
+import { useNavigate } from "react-router-dom";
+import Header from "../../components/Header";
+import Footer from "../../components/Footer";
 import {
   Building2,
   Hospital,
@@ -51,13 +54,15 @@ import {
 import { toast } from "react-hot-toast";
 
 const PartnerWithUs = () => {
-  React.useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
-
+  const navigate = useNavigate();
   const [selectedPartnership, setSelectedPartnership] = useState("hospital");
   const [showForm, setShowForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  // Scroll to top on page load
+  React.useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   // Partnership types
   const partnershipTypes = [
@@ -161,7 +166,7 @@ const PartnerWithUs = () => {
         "School/College/University",
         "Student body approval",
         "Campus facilities",
-        "Faculty coordinator",
+        "Facility coordinator",
       ],
       stats: {
         partners: "300+",
@@ -233,27 +238,25 @@ const PartnerWithUs = () => {
       image:
         "https://images.unsplash.com/photo-1586773860418-d37222d8fce3?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
       quote:
-        "BloodConnect has transformed our blood inventory management. We've reduced wastage by 40% and never faced a blood shortage since partnering.",
+        "LifeDrop has transformed our blood inventory management. We've reduced wastage by 40% and never faced a blood shortage since partnering.",
       impact: "500+ lives saved annually",
       since: "2022",
     },
     {
       name: "TechMahindra Foundation",
       type: "Corporate",
-      image:
-        "https://images.unsplash.com/photo-1556761175-b413da4baf72?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
+      image: "/techmahindra_foundation.png",
       quote:
-        "Our employees love the blood donation camps organized through BloodConnect. It's become our flagship CSR initiative.",
+        "Our employees love the blood donation camps organized through LifeDrop. It's become our flagship CSR initiative.",
       impact: "1000+ units collected",
       since: "2021",
     },
     {
       name: "Delhi University",
       type: "Educational",
-      image:
-        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
+      image: "/delhi_university.png",
       quote:
-        "The student response has been overwhelming. BloodConnect makes it easy to organize camps and track donations.",
+        "The student response has been overwhelming. LifeDrop makes it easy to organize camps and track donations.",
       impact: "2000+ student donors",
       since: "2023",
     },
@@ -361,6 +364,7 @@ const PartnerWithUs = () => {
         "Partnership request submitted successfully! Our team will contact you within 48 hours.",
       );
       setShowForm(false);
+      navigate("/");
       setFormData({
         organizationName: "",
         organizationType: "",
@@ -381,6 +385,7 @@ const PartnerWithUs = () => {
       });
     } catch (error) {
       toast.error("Submission failed. Please try again.");
+      console.error(error);
     } finally {
       setSubmitting(false);
     }
@@ -392,20 +397,20 @@ const PartnerWithUs = () => {
   const Icon = currentPartnership?.icon || Hospital;
 
   return (
-    <>
+    <div className="min-h-screen flex flex-col bg-gray-50">
       <Helmet>
         <title>
-          Partner with BloodConnect | Join Our Mission to Save Lives
+          Partner with LifeDrop | Join Our Mission to Save Lives
         </title>
         <meta
           name="description"
-          content="Partner with BloodConnect to enhance blood donation and management. Join hospitals, blood banks, corporates, and NGOs in our life-saving mission."
+          content="Partner with LifeDrop to enhance blood donation and management. Join hospitals, blood banks, corporates, and NGOs in our life-saving mission."
         />
       </Helmet>
-
-      <div className="min-h-screen bg-gray-50">
+      <Header />
+      <main className="flex-grow">
         {/* Hero Section */}
-        <div className="bg-gradient-to-r from-red-600 via-red-700 to-red-800 text-white relative overflow-hidden">
+        <div className="bg-gradient-to-r from-red-600 via-red-700 to-red-800 text-white relative overflow-hidden pt-20">
           <div className="absolute inset-0 opacity-10">
             <div className="absolute top-0 left-0 w-64 h-64 bg-white rounded-full filter blur-3xl"></div>
             <div className="absolute bottom-0 right-0 w-96 h-96 bg-white rounded-full filter blur-3xl"></div>
@@ -420,7 +425,7 @@ const PartnerWithUs = () => {
                 </span>
               </div>
               <h1 className="text-4xl md:text-6xl font-bold mb-6">
-                Partner with BloodConnect
+                Partner with LifeDrop
               </h1>
               <p className="text-xl text-red-100 mb-8 max-w-2xl mx-auto">
                 Together, we can build a robust blood donation ecosystem.
@@ -477,7 +482,7 @@ const PartnerWithUs = () => {
         <div className="container mx-auto px-4 py-16">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-              Why Partner with BloodConnect?
+              Why Partner with LifeDrop?
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
               Join India's fastest-growing blood donation network and make a
@@ -1115,7 +1120,7 @@ const PartnerWithUs = () => {
                         />
                         <span className="text-sm text-gray-700">
                           I agree to the terms and conditions and consent to
-                          BloodConnect contacting me regarding this partnership
+                          LifeDrop contacting me regarding this partnership
                           inquiry. *
                         </span>
                       </label>
@@ -1153,8 +1158,9 @@ const PartnerWithUs = () => {
             </div>
           </div>
         )}
-      </div>
-    </>
+      </main>
+      <Footer />
+    </div>
   );
 };
 

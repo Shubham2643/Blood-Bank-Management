@@ -53,15 +53,23 @@ export const donorApi = {
   getHistory: () => api.get("/donor/history"),
   getStats: () => api.get("/donor/stats"),
   getCamps: () => api.get("/donor/camps"),
+  registerForCamp: (id) => api.post(`/donor/camps/${id}/register`),
+  simulateCampDonation: (id) => api.post(`/donor/camps/${id}/simulate-donation`),
+  getCertificate: (donationId) => api.get(`/donor/certificate/${donationId}`),
+  getDonationJourney: (donationId) => api.get(`/donor/donation/${donationId}/journey`),
+  getHealthReport: (donationId) => api.get(`/donor/health-report/${donationId}`),
 };
 
 export const hospitalApi = {
   getDashboard: () => api.get("/hospital/dashboard"),
   getStock: () => api.get("/hospital/blood/stock"),
-  getRequests: () => api.get("/hospital/blood/requests"),
+  getRequests: (params) => api.get("/hospital/blood/requests", { params }),
   createRequest: (data) => api.post("/hospital/blood/request", data),
   getDonors: (params) => api.get("/hospital/donors", { params }),
   contactDonor: (id) => api.post(`/hospital/donors/${id}/contact`),
+  createDonor: (data) => api.post("/hospital/donors", data),
+  updateDonor: (id, data) => api.put(`/hospital/donors/${id}`, data),
+  deleteDonor: (id) => api.delete(`/hospital/donors/${id}`),
 };
 
 export const bloodLabApi = {
@@ -81,20 +89,29 @@ export const bloodLabApi = {
   markDonation: (id, data) => api.post(`/blood-lab/donors/donate/${id}`, data),
   getRecentDonations: () => api.get("/blood-lab/donations/recent"),
   getLabs: () => api.get("/blood-lab/labs"),
+  // e-Raktkosh testing & camp registrations workflow
+  getPendingBags: () => api.get("/blood-lab/blood/pending-testing"),
+  submitTestResults: (data) => api.post("/blood-lab/blood/submit-test", data),
+  splitWholeBlood: (data) => api.post("/blood-lab/blood/split-bag", data),
+  getCampRegistrations: (id) => api.get(`/blood-lab/camps/${id}/registrations`),
+  recordDonationVitals: (id, data) => api.post(`/blood-lab/camps/${id}/record-donation`, data),
 };
 
-export const facultyApi = {
-  getProfile: () => api.get("/faculty/profile"),
-  updateProfile: (data) => api.put("/faculty/profile", data),
-  getLabs: () => api.get("/faculty/labs"),
+export const facilityApi = {
+  getProfile: () => api.get("/facility/profile"),
+  updateProfile: (data) => api.put("/facility/profile", data),
+  getLabs: () => api.get("/facility/labs"),
 };
 
 export const adminApi = {
   getDashboard: () => api.get("/admin/dashboard"),
-  getFaculties: () => api.get("/admin/faculties"),
+  getFacilities: () => api.get("/admin/facilities"),
   getDonors: () => api.get("/admin/donors"),
-  approveFaculty: (id) => api.put(`/admin/faculty/approve/${id}`),
-  rejectFaculty: (id, data) => api.put(`/admin/faculty/reject/${id}`, data),
+  approveFacility: (id) => api.put(`/admin/facility/approve/${id}`),
+  rejectFacility: (id, data) => api.put(`/admin/facility/reject/${id}`, data),
+  getContactMessages: () => api.get("/admin/contact-messages"),
+  replyToContactMessage: (id, data) =>
+    api.post(`/admin/contact-messages/${id}/reply`, data),
 };
 
 export const publicApi = {
@@ -103,6 +120,13 @@ export const publicApi = {
   getUpcomingCamps: (params) => api.get("/public/camps/upcoming", { params }),
   getNearbyCamps: (params) => api.get("/public/camps/nearby", { params }),
   subscribeNewsletter: (email) => api.post("/public/newsletter", { email }),
+  // Blood requests
+  getBloodRequests: (params) => api.get("/public/blood-requests", { params }),
+  postBloodRequest: (data) => api.post("/public/blood-requests", data),
+  respondToBloodRequest: (id, data) => api.post(`/public/blood-requests/${id}/respond`, data),
+  // Central Live Stock Directory
+  getCentralStock: (params) => api.get("/public/blood-stock", { params }),
+  postContactMessage: (data) => api.post("/public/contact", data),
 };
 
 export const newsApi = {
@@ -122,6 +146,12 @@ export const blogApi = {
 export const userApi = {
   exportData: (format) => api.get("/user/export-data", { params: { format } }),
   deleteData: () => api.delete("/user/delete-data"),
+};
+
+export const notificationApi = {
+  getNotifications: () => api.get("/user/notifications"),
+  markAsRead: (id) => api.put(`/user/notifications/${id}/read`),
+  markAllAsRead: () => api.put("/user/notifications/read-all"),
 };
 
 export default api;

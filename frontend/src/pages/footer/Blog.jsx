@@ -34,12 +34,20 @@ import {
   Droplet,
   Stethoscope,
   Activity,
+  ChevronLeft,
+  MapPin,
+  AlertCircle,
 } from "lucide-react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import { toast } from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
-import api, { blogApi as blogApiClient } from "../../services/api.js";
+import { useNavigate, useParams } from "react-router-dom";
+import { io } from "socket.io-client";
+import { SOCKET_URL } from "../../config/env.js";
+import api, { blogApi as blogApiClient, publicApi } from "../../services/api.js";
+
+// Fallback image for blog posts
+const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1579154204601-01588f351e67?w=800&auto=format";
 
 // Mock data for random blogs (fallback when API fails)
 const MOCK_BLOGS = [
@@ -178,6 +186,12 @@ const blogApi = {
   async getAll(filters = {}) {
     try {
       const response = await blogApiClient.getAll(filters);
+      if (response.data && response.data.blogs) {
+        response.data.blogs = response.data.blogs.map((blog) => ({
+          ...blog,
+          id: blog._id || blog.id,
+        }));
+      }
       return response.data;
     } catch (error) {
       console.error("Blog API Error:", error);
@@ -214,7 +228,13 @@ const blogApi = {
   async getById(id) {
     try {
       const response = await blogApiClient.getById(id);
-      return response.data;
+      if (response.data) {
+        return {
+          ...response.data,
+          id: response.data._id || response.data.id,
+        };
+      }
+      return null;
     } catch (error) {
       console.error("Blog API Error:", error);
       const blog = MOCK_BLOGS.find((b) => b.id === id);
@@ -236,6 +256,12 @@ const blogApi = {
   async getPopular() {
     try {
       const response = await blogApiClient.getPopular();
+      if (response.data && response.data.blogs) {
+        response.data.blogs = response.data.blogs.map((blog) => ({
+          ...blog,
+          id: blog._id || blog.id,
+        }));
+      }
       return response.data;
     } catch (error) {
       console.error("Blog API Error:", error);
@@ -384,12 +410,11 @@ const BlogCard = ({
     >
       <div className="relative h-56 overflow-hidden">
         <img
-          src={blog.coverImage}
+          src={blog.coverImage || FALLBACK_IMAGE}
           alt={blog.title}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
           onError={(e) => {
-            e.target.src =
-              "https://images.unsplash.com/photo-1579154204601-01588f351e67?w=800&auto=format";
+            e.target.src = FALLBACK_IMAGE;
           }}
         />
         <div className="absolute top-4 right-4 flex gap-2">
@@ -488,7 +513,7 @@ const BlogCard = ({
           </button>
           <button className="flex items-center gap-1 text-gray-500 hover:text-red-600 transition-colors">
             <MessageCircle className="w-4 h-4" />
-            <span className="text-sm">{blog.comments || 0}</span>
+            <span className="text-sm">{Array.isArray(blog.comments) ? blog.comments.length : (typeof blog.comments === 'number' ? blog.comments : 0)}</span>
           </button>
           <div className="flex items-center gap-1 text-gray-500 ml-auto">
             <TrendingUp className="w-4 h-4" />
@@ -507,12 +532,11 @@ const FeaturedBlog = ({ blog }) => {
   return (
     <div className="relative h-[600px] rounded-3xl overflow-hidden">
       <img
-        src={blog.coverImage}
+        src={blog.coverImage || FALLBACK_IMAGE}
         alt={blog.title}
         className="w-full h-full object-cover"
         onError={(e) => {
-          e.target.src =
-            "https://images.unsplash.com/photo-1579154204601-01588f351e67?w=1200&auto=format";
+          e.target.src = FALLBACK_IMAGE;
         }}
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent"></div>
@@ -907,8 +931,8 @@ const BlogEditorModal = ({ isOpen, onClose, blogToEdit, onSave }) => {
   );
 };
 
-// Main Blog Page Component
 const Blog = () => {
+  const { id } = useParams();
   const [blogs, setBlogs] = useState([]);
   const [featuredBlog, setFeaturedBlog] = useState(null);
   const [popularBlogs, setPopularBlogs] = useState([]);
@@ -928,8 +952,43 @@ const Blog = () => {
     totalComments: 0,
   });
 
+  // Params Detail State
+  const [currentBlog, setCurrentBlog] = useState(null);
+  const [blogLoading, setBlogLoading] = useState(false);
+  const [commentsList, setCommentsList] = useState([]);
+  const [newCommentText, setNewCommentText] = useState("");
+  const [submittingComment, setSubmittingComment] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
+  
+  // Real-time Sidebar requests
+  const [liveRequests, setLiveRequests] = useState([]);
+
   const hasSetFeaturedRef = useRef(false);
   const navigate = useNavigate();
+
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [subscribing, setSubscribing] = useState(false);
+
+  const handleNewsletterSubmit = async (e) => {
+    e.preventDefault();
+    if (!newsletterEmail || !newsletterEmail.includes("@")) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+    setSubscribing(true);
+    try {
+      const response = await publicApi.subscribeNewsletter(newsletterEmail);
+      if (response && response.data) {
+        toast.success(response.data.message || "Successfully subscribed to newsletter!");
+        setNewsletterEmail("");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Subscription failed. Please try again.");
+    } finally {
+      setSubscribing(false);
+    }
+  };
 
   const loadBlogs = useCallback(async () => {
     setLoading(true);
@@ -954,7 +1013,7 @@ const Blog = () => {
         0,
       );
       const totalComments = data.blogs.reduce(
-        (sum, blog) => sum + (blog.comments || 0),
+        (sum, blog) => sum + (Array.isArray(blog.comments) ? blog.comments.length : (typeof blog.comments === 'number' ? blog.comments : 0)),
         0,
       );
 
@@ -1005,12 +1064,145 @@ const Blog = () => {
     }
   }, []);
 
+  // Load single blog detail
+  const loadBlogDetail = useCallback(async () => {
+    if (!id) return;
+    setBlogLoading(true);
+    try {
+      const blogData = await blogApi.getById(id);
+      if (blogData) {
+        const mappedBlog = {
+          ...blogData,
+          id: blogData._id || blogData.id
+        };
+        setCurrentBlog(mappedBlog);
+        setCommentsList(Array.isArray(mappedBlog.comments) ? mappedBlog.comments : []);
+      } else {
+        toast.error("Blog post not found");
+        navigate("/blog");
+      }
+    } catch (error) {
+      console.error("Failed to load blog detail:", error);
+      toast.error("Error loading blog details");
+    } finally {
+      setBlogLoading(false);
+    }
+  }, [id, navigate]);
+
+  // Load live requests
+  const fetchLiveRequests = async () => {
+    try {
+      const res = await publicApi.getBloodRequests({ status: "active" });
+      if (res.data?.requests) {
+        setLiveRequests(res.data.requests.slice(0, 3));
+      }
+    } catch (error) {
+      console.error("Failed to load requests:", error);
+    }
+  };
+
   useEffect(() => {
     loadBlogs();
     loadCategories();
     loadPopularBlogs();
     checkUserRole();
+    fetchLiveRequests();
   }, [loadBlogs, loadCategories, loadPopularBlogs, checkUserRole]);
+
+  useEffect(() => {
+    if (id) {
+      loadBlogDetail();
+    } else {
+      setCurrentBlog(null);
+    }
+  }, [id, loadBlogDetail]);
+
+  // Real-time socket connections
+  useEffect(() => {
+    const socket = io(SOCKET_URL, {
+      transports: ["websocket", "polling"],
+      reconnection: true,
+    });
+
+    socket.on("new-blood-request", (newReq) => {
+      setLiveRequests((prev) => {
+        if (prev.find((r) => r._id === newReq._id)) return prev;
+        return [newReq, ...prev].slice(0, 3);
+      });
+      toast.success(`🩸 Live: New blood request for ${newReq.bloodType} in ${newReq.city}!`);
+    });
+
+    socket.on("blog-feed-updated", () => {
+      loadBlogs();
+      loadPopularBlogs();
+    });
+
+    socket.on("blog-updated", (updatedInfo) => {
+      if (id && updatedInfo.id === id) {
+        if (updatedInfo.likes !== undefined) {
+          setCurrentBlog((prev) => prev ? { ...prev, likes: updatedInfo.likes } : null);
+        }
+        if (updatedInfo.comments !== undefined) {
+          setCommentsList(Array.isArray(updatedInfo.comments) ? updatedInfo.comments : []);
+        }
+      }
+    });
+
+    socket.on("new-blog-post", (newBlog) => {
+      toast.success(`📰 New Blog Post: "${newBlog.title}" just published!`);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [id, loadBlogs, loadPopularBlogs]);
+
+  const handleCommentSubmit = async (e) => {
+    e.preventDefault();
+    if (!localStorage.getItem("token")) {
+      toast.error("Please login to comment");
+      navigate("/login");
+      return;
+    }
+    if (!newCommentText.trim()) return;
+
+    setSubmittingComment(true);
+    try {
+      const response = await api.post(`/blog/${id}/comment`, { comment: newCommentText });
+      if (response.status >= 200 && response.status < 300) {
+        toast.success("Comment added!");
+        setNewCommentText("");
+        const updatedBlog = await blogApi.getById(id);
+        if (updatedBlog) {
+          setCommentsList(Array.isArray(updatedBlog.comments) ? updatedBlog.comments : []);
+        }
+      } else {
+        toast.error("Failed to add comment");
+      }
+    } catch (error) {
+      console.error("Error adding comment:", error);
+      toast.error("Error adding comment");
+    } finally {
+      setSubmittingComment(false);
+    }
+  };
+
+  const handleDetailLike = async () => {
+    if (!localStorage.getItem("token")) {
+      toast.error("Please login to like this post");
+      navigate("/login");
+      return;
+    }
+    const success = await blogApi.likeBlog(id);
+    if (success) {
+      setIsLiked(true);
+      toast.success("You liked this post!");
+      const updatedBlog = await blogApi.getById(id);
+      if (updatedBlog && currentBlog) {
+        setCurrentBlog(prev => prev ? { ...prev, likes: updatedBlog.likes } : null);
+      }
+    }
+  };
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -1120,6 +1312,277 @@ const Blog = () => {
     hasSetFeaturedRef.current = false;
   };
 
+  if (id) {
+    if (blogLoading) {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-red-50 to-white flex flex-col">
+          <Header />
+          <div className="flex-grow flex items-center justify-center py-24">
+            <Loader2 className="w-12 h-12 text-red-600 animate-spin" />
+          </div>
+          <Footer />
+        </div>
+      );
+    }
+
+    if (!currentBlog) {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-red-50 to-white flex flex-col">
+          <Header />
+          <div className="flex-grow flex flex-col items-center justify-center py-24 text-center">
+            <AlertCircle className="w-16 h-16 text-gray-400 mb-4" />
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Blog Post Not Found</h2>
+            <button
+              onClick={() => navigate("/blog")}
+              className="mt-4 px-6 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors"
+            >
+              Back to Blog
+            </button>
+          </div>
+          <Footer />
+        </div>
+      );
+    }
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-50 to-white flex flex-col">
+        <Header />
+        
+        {/* Blog Detail Header */}
+        <section className="relative pt-24 pb-12 bg-gradient-to-br from-slate-900 to-gray-900 text-white overflow-hidden">
+          <div className="absolute inset-0 opacity-20">
+            <img
+              src={currentBlog.coverImage || FALLBACK_IMAGE}
+              alt={currentBlog.title}
+              className="w-full h-full object-cover blur-sm"
+              onError={(e) => {
+                e.target.src = FALLBACK_IMAGE;
+              }}
+            />
+            <div className="absolute inset-0 bg-black/60" />
+          </div>
+          <div className="container mx-auto px-4 max-w-4xl relative z-10">
+            <button
+              onClick={() => navigate("/blog")}
+              className="inline-flex items-center gap-2 text-red-400 hover:text-red-300 font-medium mb-6 transition-colors"
+            >
+              <ChevronLeft className="w-5 h-5" />
+              Back to Blog
+            </button>
+            <div className="mb-4">
+              <span className="px-3 py-1 bg-red-600 text-white rounded-full text-xs font-semibold uppercase tracking-wider">
+                {currentBlog.category}
+              </span>
+            </div>
+            <h1 className="text-3xl md:text-5xl font-extrabold mt-4 mb-6 leading-tight text-white">
+              {currentBlog.title}
+            </h1>
+            <div className="flex flex-wrap items-center gap-6 text-sm text-gray-300">
+              <div className="flex items-center gap-3">
+                <img
+                  src={currentBlog.author?.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100"}
+                  alt={currentBlog.author?.name}
+                  className="w-10 h-10 rounded-full border border-gray-700 object-cover"
+                />
+                <div>
+                  <p className="font-semibold text-white">{currentBlog.author?.name}</p>
+                  <p className="text-xs text-gray-400">{currentBlog.author?.role}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1">
+                <Calendar className="w-4 h-4 text-red-500" />
+                {new Date(currentBlog.createdAt).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </div>
+              <div className="flex items-center gap-1">
+                <Clock className="w-4 h-4 text-red-500" />
+                {currentBlog.readTime} min read
+              </div>
+              <div className="flex items-center gap-1">
+                <Eye className="w-4 h-4 text-red-500" />
+                {currentBlog.views} views
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Blog content and sidebar layout */}
+        <div className="container mx-auto px-4 py-12 max-w-7xl flex-grow">
+          <div className="flex flex-col lg:flex-row gap-8">
+            {/* Article Content */}
+            <div className="lg:w-3/4 bg-white rounded-3xl shadow-xl p-6 md:p-10 border border-gray-100">
+              <article className="prose max-w-none text-gray-700 leading-relaxed space-y-6">
+                <div className="whitespace-pre-wrap text-base md:text-lg">
+                  {currentBlog.content}
+                </div>
+              </article>
+
+              {/* Likes and Share */}
+              <div className="flex items-center justify-between border-t border-b border-gray-100 py-6 my-8">
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={handleDetailLike}
+                    disabled={isLiked}
+                    className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold transition-all ${
+                      isLiked
+                        ? "bg-red-50 text-red-600 border border-red-200 cursor-default"
+                        : "bg-gray-50 text-gray-700 hover:bg-red-50 hover:text-red-600 border border-gray-100"
+                    }`}
+                  >
+                    <Heart className={`w-5 h-5 ${isLiked ? "fill-red-600 text-red-600" : ""}`} />
+                    {currentBlog.likes} Likes
+                  </button>
+                  <button
+                    onClick={() => handleShare(currentBlog)}
+                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-100 transition-all"
+                  >
+                    <Share2 className="w-5 h-5" />
+                    Share
+                  </button>
+                </div>
+                <div className="flex items-center gap-2">
+                  {currentBlog.tags?.map((tag) => (
+                    <span key={tag} className="px-2.5 py-1 bg-gray-100 text-gray-600 rounded-lg text-xs font-medium">
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Comments Section */}
+              <div className="mt-8">
+                <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                  <MessageCircle className="w-6 h-6 text-red-600" />
+                  Comments ({commentsList.length})
+                </h3>
+
+                {/* Comment Form */}
+                <form onSubmit={handleCommentSubmit} className="mb-8">
+                  <textarea
+                    rows={4}
+                    value={newCommentText}
+                    onChange={(e) => setNewCommentText(e.target.value)}
+                    placeholder="Join the discussion... Share your thoughts."
+                    className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm resize-none mb-3"
+                    required
+                  />
+                  <button
+                    type="submit"
+                    disabled={submittingComment}
+                    className="px-6 py-2.5 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors font-semibold text-sm flex items-center gap-2 disabled:opacity-60"
+                  >
+                    {submittingComment ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                    Post Comment
+                  </button>
+                </form>
+
+                {/* Comments List */}
+                <div className="space-y-4">
+                  {commentsList.length === 0 ? (
+                    <p className="text-gray-500 text-sm italic">No comments yet. Be the first to share your opinion!</p>
+                  ) : (
+                    commentsList.map((c, index) => (
+                      <div key={index} className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                        <div className="flex justify-between items-center mb-2">
+                          <p className="font-semibold text-gray-800 text-sm">{c.name}</p>
+                          <p className="text-xs text-gray-400">
+                            {new Date(c.createdAt).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit"
+                            })}
+                          </p>
+                        </div>
+                        <p className="text-gray-600 text-sm">{c.text}</p>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Sidebar with Live Needs */}
+            <div className="lg:w-1/4">
+              <div className="bg-white rounded-3xl shadow-xl p-6 sticky top-24 border border-gray-100">
+                <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <Activity className="w-5 h-5 text-red-600 animate-pulse" />
+                  Live Urgent Needs
+                </h3>
+                <div className="space-y-3">
+                  {liveRequests.length === 0 ? (
+                    <p className="text-sm text-gray-500 italic">No active urgent requests</p>
+                  ) : (
+                    liveRequests.map((req) => (
+                      <div
+                        key={req._id}
+                        onClick={() => navigate("/blood-request")}
+                        className="p-3 bg-red-50 hover:bg-red-100 border border-red-100 rounded-xl cursor-pointer transition-colors group"
+                      >
+                        <div className="flex justify-between items-start mb-1.5">
+                          <span className="px-2 py-0.5 bg-red-600 text-white font-bold text-xs rounded-full">
+                            {req.bloodType}
+                          </span>
+                          <span className="text-[10px] text-red-600 uppercase font-bold tracking-wider animate-pulse">
+                            {req.urgency}
+                          </span>
+                        </div>
+                        <p className="text-xs font-semibold text-gray-800 line-clamp-1 group-hover:text-red-700">
+                          {req.patientName} ({req.units} Units)
+                        </p>
+                        <p className="text-[10px] text-gray-500 mt-1 flex items-center gap-1">
+                          <MapPin className="w-3 h-3 text-red-500" />
+                          {req.hospital}, {req.city}
+                        </p>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                {/* Popular posts block */}
+                <div className="mt-8 border-t border-gray-100 pt-6">
+                  <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5 text-red-600" />
+                    Popular Posts
+                  </h3>
+                  <div className="space-y-3">
+                    {popularBlogs.map((b) => (
+                      <div
+                        key={b.id || b._id}
+                        onClick={() => navigate(`/blog/${b.id || b._id}`)}
+                        className="flex items-center gap-3 cursor-pointer group"
+                      >
+                        <img
+                          src={b.coverImage || FALLBACK_IMAGE}
+                          alt={b.title}
+                          className="w-14 h-14 rounded-xl object-cover"
+                          onError={(e) => {
+                            e.target.src = FALLBACK_IMAGE;
+                          }}
+                        />
+                        <div>
+                          <p className="text-xs font-semibold text-gray-800 line-clamp-2 group-hover:text-red-600">
+                            {b.title}
+                          </p>
+                          <p className="text-[10px] text-gray-400 mt-0.5">{b.readTime} min read</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 to-white">
       <Header />
@@ -1150,28 +1613,48 @@ const Blog = () => {
 
         <div className="container mx-auto px-4 py-16 relative">
           <div className="max-w-3xl">
-            <h1 className="text-5xl font-bold mb-4">BloodConnect Blog</h1>
+            <h1 className="text-5xl font-bold mb-4">LifeDrop Blog</h1>
             <p className="text-xl opacity-90 mb-8">
               Insights, stories, and expert advice about blood donation, health,
               and community impact.
             </p>
 
             {/* Search Bar */}
-            <form onSubmit={handleSearch} className="relative max-w-2xl">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search blog posts..."
-                className="w-full pl-12 pr-32 py-4 rounded-xl text-gray-900 focus:ring-2 focus:ring-red-500"
-              />
-              <button
-                type="submit"
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors"
-              >
-                Search
-              </button>
+            <form onSubmit={handleSearch} className="relative max-w-2xl group">
+              <div className="relative flex items-center bg-white rounded-2xl shadow-lg border border-transparent group-focus-within:border-red-500/30 group-focus-within:ring-4 group-focus-within:ring-red-500/10 transition-all duration-300">
+                <Search className="absolute left-4 text-gray-400 w-5 h-5 group-focus-within:text-red-500 transition-colors" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search blog posts..."
+                  className="w-full pl-12 pr-32 py-4 bg-transparent rounded-2xl text-gray-900 placeholder-gray-400 focus:outline-none text-base"
+                />
+                
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchQuery("");
+                      setCurrentPage(1);
+                      hasSetFeaturedRef.current = false;
+                      setTimeout(() => loadBlogs(), 10);
+                    }}
+                    className="absolute right-28 p-1.5 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-all"
+                    title="Clear search"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+
+                <button
+                  type="submit"
+                  className="absolute right-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white px-6 py-2.5 rounded-xl font-semibold text-sm shadow-md shadow-red-500/10 hover:shadow-red-500/20 active:scale-95 transition-all flex items-center gap-1.5"
+                >
+                  <Search className="w-4 h-4" />
+                  Search
+                </button>
+              </div>
             </form>
 
             {/* Create Blog Button (for authorized users) */}
@@ -1268,6 +1751,43 @@ const Blog = () => {
                 ))}
               </div>
 
+              {/* Live Urgent Requests Widget */}
+              <div className="mt-8 border-t border-gray-100 pt-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <Activity className="w-5 h-5 text-red-600 animate-pulse" />
+                  Live Urgent Needs
+                </h3>
+                <div className="space-y-3">
+                  {liveRequests.length === 0 ? (
+                    <p className="text-sm text-gray-500 italic text-center">No active urgent requests</p>
+                  ) : (
+                    liveRequests.map((req) => (
+                      <div
+                        key={req._id}
+                        onClick={() => navigate("/blood-request")}
+                        className="p-3 bg-red-50 hover:bg-red-100 border border-red-100 rounded-xl cursor-pointer transition-colors group"
+                      >
+                        <div className="flex justify-between items-start mb-1.5">
+                          <span className="px-2 py-0.5 bg-red-600 text-white font-bold text-xs rounded-full">
+                            {req.bloodType}
+                          </span>
+                          <span className="text-[10px] text-red-600 uppercase font-bold tracking-wider animate-pulse">
+                            {req.urgency}
+                          </span>
+                        </div>
+                        <p className="text-xs font-semibold text-gray-800 line-clamp-1 group-hover:text-red-700">
+                          {req.patientName} ({req.units} Units)
+                        </p>
+                        <p className="text-[10px] text-gray-500 mt-1 flex items-center gap-1">
+                          <MapPin className="w-3 h-3 text-red-500" />
+                          {req.hospital}, {req.city}
+                        </p>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
               {/* Popular Posts */}
               <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
                 <TrendingUp className="w-5 h-5 text-red-600" />
@@ -1282,12 +1802,11 @@ const Blog = () => {
                     className="flex gap-3 w-full text-left hover:bg-gray-50 p-2 rounded-lg transition-colors"
                   >
                     <img
-                      src={blog.coverImage}
+                      src={blog.coverImage || FALLBACK_IMAGE}
                       alt={blog.title}
                       className="w-12 h-12 rounded-lg object-cover"
                       onError={(e) => {
-                        e.target.src =
-                          "https://images.unsplash.com/photo-1579154204601-01588f351e67?w=100&h=100&fit=crop";
+                        e.target.src = FALLBACK_IMAGE;
                       }}
                     />
                     <div className="flex-1">
@@ -1303,7 +1822,7 @@ const Blog = () => {
               </div>
 
               {/* Newsletter Signup */}
-              <div className="mt-6 p-4 bg-gradient-to-br from-red-50 to-red-100 rounded-xl">
+              <form onSubmit={handleNewsletterSubmit} className="mt-6 p-4 bg-gradient-to-br from-red-50 to-red-100 rounded-xl">
                 <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
                   <Mail className="w-4 h-4 text-red-600" />
                   Subscribe to Blog
@@ -1314,14 +1833,26 @@ const Blog = () => {
                 <div className="flex gap-2">
                   <input
                     type="email"
+                    value={newsletterEmail}
+                    onChange={(e) => setNewsletterEmail(e.target.value)}
+                    disabled={subscribing}
                     placeholder="Your email"
+                    required
                     className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
                   />
-                  <button className="p-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
-                    <Mail className="w-4 h-4" />
+                  <button
+                    type="submit"
+                    disabled={subscribing}
+                    className="p-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:bg-red-400"
+                  >
+                    {subscribing ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Mail className="w-4 h-4" />
+                    )}
                   </button>
                 </div>
-              </div>
+              </form>
 
               {/* Active Filters */}
               {(selectedCategory || searchQuery) && (

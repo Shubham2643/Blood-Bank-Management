@@ -1,6 +1,9 @@
 // src/pages/footer/InventoryManagement.jsx
 import React, { useState } from "react";
 import { Helmet } from "react-helmet";
+import { useNavigate } from "react-router-dom";
+import Header from "../../components/Header";
+import Footer from "../../components/Footer";
 import {
   Droplet,
   Package,
@@ -44,6 +47,8 @@ import {
 import { toast } from "react-hot-toast";
 
 const InventoryManagement = () => {
+  const navigate = useNavigate();
+  // Scroll to top on page load
   React.useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -423,18 +428,18 @@ const InventoryManagement = () => {
   };
 
   return (
-    <>
+    <div className="min-h-screen flex flex-col bg-gray-50">
       <Helmet>
-        <title>Blood Inventory Management | BloodConnect</title>
+        <title>Blood Inventory Management | LifeDrop</title>
         <meta
           name="description"
           content="Real-time blood inventory status across blood banks. Track blood stock levels, expiry dates, and availability."
         />
       </Helmet>
-
-      <div className="min-h-screen bg-gray-50">
+      <Header />
+      <main className="flex-grow">
         {/* Hero Section - Red Theme */}
-        <div className="bg-gradient-to-r from-red-600 via-red-700 to-red-800 text-white relative overflow-hidden">
+        <div className="bg-gradient-to-r from-red-600 via-red-700 to-red-800 text-white relative overflow-hidden pt-20">
           <div className="absolute inset-0 opacity-10">
             <div className="absolute top-0 left-0 w-64 h-64 bg-white rounded-full filter blur-3xl"></div>
             <div className="absolute bottom-0 right-0 w-96 h-96 bg-white rounded-full filter blur-3xl"></div>
@@ -942,7 +947,7 @@ const InventoryManagement = () => {
                 </div>
               </div>
               <button
-                onClick={() => (window.location.href = "/blood-request")}
+                onClick={() => navigate("/blood-request")}
                 className="px-8 py-4 bg-white text-red-600 rounded-xl hover:bg-gray-100 transition-all duration-300 hover:scale-105 shadow-lg font-semibold whitespace-nowrap"
               >
                 Post Blood Request
@@ -950,8 +955,9 @@ const InventoryManagement = () => {
             </div>
           </div>
         </div>
-      </div>
-    </>
+      </main>
+      <Footer />
+    </div>
   );
 };
 

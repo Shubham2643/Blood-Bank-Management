@@ -6,7 +6,7 @@ import {
   logout,
   firebaseAuth,
   completeFirebaseRegistration,
-} from "../controllers/authContoller.js";
+} from "../controllers/authController.js";
 import { protect } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();

@@ -1,9 +1,9 @@
 import express from "express";
 import {
-  protectfaculty,
-  requireFacultyApproved,
-  requireFacultyType,
-} from "../middlewares/facultyMiddleware.js";
+  protectfacility,
+  requireFacilityApproved,
+  requireFacilityType,
+} from "../middlewares/facilityMiddleware.js";
 import {
   createBloodCamp,
   deleteBloodCamp,
@@ -18,6 +18,11 @@ import {
   updateBloodRequestStatus,
   getLabBloodRequests,
   getAllLabs,
+  getPendingBags,
+  submitTestResults,
+  splitWholeBlood,
+  getCampRegistrations,
+  recordDonationVitals,
 } from "../controllers/bloodLabController.js";
 import {
   getRecentDonations,
@@ -27,7 +32,7 @@ import {
 
 const router = express.Router();
 
-router.use(protectfaculty, requireFacultyType("blood-lab"), requireFacultyApproved);
+router.use(protectfacility, requireFacilityType("blood-lab"), requireFacilityApproved);
 
 router.get("/dashboard", getBloodLabDashboard);
 router.get("/history", getBloodLabHistory);
@@ -45,5 +50,12 @@ router.get("/labs", getAllLabs);
 router.get("/donors/search", searchDonor);
 router.post("/donors/donate/:id", markDonation);
 router.get("/donations/recent", getRecentDonations);
+
+// e-Raktkosh testing & camp registrations workflow
+router.get("/blood/pending-testing", getPendingBags);
+router.post("/blood/submit-test", submitTestResults);
+router.post("/blood/split-bag", splitWholeBlood);
+router.get("/camps/:id/registrations", getCampRegistrations);
+router.post("/camps/:id/record-donation", recordDonationVitals);
 
 export default router;

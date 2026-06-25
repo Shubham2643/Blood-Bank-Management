@@ -14,6 +14,7 @@ import {
   CheckCircle,
   XCircle,
   MoreVertical,
+  AlertCircle,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import api, { bloodLabApi } from "../../services/api.js";
@@ -61,6 +62,7 @@ const BloodCamps = () => {
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [actionMenu, setActionMenu] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   console.log("🔧 BloodCamps Component State:", {
     campsCount: camps.length,
@@ -354,9 +356,14 @@ const BloodCamps = () => {
   };
 
   // Handle delete
-  const handleDeleteCamp = async (id) => {
+  const handleDeleteCamp = (camp) => {
+    setDeleteTarget(camp);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+    const id = deleteTarget._id;
     console.log("🗑️ Deleting camp:", id);
-    if (!window.confirm("Are you sure you want to delete this camp? This action cannot be undone.")) return;
     
     try {
       const res = await bloodLabApi.deleteCamp(id);
@@ -365,6 +372,7 @@ const BloodCamps = () => {
 
       if (data.success) {
         toast.success("Camp deleted successfully!");
+        setDeleteTarget(null);
         fetchCamps();
       } else {
         throw new Error(data.message || "Failed to delete camp");
@@ -450,7 +458,7 @@ const BloodCamps = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 to-white p-6">
+    <div className="space-y-6">
       <div className="max-w-7xl mx-auto">
         {/* Header with Stats */}
         <div className="mb-8">
@@ -504,7 +512,7 @@ const BloodCamps = () => {
 
         {/* Filters */}
         <div className="bg-white rounded-2xl shadow-lg border border-red-100 p-6 mb-6">
-          <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
@@ -837,7 +845,7 @@ const BloodCamps = () => {
                           </div>
                         )}
                         <button
-                          onClick={() => handleDeleteCamp(camp._id)}
+                          onClick={() => handleDeleteCamp(camp)}
                           className="text-red-500 hover:text-red-600 p-1 transition-colors"
                           title="Delete camp"
                         >
@@ -915,6 +923,40 @@ const BloodCamps = () => {
               </div>
             )}
           </>
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {deleteTarget && (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fadeIn">
+            <div className="bg-white rounded-3xl shadow-xl max-w-md w-full p-6 border border-slate-100 relative text-center">
+              <div className="mx-auto w-14 h-14 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mb-4 border border-rose-100 shadow-sm">
+                <AlertCircle size={28} />
+              </div>
+              <h3 className="text-xl font-black text-gray-800 mb-2">
+                Delete Donation Camp?
+              </h3>
+              <p className="text-slate-500 text-sm mb-6 leading-relaxed">
+                Are you sure you want to delete the camp <strong className="text-slate-800">{deleteTarget.title}</strong>? This action is permanent and cannot be undone.
+              </p>
+
+              <div className="flex gap-3 justify-center">
+                <button
+                  type="button"
+                  onClick={() => setDeleteTarget(null)}
+                  className="flex-1 py-2.5 bg-slate-50 border border-slate-200 text-slate-700 hover:bg-slate-100 rounded-xl transition-all font-bold text-sm cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmDelete}
+                  className="flex-1 py-2.5 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white rounded-xl transition-all font-bold text-sm shadow-md hover:shadow-red-200 cursor-pointer"
+                >
+                  Confirm Delete
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>

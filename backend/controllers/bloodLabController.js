@@ -1,11 +1,12 @@
 import Blood from "../models/bloodModel.js";
 import BloodCamp from "../models/bloodCampModel.js";
-import Faculty from "../models/facultyModel.js";
+import Facility from "../models/facilityModel.js";
 import BloodRequest from "../models/bloodRequestModel.js";
 import Donor from "../models/donorModel.js";
 import { AppError } from "../utils/errorHandler.js";
 import { getIO, broadcastCampEvent, SocketEvents } from "../socket/index.js";
 import { sendEmail } from "../utils/emailService.js";
+import { notifyUser, notifyRole } from "../utils/notification.js";
 
 export const getBloodLabDashboard = async (req, res, next) => {
   try {
@@ -17,21 +18,22 @@ export const getBloodLabDashboard = async (req, res, next) => {
     const [
       camps,
       stock,
-      faculty,
+      facility,
       recentDonations,
       pendingRequests,
       weeklyStats,
+      totalDonors,
     ] = await Promise.all([
       BloodCamp.find({ hospital: labId }).sort({ date: -1 }).limit(10),
       Blood.find({ bloodLab: labId }).sort({ bloodGroup: 1 }),
-      Faculty.findById(labId).select(
+      Facility.findById(labId).select(
         "name email phone address operatingHours status history lastLogin",
       ),
       Donor.aggregate([
         { $unwind: "$donationHistory" },
         {
           $match: {
-            "donationHistory.faculty": labId,
+            "donationHistory.facility": labId,
             "donationHistory.donationDate": { $gt: weekAgo },
           },
         },
@@ -59,6 +61,7 @@ export const getBloodLabDashboard = async (req, res, next) => {
           },
         },
       ]),
+      Donor.countDocuments(),
     ]);
 
     const totalUnits = stock.reduce((sum, item) => sum + item.quantity, 0);
@@ -67,7 +70,7 @@ export const getBloodLabDashboard = async (req, res, next) => {
     res.json({
       success: true,
       data: {
-        Faculty: faculty,
+        Facility: facility,
         stats: {
           totalCamps: camps.length,
           upcomingCamps: camps.filter((c) => String(c.status).toLowerCase() === "upcoming").length,
@@ -75,6 +78,7 @@ export const getBloodLabDashboard = async (req, res, next) => {
           criticalStock,
           pendingRequests,
           recentDonations: recentDonations.length,
+          totalDonors,
         },
         stock: weeklyStats,
         recentCamps: camps,
@@ -90,8 +94,8 @@ export const getBloodLabDashboard = async (req, res, next) => {
 export const getDashboard = getBloodLabDashboard;
 
 export const createBloodCamp = async (req, res, next) => {
-  const session = await BloodCamp.startSession();
-  session.startTransaction();
+  const session = global.supportsTransactions ? await BloodCamp.startSession() : null;
+  if (session) session.startTransaction();
 
   try {
     const labId = req.user._id;
@@ -105,6 +109,7 @@ export const createBloodCamp = async (req, res, next) => {
     // Validate dates
     const campDate = new Date(campData.date);
     if (campDate < new Date()) {
+      if (session) await session.abortTransaction();
       return next(new AppError("Camp date cannot be in the past", 400));
     }
 
@@ -118,6 +123,7 @@ export const createBloodCamp = async (req, res, next) => {
     }).session(session);
 
     if (existingCamp) {
+      if (session) await session.abortTransaction();
       return next(new AppError("A camp already exists on this date", 400));
     }
 
@@ -127,18 +133,18 @@ export const createBloodCamp = async (req, res, next) => {
           hospital: labId,
           ...campData,
           location: {
-            venue: campData.venue,
-            city: campData.city,
-            state: campData.state,
-            pincode: campData.pincode,
+            venue: campData.location?.venue || campData.venue,
+            city: campData.location?.city || campData.city,
+            state: campData.location?.state || campData.state,
+            pincode: campData.location?.pincode || campData.pincode,
           },
         },
       ],
       { session },
     );
 
-    // Update faculty history
-    await Faculty.findByIdAndUpdate(labId, {
+    // Update facility history
+    await Facility.findByIdAndUpdate(labId, {
       $push: {
         history: {
           eventType: "Blood Camp",
@@ -149,7 +155,7 @@ export const createBloodCamp = async (req, res, next) => {
       },
     }).session(session);
 
-    await session.commitTransaction();
+    if (session) await session.commitTransaction();
 
     broadcastCampEvent(SocketEvents.NEW_CAMP, {
       campId: camp[0]._id,
@@ -161,22 +167,28 @@ export const createBloodCamp = async (req, res, next) => {
       organizedBy: req.user.name,
     });
 
+    await notifyRole(
+      "donor",
+      `New blood donation camp "${campData.title}" organized at ${campData.venue} on ${campData.date}`,
+      "info"
+    );
+
     res.status(201).json({
       success: true,
       message: "Blood camp created successfully",
       data: camp[0],
     });
   } catch (error) {
-    await session.abortTransaction();
+    if (session) await session.abortTransaction();
     next(error);
   } finally {
-    session.endSession();
+    if (session) session.endSession();
   }
 };
 
 export const updateCampStatus = async (req, res, next) => {
-  const session = await BloodCamp.startSession();
-  session.startTransaction();
+  const session = global.supportsTransactions ? await BloodCamp.startSession() : null;
+  if (session) session.startTransaction();
 
   try {
     const { id } = req.params;
@@ -189,6 +201,7 @@ export const updateCampStatus = async (req, res, next) => {
     }).session(session);
 
     if (!camp) {
+      if (session) await session.abortTransaction();
       return next(new AppError("Camp not found", 404));
     }
 
@@ -201,8 +214,8 @@ export const updateCampStatus = async (req, res, next) => {
 
     await camp.save({ session });
 
-    // Update faculty history
-    await Faculty.findByIdAndUpdate(labId, {
+    // Update facility history
+    await Facility.findByIdAndUpdate(labId, {
       $push: {
         history: {
           eventType: "Blood Camp",
@@ -213,7 +226,7 @@ export const updateCampStatus = async (req, res, next) => {
       },
     }).session(session);
 
-    await session.commitTransaction();
+    if (session) await session.commitTransaction();
 
     const event =
       status && String(status).toLowerCase() === "completed"
@@ -234,22 +247,23 @@ export const updateCampStatus = async (req, res, next) => {
       data: camp,
     });
   } catch (error) {
-    await session.abortTransaction();
+    if (session) await session.abortTransaction();
     next(error);
   } finally {
-    session.endSession();
+    if (session) session.endSession();
   }
 };
 
 export const addBloodStock = async (req, res, next) => {
-  const session = await Blood.startSession();
-  session.startTransaction();
+  const session = global.supportsTransactions ? await Blood.startSession() : null;
+  if (session) session.startTransaction();
 
   try {
     const { bloodType, quantity, expiryDate } = req.body;
     const bloodLab = req.user._id;
 
     if (!bloodType || !quantity || quantity <= 0) {
+      if (session) await session.abortTransaction();
       return next(
         new AppError("Please provide valid bloodType and quantity", 400),
       );
@@ -262,6 +276,8 @@ export const addBloodStock = async (req, res, next) => {
     let stock = await Blood.findOne({
       bloodGroup: bloodType,
       bloodLab,
+      testingStatus: "safe",
+      status: "available",
     }).session(session);
 
     if (stock) {
@@ -276,6 +292,8 @@ export const addBloodStock = async (req, res, next) => {
             quantity: Number(quantity),
             expiryDate: expDate,
             bloodLab,
+            testingStatus: "safe",
+            status: "available",
           },
         ],
         { session },
@@ -283,8 +301,8 @@ export const addBloodStock = async (req, res, next) => {
       stock = stock[0];
     }
 
-    // Update faculty history
-    await Faculty.findByIdAndUpdate(bloodLab, {
+    // Update facility history
+    await Facility.findByIdAndUpdate(bloodLab, {
       $push: {
         history: {
           eventType: "Stock Update",
@@ -294,17 +312,23 @@ export const addBloodStock = async (req, res, next) => {
       },
     }).session(session);
 
-    await session.commitTransaction();
+    if (session) await session.commitTransaction();
 
     // Check for critical levels after addition
     if (stock.quantity < 10) {
       getIO()
-        .to(`user:${bloodLab}`)
+        .to(`user:${req.user.user}`)
         .emit("stock-warning", {
           bloodType,
           quantity: stock.quantity,
           message: `Stock for ${bloodType} is low`,
         });
+
+      await notifyUser(
+        req.user.user,
+        `Stock for ${bloodType} is low (< 10 units remaining: ${stock.quantity} units)`,
+        "warning"
+      );
     }
 
     res.json({
@@ -313,22 +337,23 @@ export const addBloodStock = async (req, res, next) => {
       data: stock,
     });
   } catch (error) {
-    await session.abortTransaction();
+    if (session) await session.abortTransaction();
     next(error);
   } finally {
-    session.endSession();
+    if (session) session.endSession();
   }
 };
 
 export const removeBloodStock = async (req, res, next) => {
-  const session = await Blood.startSession();
-  session.startTransaction();
+  const session = global.supportsTransactions ? await Blood.startSession() : null;
+  if (session) session.startTransaction();
 
   try {
     const { bloodType, quantity } = req.body;
     const bloodLab = req.user._id;
 
     if (!bloodType || !quantity || quantity <= 0) {
+      if (session) await session.abortTransaction();
       return next(
         new AppError("Please provide valid bloodType and quantity", 400),
       );
@@ -340,6 +365,7 @@ export const removeBloodStock = async (req, res, next) => {
     }).session(session);
 
     if (!stock || stock.quantity < Number(quantity)) {
+      if (session) await session.abortTransaction();
       return next(
         new AppError(
           `Insufficient stock. Available: ${stock?.quantity || 0} units`,
@@ -356,7 +382,7 @@ export const removeBloodStock = async (req, res, next) => {
       await stock.save({ session });
     }
 
-    await Faculty.findByIdAndUpdate(bloodLab, {
+    await Facility.findByIdAndUpdate(bloodLab, {
       $push: {
         history: {
           eventType: "Stock Update",
@@ -366,17 +392,17 @@ export const removeBloodStock = async (req, res, next) => {
       },
     }).session(session);
 
-    await session.commitTransaction();
+    if (session) await session.commitTransaction();
 
     res.json({
       success: true,
       message: "Blood stock removed successfully",
     });
   } catch (error) {
-    await session.abortTransaction();
+    if (session) await session.abortTransaction();
     next(error);
   } finally {
-    session.endSession();
+    if (session) session.endSession();
   }
 };
 
@@ -462,10 +488,10 @@ export const updateBloodCamp = async (req, res, next) => {
       {
         ...campData,
         location: {
-          venue: campData.venue,
-          city: campData.city,
-          state: campData.state,
-          pincode: campData.pincode,
+          venue: campData.location?.venue || campData.venue,
+          city: campData.location?.city || campData.city,
+          state: campData.location?.state || campData.state,
+          pincode: campData.location?.pincode || campData.pincode,
         },
       },
       { new: true, runValidators: true },
@@ -574,8 +600,8 @@ export const getLabBloodRequests = async (req, res, next) => {
 };
 
 export const updateBloodRequestStatus = async (req, res, next) => {
-  const session = await BloodRequest.startSession();
-  session.startTransaction();
+  const session = global.supportsTransactions ? await BloodRequest.startSession() : null;
+  if (session) session.startTransaction();
 
   try {
     const { id } = req.params;
@@ -590,10 +616,12 @@ export const updateBloodRequestStatus = async (req, res, next) => {
       .session(session);
 
     if (!request) {
+      if (session) await session.abortTransaction();
       return next(new AppError("Request not found", 404));
     }
 
     if (request.status !== "pending") {
+      if (session) await session.abortTransaction();
       return next(new AppError("Request already processed", 400));
     }
 
@@ -605,6 +633,7 @@ export const updateBloodRequestStatus = async (req, res, next) => {
       }).session(session);
 
       if (!labStock || labStock.quantity < request.units) {
+        if (session) await session.abortTransaction();
         return next(
           new AppError(
             `Insufficient stock. Available: ${labStock?.quantity || 0} units`,
@@ -656,7 +685,7 @@ export const updateBloodRequestStatus = async (req, res, next) => {
     await request.save({ session });
 
     // Update history for both parties
-    await Faculty.findByIdAndUpdate(labId, {
+    await Facility.findByIdAndUpdate(labId, {
       $push: {
         history: {
           eventType: "Stock Update",
@@ -667,7 +696,7 @@ export const updateBloodRequestStatus = async (req, res, next) => {
       },
     }).session(session);
 
-    await Faculty.findByIdAndUpdate(request.hospitalId._id, {
+    await Facility.findByIdAndUpdate(request.hospitalId._id, {
       $push: {
         history: {
           eventType: "Stock Update",
@@ -678,11 +707,11 @@ export const updateBloodRequestStatus = async (req, res, next) => {
       },
     }).session(session);
 
-    await session.commitTransaction();
+    if (session) await session.commitTransaction();
 
     // Send real-time notification
     getIO()
-      .to(`user:${request.hospitalId._id}`)
+      .to(`user:${request.hospitalId.user}`)
       .emit("request-processed", {
         requestId: request._id,
         status: request.status,
@@ -691,10 +720,21 @@ export const updateBloodRequestStatus = async (req, res, next) => {
         message: `Your blood request has been ${request.status}`,
       });
 
+    await notifyUser(
+      request.hospitalId.user,
+      `Your blood request for ${request.units} units of ${request.bloodType} has been ${request.status}`,
+      request.status === "accepted" ? "success" : "warning"
+    );
+
+    // Sync testing queue for the lab
+    getIO().to(`user:${req.user.user}`).emit("testing-queue-updated", {
+      message: "Blood request processed, stock updated."
+    });
+
     // Send email notification
     await sendEmail({
       email: request.hospitalId.email,
-      subject: `Blood Request ${action === "accept" ? "Accepted" : "Rejected"} - BloodConnect`,
+      subject: `Blood Request ${action === "accept" ? "Accepted" : "Rejected"} - LifeDrop`,
       template: "requestProcessed",
       data: {
         hospitalName: request.hospitalId.name,
@@ -711,22 +751,22 @@ export const updateBloodRequestStatus = async (req, res, next) => {
       data: request,
     });
   } catch (error) {
-    await session.abortTransaction();
+    if (session) await session.abortTransaction();
     next(error);
   } finally {
-    session.endSession();
+    if (session) session.endSession();
   }
 };
 
 export const getBloodLabHistory = async (req, res, next) => {
   try {
-    const faculty = await Faculty.findById(req.user._id).select("history");
+    const facility = await Facility.findById(req.user._id).select("history");
 
-    if (!faculty) {
-      return next(new AppError("Faculty not found", 404));
+    if (!facility) {
+      return next(new AppError("Facility not found", 404));
     }
 
-    const history = faculty.history || [];
+    const history = facility.history || [];
 
     res.json({
       success: true,
@@ -742,7 +782,7 @@ export const getAllLabs = async (req, res, next) => {
     const { city } = req.query;
 
     const filter = {
-      facultyType: "blood-lab",
+      facilityType: "blood-lab",
       // Allow hospitals to see labs that are still pending.
       status: { $in: ["approved", "pending"] },
     };
@@ -751,7 +791,7 @@ export const getAllLabs = async (req, res, next) => {
       filter["address.city"] = { $regex: city, $options: "i" };
     }
 
-    const labs = await Faculty.find(filter)
+    const labs = await Facility.find(filter)
       .select("name email phone address operatingHours")
       .sort({ name: 1 });
 
@@ -761,5 +801,284 @@ export const getAllLabs = async (req, res, next) => {
     });
   } catch (error) {
     next(error);
+  }
+};
+
+export const getPendingBags = async (req, res, next) => {
+  try {
+    const bloodLab = req.user._id;
+    const pendingBags = await Blood.find({
+      bloodLab,
+      testingStatus: "pending-test",
+    }).populate({
+      path: "donor",
+      populate: { path: "user", select: "name" },
+    });
+
+    res.json({
+      success: true,
+      data: pendingBags,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const submitTestResults = async (req, res, next) => {
+  const session = global.supportsTransactions ? await Blood.startSession() : null;
+  if (session) session.startTransaction();
+
+  try {
+    const { bagId, hiv, hbv, hcv, malaria, syphilis, hemoglobin, bloodPressure, pulse, temperature } = req.body;
+    const bloodLab = req.user._id;
+
+    const bag = await Blood.findOne({ bagId, bloodLab }).session(session);
+    if (!bag) {
+      if (session) await session.abortTransaction();
+      return next(new AppError("Blood bag not found", 404));
+    }
+
+    bag.diseasesTested = { hiv, hbv, hcv, malaria, syphilis };
+    
+    // Save health metrics if provided
+    bag.healthMetrics = {
+      hemoglobin: hemoglobin ? Number(hemoglobin) : undefined,
+      bloodPressure: bloodPressure || undefined,
+      pulse: pulse ? Number(pulse) : undefined,
+      temperature: temperature ? Number(temperature) : undefined,
+    };
+
+    const isUnsafe = hiv || hbv || hcv || malaria || syphilis;
+    if (isUnsafe) {
+      bag.testingStatus = "unsafe-discarded";
+      bag.status = "expired";
+    } else {
+      bag.testingStatus = "safe";
+      bag.status = "available";
+    }
+
+    await bag.save({ session });
+    if (session) await session.commitTransaction();
+
+    // Emit socket event to update lab UI
+    getIO().to(`user:${req.user.user}`).emit("testing-queue-updated", {
+      message: "Test results submitted, queue updated."
+    });
+
+    res.json({
+      success: true,
+      message: isUnsafe
+        ? "Blood bag marked unsafe and discarded"
+        : "Blood bag certified safe and added to inventory",
+      data: bag,
+    });
+  } catch (error) {
+    if (session) await session.abortTransaction();
+    next(error);
+  } finally {
+    if (session) session.endSession();
+  }
+};
+
+export const splitWholeBlood = async (req, res, next) => {
+  const session = global.supportsTransactions ? await Blood.startSession() : null;
+  if (session) session.startTransaction();
+
+  try {
+    const { bagId } = req.body;
+    const bloodLab = req.user._id;
+
+    const originalBag = await Blood.findOne({
+      bagId,
+      bloodLab,
+      componentType: "Whole Blood",
+      testingStatus: "safe",
+    }).session(session);
+
+    if (!originalBag) {
+      if (session) await session.abortTransaction();
+      return next(new AppError("Safe Whole Blood bag not found", 404));
+    }
+
+    // Delete original Whole Blood bag
+    await Blood.findByIdAndDelete(originalBag._id).session(session);
+
+    // Create components: Packed Red Blood Cells (PRBC), Platelets, Fresh Frozen Plasma (FFP)
+    const components = [
+      {
+        bloodGroup: originalBag.bloodGroup,
+        componentType: "Packed Red Blood Cells",
+        quantity: 1,
+        expiryDate: new Date(Date.now() + 42 * 24 * 60 * 60 * 1000),
+        bloodLab,
+        testingStatus: "safe",
+        status: "available",
+        donor: originalBag.donor,
+        diseasesTested: originalBag.diseasesTested,
+      },
+      {
+        bloodGroup: originalBag.bloodGroup,
+        componentType: "Platelets",
+        quantity: 1,
+        expiryDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
+        bloodLab,
+        testingStatus: "safe",
+        status: "available",
+        donor: originalBag.donor,
+        diseasesTested: originalBag.diseasesTested,
+      },
+      {
+        bloodGroup: originalBag.bloodGroup,
+        componentType: "Fresh Frozen Plasma",
+        quantity: 1,
+        expiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+        bloodLab,
+        testingStatus: "safe",
+        status: "available",
+        donor: originalBag.donor,
+        diseasesTested: originalBag.diseasesTested,
+      },
+    ];
+
+    const created = await Blood.create(components, { session });
+
+    if (session) await session.commitTransaction();
+
+    // Emit socket event to update lab UI
+    getIO().to(`user:${req.user.user}`).emit("testing-queue-updated", {
+      message: "Whole Blood bag split into components."
+    });
+
+    res.json({
+      success: true,
+      message: "Successfully separated Whole Blood into PRBC, Platelets, and FFP",
+      data: created,
+    });
+  } catch (error) {
+    if (session) await session.abortTransaction();
+    next(error);
+  } finally {
+    if (session) session.endSession();
+  }
+};
+
+export const getCampRegistrations = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const labId = req.user._id;
+
+    const camp = await BloodCamp.findOne({ _id: id, hospital: labId })
+      .populate({
+        path: "registeredDonors.donor",
+        populate: { path: "user", select: "name phone" },
+      });
+
+    if (!camp) {
+      return next(new AppError("Camp not found or unauthorized", 404));
+    }
+
+    res.json({
+      success: true,
+      data: camp.registeredDonors,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const recordDonationVitals = async (req, res, next) => {
+  const session = global.supportsTransactions ? await Facility.startSession() : null;
+  if (session) session.startTransaction();
+
+  try {
+    const { id: campId } = req.params;
+    const { donorId, weight, bloodPressure, hemoglobin, pulse, quantity = 1 } = req.body;
+    const labId = req.user._id;
+
+    // Check camp
+    const camp = await BloodCamp.findOne({ _id: campId, hospital: labId }).session(session);
+    if (!camp) {
+      if (session) await session.abortTransaction();
+      return next(new AppError("Camp not found", 404));
+    }
+
+    // Check donor
+    const donor = await Donor.findById(donorId).session(session);
+    if (!donor) {
+      if (session) await session.abortTransaction();
+      return next(new AppError("Donor not found", 404));
+    }
+
+    // Verify eligibility checks: Hemoglobin >= 12.5, Weight >= 45
+    if (weight && weight < 45) {
+      if (session) await session.abortTransaction();
+      return next(new AppError("Donor weight is below 45kg (ineligible)", 400));
+    }
+    if (hemoglobin && hemoglobin < 12.5) {
+      if (session) await session.abortTransaction();
+      return next(new AppError("Donor hemoglobin is below 12.5 g/dL (ineligible)", 400));
+    }
+
+    // Update donor history
+    donor.donationHistory.push({
+      donationDate: new Date(),
+      facility: labId,
+      bloodGroup: donor.bloodGroup,
+      quantity,
+      verified: true,
+    });
+    donor.lastDonationDate = new Date();
+    await donor.save({ session });
+
+    const newDonation = donor.donationHistory[donor.donationHistory.length - 1];
+
+    // Create Blood bag in pending-test
+    const bloodBag = await Blood.create(
+      [
+        {
+          bloodGroup: donor.bloodGroup,
+          componentType: "Whole Blood",
+          quantity,
+          expiryDate: new Date(Date.now() + 42 * 24 * 60 * 60 * 1000),
+          bloodLab: labId,
+          testingStatus: "pending-test",
+          status: "reserved",
+          donor: donor._id,
+          donationId: newDonation._id,
+          healthMetrics: {
+            hemoglobin: hemoglobin ? Number(hemoglobin) : undefined,
+            bloodPressure: bloodPressure || undefined,
+            pulse: pulse ? Number(pulse) : undefined,
+            temperature: 98.4,
+          },
+        },
+      ],
+      { session },
+    );
+
+    // Increment camp actualDonors count
+    camp.actualDonors += 1;
+    await camp.save({ session });
+
+    if (session) await session.commitTransaction();
+
+    // Emit socket event to update lab UI
+    getIO().to(`user:${req.user.user}`).emit("testing-queue-updated", {
+      message: "Donation vitals recorded, blood bag added to screening queue."
+    });
+
+    res.json({
+      success: true,
+      message: "Donation vitals recorded and blood bag created for screening",
+      data: {
+        bloodBag: bloodBag[0],
+        donor,
+      },
+    });
+  } catch (error) {
+    if (session) await session.abortTransaction();
+    next(error);
+  } finally {
+    if (session) session.endSession();
   }
 };

@@ -337,8 +337,9 @@ const DonorRegisterForm = () => {
         toast.error(data.message || "Registration failed");
       }
     } catch (error) {
-      console.error("Network error:", error);
-      toast.error("Registration failed. Please try again.");
+      console.error("Registration error:", error);
+      const errMsg = error.response?.data?.message || error.message || "Registration failed. Please try again.";
+      toast.error(errMsg);
     } finally {
       setIsSubmitting(false);
     }

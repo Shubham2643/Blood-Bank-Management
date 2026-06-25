@@ -5,6 +5,9 @@ import BloodCamp from "../models/bloodCampModel.js";
 import { AppError } from "../utils/errorHandler.js";
 import { broadcastCampEvent, SocketEvents } from "../socket/index.js";
 import { seedCampsIfEmpty } from "./publicController.js";
+import { notifyUser } from "../utils/notification.js";
+import facility from "../models/facilityModel.js";
+import Blood from "../models/bloodModel.js";
 
 const normalizeGender = (gender) => {
   if (!gender) return gender;
@@ -23,8 +26,8 @@ export const getDonorProfile = async (req, res, next) => {
     const donor = await Donor.findById(req.user.id)
       .populate("user", "name email phone role")
       .populate({
-        path: "donationHistory.faculty",
-        select: "address",
+        path: "donationHistory.facility",
+        select: "name address",
       })
       .select("-password -refreshToken -emailVerificationToken");
 
@@ -116,7 +119,7 @@ export const updateDonorProfile = async (req, res, next) => {
       filteredUpdates.isEligible = false;
     }
 
-    // Update base User fields (name/phone) if provided
+    // Update base User fields (name/phone/password) if provided
     const userUpdates = {};
     if (typeof updates.fullName === "string" && updates.fullName.trim()) {
       userUpdates.name = updates.fullName.trim();
@@ -124,11 +127,17 @@ export const updateDonorProfile = async (req, res, next) => {
     if (typeof updates.phone === "string" && updates.phone.trim()) {
       userUpdates.phone = updates.phone.trim();
     }
+    if (typeof updates.password === "string" && updates.password.trim().length >= 6) {
+      userUpdates.password = updates.password;
+    }
     if (Object.keys(userUpdates).length > 0) {
-      await User.findByIdAndUpdate(req.user.user, userUpdates, {
-        new: true,
-        runValidators: true,
-      });
+      const user = await User.findById(req.user.user).select("+password");
+      if (user) {
+        if (userUpdates.name) user.name = userUpdates.name;
+        if (userUpdates.phone) user.phone = userUpdates.phone;
+        if (userUpdates.password) user.password = userUpdates.password;
+        await user.save();
+      }
     }
 
     if (typeof filteredUpdates.gender === "string") {
@@ -198,7 +207,7 @@ export const getDonorStats = async (req, res, next) => {
         (d) => new Date(d.donationDate).getFullYear() === now.getFullYear(),
       ).length,
       uniqueFacilities: new Set(
-        donor.donationHistory.map((d) => d.faculty?.toString()),
+        donor.donationHistory.map((d) => d.facility?.toString()),
       ).size,
     };
 
@@ -263,6 +272,28 @@ export const getDonorCamps = async (req, res, next) => {
 
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
+    // Auto-migrate malformed registeredDonors (legacy format)
+    try {
+      const malformedCamps = await BloodCamp.find({
+        "registeredDonors.donor": { $exists: false },
+        "registeredDonors.0": { $exists: true }
+      });
+      for (const mc of malformedCamps) {
+        let updated = false;
+        for (const reg of mc.registeredDonors) {
+          if (!reg.donor && reg._id) {
+            reg.donor = reg._id;
+            updated = true;
+          }
+        }
+        if (updated) {
+          await mc.save();
+        }
+      }
+    } catch (migErr) {
+      console.error("Migration error:", migErr);
+    }
+
     const [camps, total] = await Promise.all([
       BloodCamp.find(filter)
         .populate("hospital", "name email phone")
@@ -273,13 +304,13 @@ export const getDonorCamps = async (req, res, next) => {
     ]);
 
     // Check if donor is registered for each camp
-    const donor = await Donor.findById(req.user.id);
     const campsWithRegistration = camps.map((camp) => {
       const campObj = camp.toObject();
-      campObj.isRegistered =
-        donor?.donationHistory?.some(
-          (h) => h.campId?.toString() === camp._id.toString(),
-        ) || false;
+      campObj.isRegistered = camp.registeredDonors?.some(
+        (reg) =>
+          (reg.donor && reg.donor.toString() === req.user.id.toString()) ||
+          (reg._id && reg._id.toString() === req.user.id.toString())
+      ) || false;
       return campObj;
     });
 
@@ -309,8 +340,8 @@ export const getDonorCamps = async (req, res, next) => {
 // @route   POST /api/donor/camps/:id/register
 // @access  Private/Donor
 export const registerForCamp = async (req, res, next) => {
-  const session = await Donor.startSession();
-  session.startTransaction();
+  const session = global.supportsTransactions ? await Donor.startSession() : null;
+  if (session) session.startTransaction();
 
   try {
     const campId = req.params.id;
@@ -319,20 +350,20 @@ export const registerForCamp = async (req, res, next) => {
     // Find camp
     const camp = await BloodCamp.findById(campId).session(session);
     if (!camp) {
-      await session.abortTransaction();
+      if (session) await session.abortTransaction();
       return next(new AppError("Camp not found", 404));
     }
 
     // Check if camp is upcoming (normalize casing)
     if (String(camp.status).toLowerCase() !== "upcoming") {
-      await session.abortTransaction();
+      if (session) await session.abortTransaction();
       return next(new AppError("Camp is not available for registration", 400));
     }
 
     // Check if donor is eligible
     const donor = await Donor.findById(donorId).session(session);
     if (!donor.isEligible) {
-      await session.abortTransaction();
+      if (session) await session.abortTransaction();
       return next(
         new AppError("You are not eligible to donate blood at this time", 400),
       );
@@ -340,11 +371,13 @@ export const registerForCamp = async (req, res, next) => {
 
     // Check if already registered
     const alreadyRegistered = camp.registeredDonors?.some(
-      (id) => id.toString() === donorId,
+      (reg) =>
+        (reg.donor && reg.donor.toString() === donorId.toString()) ||
+        (reg._id && reg._id.toString() === donorId.toString()),
     );
 
     if (alreadyRegistered) {
-      await session.abortTransaction();
+      if (session) await session.abortTransaction();
       return next(new AppError("Already registered for this camp", 400));
     }
 
@@ -352,10 +385,10 @@ export const registerForCamp = async (req, res, next) => {
     if (!camp.registeredDonors) {
       camp.registeredDonors = [];
     }
-    camp.registeredDonors.push(donorId);
+    camp.registeredDonors.push({ donor: donorId });
     await camp.save({ session });
 
-    await session.commitTransaction();
+    if (session) await session.commitTransaction();
 
     // Notify camp organizers and refresh camp lists for donors
     broadcastCampEvent(SocketEvents.CAMP_UPDATED, {
@@ -372,16 +405,27 @@ export const registerForCamp = async (req, res, next) => {
       facilityId: camp.hospital?.toString(),
     });
 
+    if (camp.hospital) {
+      const facilityObj = await facility.findById(camp.hospital);
+      if (facilityObj) {
+        await notifyUser(
+          facilityObj.user,
+          `Donor ${req.user.name} (${donor.bloodGroup}) registered for your camp "${camp.title}"`,
+          "success"
+        );
+      }
+    }
+
     res.json({
       success: true,
       message: "Successfully registered for camp",
       data: camp,
     });
   } catch (error) {
-    await session.abortTransaction();
+    if (session) await session.abortTransaction();
     next(error);
   } finally {
-    session.endSession();
+    if (session) session.endSession();
   }
 };
 
@@ -394,8 +438,8 @@ export const getDonorHistory = async (req, res, next) => {
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
     const donor = await Donor.findById(req.user.id).populate({
-      path: "donationHistory.faculty",
-      select: "name address.city",
+      path: "donationHistory.facility",
+      select: "name address",
     });
 
     if (!donor) {
@@ -417,7 +461,7 @@ export const getDonorHistory = async (req, res, next) => {
       firstDonation:
         history.length > 0 ? history[history.length - 1].donationDate : null,
       lastDonation: history.length > 0 ? history[0].donationDate : null,
-      uniqueFacilities: new Set(history.map((d) => d.faculty?._id?.toString()))
+      uniqueFacilities: new Set(history.map((d) => d.facility?._id?.toString()))
         .size,
     };
 
@@ -436,6 +480,143 @@ export const getDonorHistory = async (req, res, next) => {
   }
 };
 
+// @desc    Simulate a blood donation at a registered camp
+// @route   POST /api/donor/camps/:id/simulate-donation
+// @access  Private/Donor
+export const simulateCampDonation = async (req, res, next) => {
+  const session = global.supportsTransactions ? await Donor.startSession() : null;
+  if (session) session.startTransaction();
+
+  try {
+    const campId = req.params.id;
+    const donorId = req.user.id;
+
+    // Find camp
+    const camp = await BloodCamp.findById(campId).session(session);
+    if (!camp) {
+      if (session) await session.abortTransaction();
+      return next(new AppError("Camp not found", 404));
+    }
+
+    // Verify donor is registered for this camp
+    const isRegistered = camp.registeredDonors?.some(
+      (reg) =>
+        (reg.donor && reg.donor.toString() === donorId.toString()) ||
+        (reg._id && reg._id.toString() === donorId.toString())
+    );
+
+    if (!isRegistered) {
+      if (session) await session.abortTransaction();
+      return next(new AppError("You must be registered for this camp to donate", 400));
+    }
+
+    // Find donor
+    const donor = await Donor.findById(donorId).session(session);
+    if (!donor) {
+      if (session) await session.abortTransaction();
+      return next(new AppError("Donor profile not found", 404));
+    }
+
+    // Check if donor already has a donation at this camp on the same day to prevent duplicates
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date();
+    todayEnd.setHours(23, 59, 59, 999);
+
+    const alreadyDonatedToday = donor.donationHistory?.some(
+      (d) =>
+        d.facility?.toString() === camp.hospital?.toString() &&
+        new Date(d.donationDate) >= todayStart &&
+        new Date(d.donationDate) <= todayEnd
+    );
+
+    if (alreadyDonatedToday) {
+      if (session) await session.abortTransaction();
+      return next(new AppError("You have already recorded a donation at this facility today", 400));
+    }
+
+    const donationDate = new Date();
+    
+    // Add donation history entry
+    donor.donationHistory.push({
+      donationDate: donationDate,
+      facility: camp.hospital, // the hospital hosting the camp
+      bloodGroup: donor.bloodGroup,
+      quantity: 1,
+      verified: true,
+    });
+    
+    donor.lastDonationDate = donationDate;
+    await donor.save({ session });
+
+    // Get the newly added donation subdocument to retrieve its _id
+    const newDonation = donor.donationHistory[donor.donationHistory.length - 1];
+
+    // Create corresponding Blood bag in pending-test
+    await Blood.create(
+      [
+        {
+          bloodGroup: donor.bloodGroup,
+          componentType: "Whole Blood",
+          quantity: 1,
+          expiryDate: new Date(donationDate.getTime() + 42 * 24 * 60 * 60 * 1000),
+          bloodLab: camp.hospital,
+          testingStatus: "pending-test",
+          status: "reserved",
+          donor: donor._id,
+          donationId: newDonation._id,
+          healthMetrics: {
+            hemoglobin: 14.5,
+            bloodPressure: "120/80",
+            pulse: 75,
+            temperature: 98.6,
+          }
+        },
+      ],
+      { session }
+    );
+
+    // Increment camp actualDonors count
+    camp.actualDonors = (camp.actualDonors || 0) + 1;
+    await camp.save({ session });
+
+    if (session) await session.commitTransaction();
+
+    // Emit real-time update to blood lab testing queue
+    if (camp.hospital) {
+      try {
+        const facilityDoc = await facility.findById(camp.hospital);
+        if (facilityDoc) {
+          getIO().to(`user:${facilityDoc.user}`).emit("testing-queue-updated", {
+            message: `New donation bag registered from camp "${camp.title}"`,
+            bagDetails: {
+              bloodGroup: donor.bloodGroup,
+              componentType: "Whole Blood",
+              donorName: donor.fullName
+            }
+          });
+        }
+      } catch (socketErr) {
+        console.error("Failed to emit socket update for simulated donation:", socketErr.message);
+      }
+    }
+
+    res.json({
+      success: true,
+      message: "Donation simulated successfully! Your certificate of appreciation has been generated.",
+      data: {
+        donationId: newDonation._id,
+        certificateNumber: `BC-${newDonation._id.toString().slice(-8).toUpperCase()}`,
+      }
+    });
+  } catch (error) {
+    if (session) await session.abortTransaction();
+    next(error);
+  } finally {
+    if (session) session.endSession();
+  }
+};
+
 // @desc    Get donation certificate
 // @route   GET /api/donor/certificate/:donationId
 // @access  Private/Donor
@@ -446,7 +627,9 @@ export const getDonationCertificate = async (req, res, next) => {
     const donor = await Donor.findOne({
       _id: req.user.id,
       "donationHistory._id": donationId,
-    }).populate("donationHistory.faculty", "name registrationNumber");
+    })
+      .populate("user", "name")
+      .populate("donationHistory.facility", "name registrationNumber");
 
     if (!donor) {
       return next(new AppError("Donation record not found", 404));
@@ -457,11 +640,11 @@ export const getDonationCertificate = async (req, res, next) => {
     // Generate certificate data
     const certificate = {
       id: donation._id,
-      donorName: donor.fullName,
+      donorName: donor.user?.name || "LifeDrop Donor",
       donorBloodGroup: donor.bloodGroup,
       donationDate: donation.donationDate,
-      facilityName: donation.faculty?.name || "Blood Connect",
-      facilityRegNo: donation.faculty?.registrationNumber || "N/A",
+      facilityName: donation.facility?.name || "Blood Connect",
+      facilityRegNo: donation.facility?.registrationNumber || "N/A",
       quantity: donation.quantity || 1,
       certificateNumber: `BC-${donation._id.toString().slice(-8).toUpperCase()}`,
       issuedAt: new Date(),
@@ -520,30 +703,30 @@ export const searchDonor = async (req, res, next) => {
 // @route   POST /api/donor/donate/:id
 // @access  Private/Hospital or Lab
 export const markDonation = async (req, res, next) => {
-  const session = await Donor.startSession();
-  session.startTransaction();
+  const session = global.supportsTransactions ? await Donor.startSession() : null;
+  if (session) session.startTransaction();
 
   try {
     const donorId = req.params.id;
     const { quantity = 1, remarks } = req.body;
-    const facultyId = req.user._id;
+    const facilityId = req.user._id;
 
     const donor = await Donor.findById(donorId).session(session);
     if (!donor) {
-      await session.abortTransaction();
+      if (session) await session.abortTransaction();
       return next(new AppError("Donor not found", 404));
     }
 
     // Check eligibility
     if (!donor.isEligible) {
-      await session.abortTransaction();
+      if (session) await session.abortTransaction();
       return next(new AppError("Donor is not eligible to donate", 400));
     }
 
     // Add to donation history
     donor.donationHistory.push({
       donationDate: new Date(),
-      faculty: facultyId,
+      facility: facilityId,
       bloodGroup: donor.bloodGroup,
       quantity,
       remarks,
@@ -554,10 +737,10 @@ export const markDonation = async (req, res, next) => {
     donor.lastDonationDate = new Date();
 
     await donor.save({ session });
-    await session.commitTransaction();
+    if (session) await session.commitTransaction();
 
     // Emit real-time update
-    getIO().to(`user:${donorId}`).emit("donation-made", {
+    getIO().to(`user:${donor.user}`).emit("donation-made", {
       message: "Your donation has been recorded",
       donationDate: new Date(),
     });
@@ -568,10 +751,10 @@ export const markDonation = async (req, res, next) => {
       data: donor,
     });
   } catch (error) {
-    await session.abortTransaction();
+    if (session) await session.abortTransaction();
     next(error);
   } finally {
-    session.endSession();
+    if (session) session.endSession();
   }
 };
 
@@ -580,27 +763,27 @@ export const markDonation = async (req, res, next) => {
 // @access  Private/Hospital or Lab
 export const getRecentDonations = async (req, res, next) => {
   try {
-    const facultyId = req.user._id;
+    const facilityId = req.user._id;
     const { limit = 10 } = req.query;
 
     const donors = await Donor.find({
-      "donationHistory.faculty": facultyId,
+      "donationHistory.facility": facilityId,
     })
       .select("fullName bloodGroup donationHistory")
-      .populate("donationHistory.faculty", "name")
+      .populate("donationHistory.facility", "name")
       .sort({ "donationHistory.donationDate": -1 })
       .limit(parseInt(limit));
 
     const recentDonations = [];
     donors.forEach((donor) => {
       donor.donationHistory.forEach((donation) => {
-        if (donation.faculty?._id.toString() === facultyId.toString()) {
+        if (donation.facility?._id.toString() === facilityId.toString()) {
           recentDonations.push({
             donorName: donor.fullName,
             bloodGroup: donor.bloodGroup,
             date: donation.donationDate,
             quantity: donation.quantity,
-            facility: donation.faculty?.name,
+            facility: donation.facility?.name,
           });
         }
       });
@@ -641,3 +824,311 @@ export const getRecentDonations = async (req, res, next) => {
     next(error);
   }
 };
+
+// @desc    Get tracking journey for a blood donation
+// @route   GET /api/donor/donation/:donationId/journey
+// @access  Private/Donor
+export const getDonationJourney = async (req, res, next) => {
+  try {
+    const { donationId } = req.params;
+    const donor = await Donor.findById(req.user.id);
+
+    if (!donor) {
+      return next(new AppError("Donor profile not found", 404));
+    }
+
+    const donation = donor.donationHistory.id(donationId);
+    if (!donation) {
+      return next(new AppError("Donation record not found", 404));
+    }
+
+    // Try to find the associated facility
+    const facilityObj = await facility.findById(donation.facility).select("name address");
+    const facilityName = facilityObj?.name || "Blood Donation Center";
+    const facilityCity = facilityObj?.address?.city || donation.city || "Local City";
+
+    const donationDate = new Date(donation.donationDate);
+    const dateStr = donationDate.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+    const timeStr = donationDate.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
+
+    // Look for matching blood bags in Blood collection
+    const dateStart = new Date(donationDate.getTime() - 24 * 60 * 60 * 1000);
+    const dateEnd = new Date(donationDate.getTime() + 24 * 60 * 60 * 1000);
+
+    const bags = await Blood.find({
+      donor: req.user.id,
+      createdAt: { $gte: dateStart, $lte: dateEnd }
+    }).populate("hospital", "name address");
+
+    let stages = [];
+
+    if (bags.length > 0) {
+      // Real database tracking
+      // Use the first bag to represent testing and status
+      const primaryBag = bags[0];
+      
+      // Stage 1: Donated
+      stages.push({
+        id: "donated",
+        title: "Donation Completed",
+        description: `Successfully donated 1 unit of ${donation.bloodGroup} blood at ${facilityName}.`,
+        status: "completed",
+        date: dateStr,
+        time: timeStr,
+        location: facilityCity
+      });
+
+      // Stage 2: Screened & Certified
+      let stage2Status = "pending";
+      let stage2Desc = "Blood unit undergoing mandatory screening for HIV, HBV, HCV, Malaria, and Syphilis.";
+      if (primaryBag.testingStatus === "safe") {
+        stage2Status = "completed";
+        stage2Desc = "Mandatory screening completed. Certified safe for medical transfusion.";
+      } else if (primaryBag.testingStatus === "unsafe-discarded") {
+        stage2Status = "failed";
+        stage2Desc = "Screening completed. The unit did not meet safety parameters and was safely discarded.";
+      }
+      stages.push({
+        id: "screened",
+        title: "Screened & Certified",
+        description: stage2Desc,
+        status: stage2Status,
+        location: facilityName
+      });
+
+      // Stage 3: Component Separation
+      // Check if it was split or component type is specialized
+      const hasComponents = bags.length > 1 || primaryBag.componentType !== "Whole Blood";
+      let stage3Status = "pending";
+      let stage3Desc = "Prepared as Whole Blood for inventory storage.";
+      if (primaryBag.testingStatus === "safe") {
+        if (hasComponents) {
+          stage3Status = "completed";
+          const compNames = bags.map(b => b.componentType).join(", ");
+          stage3Desc = `Separated into critical components: ${compNames} for custom therapy.`;
+        } else {
+          stage3Status = "completed";
+          stage3Desc = "Whole Blood unit stored in temperature-controlled inventory.";
+        }
+      } else if (primaryBag.testingStatus === "unsafe-discarded") {
+        stage3Status = "cancelled";
+        stage3Desc = "Discontinued due to safety test results.";
+      }
+      stages.push({
+        id: "component",
+        title: "Component Separation",
+        description: stage3Desc,
+        status: stage3Status,
+        location: facilityName
+      });
+
+      // Stage 4: Dispatched to Hospital
+      let stage4Status = "pending";
+      let stage4Desc = "Awaiting request from local clinics or emergency hospital stock.";
+      let stage4Loc = facilityName;
+      if (primaryBag.testingStatus === "safe") {
+        const hospitalBag = bags.find(b => b.hospital);
+        if (hospitalBag) {
+          stage4Status = "completed";
+          stage4Desc = `Dispatched to ${hospitalBag.hospital?.name || "Emergency Hospital"} due to urgent blood request.`;
+          stage4Loc = hospitalBag.hospital?.address?.city || hospitalBag.hospital?.name;
+        } else if (primaryBag.status === "used" || primaryBag.status === "reserved") {
+          stage4Status = "completed";
+          stage4Desc = "Dispatched and reserved at destination medical storage facility.";
+        }
+      } else if (primaryBag.testingStatus === "unsafe-discarded") {
+        stage4Status = "cancelled";
+        stage4Desc = "Dispatched cancelled. Blood bag discarded.";
+      }
+      stages.push({
+        id: "dispatched",
+        title: "Dispatched to Clinic",
+        description: stage4Desc,
+        status: stage4Status,
+        location: stage4Loc
+      });
+
+      // Stage 5: Transfused / Saved Lives
+      let stage5Status = "pending";
+      let stage5Desc = "Awaiting transfusion to save a patient in emergency.";
+      if (primaryBag.testingStatus === "safe") {
+        if (primaryBag.status === "used") {
+          stage5Status = "completed";
+          stage5Desc = "Transfused to patient! 3 Lives saved and impacted.";
+        } else if (primaryBag.status === "reserved") {
+          stage5Status = "in-progress";
+          stage5Desc = "Reserved for an upcoming surgical procedure.";
+        }
+      } else if (primaryBag.testingStatus === "unsafe-discarded") {
+        stage5Status = "cancelled";
+        stage5Desc = "Transfusion aborted.";
+      }
+      stages.push({
+        id: "transfused",
+        title: "Transfused & Saved Lives",
+        description: stage5Desc,
+        status: stage5Status,
+        location: "Destination Clinic"
+      });
+
+    } else {
+      // Fallback deterministic simulation based on elapsed days
+      const diffDays = Math.floor((new Date() - donationDate) / (1000 * 60 * 60 * 24));
+
+      // Stage 1: Donated (Always Completed)
+      stages.push({
+        id: "donated",
+        title: "Donation Completed",
+        description: `Successfully donated 1 unit of ${donation.bloodGroup} blood at ${facilityName}.`,
+        status: "completed",
+        date: dateStr,
+        time: timeStr,
+        location: facilityCity
+      });
+
+      // Stage 2: Screened
+      const day2Str = new Date(donationDate.getTime() + 24 * 60 * 60 * 1000).toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+      stages.push({
+        id: "screened",
+        title: "Screened & Certified",
+        description: diffDays >= 1 
+          ? "Mandatory screening completed. Certified safe for medical transfusion." 
+          : "Blood unit undergoing mandatory screening for HIV, HBV, HCV, Malaria, and Syphilis.",
+        status: diffDays >= 1 ? "completed" : "in-progress",
+        date: diffDays >= 1 ? day2Str : null,
+        location: facilityName
+      });
+
+      // Stage 3: Components
+      const day3Str = new Date(donationDate.getTime() + 2 * 24 * 60 * 60 * 1000).toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+      stages.push({
+        id: "component",
+        title: "Component Separation",
+        description: diffDays >= 2 
+          ? "Separated into critical components: Packed Red Blood Cells, Platelets, and Plasma." 
+          : diffDays >= 1 ? "Component extraction in progress." : "Awaiting screening completion.",
+        status: diffDays >= 2 ? "completed" : diffDays >= 1 ? "in-progress" : "pending",
+        date: diffDays >= 2 ? day3Str : null,
+        location: facilityName
+      });
+
+      // Stage 4: Dispatched
+      const day4Str = new Date(donationDate.getTime() + 4 * 24 * 60 * 60 * 1000).toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+      stages.push({
+        id: "dispatched",
+        title: "Dispatched to Clinic",
+        description: diffDays >= 4 
+          ? `Dispatched to emergency hospital stock at ${facilityCity} General Hospital.` 
+          : diffDays >= 2 ? "Reserved in central repository, preparing dispatch." : "Awaiting components processing.",
+        status: diffDays >= 4 ? "completed" : diffDays >= 2 ? "in-progress" : "pending",
+        date: diffDays >= 4 ? day4Str : null,
+        location: facilityCity
+      });
+
+      // Stage 5: Transfused
+      const day7Str = new Date(donationDate.getTime() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+      stages.push({
+        id: "transfused",
+        title: "Transfused & Saved Lives",
+        description: diffDays >= 7 
+          ? "Transfused to patient! 3 Lives saved and impacted." 
+          : diffDays >= 4 ? "Reserved for a scheduled surgery at the hospital." : "Awaiting clinical delivery.",
+        status: diffDays >= 7 ? "completed" : diffDays >= 4 ? "in-progress" : "pending",
+        date: diffDays >= 7 ? day7Str : null,
+        location: "General Hospital"
+      });
+    }
+
+    res.json({
+      success: true,
+      donationId,
+      stages
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get donor donation health report card data
+// @route   GET /api/donor/health-report/:donationId
+// @access  Private/Donor
+export const getDonationHealthReport = async (req, res, next) => {
+  try {
+    const { donationId } = req.params;
+
+    const donor = await Donor.findById(req.user.id)
+      .populate("user", "name")
+      .populate("donationHistory.facility", "name registrationNumber");
+
+    if (!donor) {
+      return next(new AppError("Donor not found", 404));
+    }
+
+    const donation = donor.donationHistory.id(donationId);
+    if (!donation) {
+      return next(new AppError("Donation record not found", 404));
+    }
+
+    const donationDate = new Date(donation.donationDate);
+    const dateStart = new Date(donationDate.getTime() - 24 * 60 * 60 * 1000);
+    const dateEnd = new Date(donationDate.getTime() + 24 * 60 * 60 * 1000);
+
+    // Look for matching blood bag by exact reference, or fall back to date approximation
+    let bags = await Blood.find({ donationId: donation._id });
+    if (bags.length === 0) {
+      bags = await Blood.find({
+        donor: req.user.id,
+        createdAt: { $gte: dateStart, $lte: dateEnd }
+      });
+    }
+
+    let metrics = {};
+    let screening = {};
+    let isSafe = true;
+
+    if (bags.length > 0) {
+      const bag = bags[0];
+      metrics = bag.healthMetrics || {};
+      screening = bag.diseasesTested || {};
+      isSafe = bag.testingStatus === "safe";
+    }
+
+    res.json({
+      success: true,
+      data: {
+        donor: {
+          name: donor.user?.name || "LifeDrop Donor",
+          bloodGroup: donor.bloodGroup,
+          age: donor.age,
+          gender: donor.gender,
+          weight: donor.weight || 65,
+        },
+        donation: {
+          id: donation._id,
+          date: donation.donationDate,
+          facilityName: donation.facility?.name || "Civil Hospital",
+          facilityRegNo: donation.facility?.registrationNumber || "REG-99201",
+        },
+        healthMetrics: {
+          hemoglobin: metrics.hemoglobin || 14.2,
+          bloodPressure: metrics.bloodPressure || "120/80",
+          pulse: metrics.pulse || 72,
+          temperature: metrics.temperature || 98.4,
+        },
+        screeningResults: {
+          hiv: screening.hiv || false,
+          hbv: screening.hbv || false,
+          hcv: screening.hcv || false,
+          malaria: screening.malaria || false,
+          syphilis: screening.syphilis || false,
+          isSafe: isSafe
+        },
+        reportNumber: `HR-${donation._id.toString().slice(-8).toUpperCase()}`,
+        generatedAt: new Date()
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+

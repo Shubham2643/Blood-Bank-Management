@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { donorApi } from "../../services/api.js";
 import {
   Droplet,
@@ -25,6 +26,7 @@ import {
 import { toast } from "react-hot-toast";
 
 const DonorDashboard = () => {
+  const navigate = useNavigate();
   const [dashboard, setDashboard] = useState(null);
   const [donor, setDonor] = useState(null);
   const [history, setHistory] = useState([]);
@@ -63,6 +65,14 @@ const DonorDashboard = () => {
       } else if (Array.isArray(historyRes.data)) {
         historyData = historyRes.data;
       }
+
+      // Map facility populated object fields to the flat Facility and city properties
+      historyData = historyData.map((item) => ({
+        ...item,
+        Facility: item.facility?.name || item.Facility || "Blood Donation Center",
+        city: item.facility?.address?.city || item.city || "Unknown City",
+        state: item.facility?.address?.state || item.state || "",
+      }));
 
       setHistory(historyData);
 
@@ -122,7 +132,7 @@ const DonorDashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-red-50 to-white flex items-center justify-center">
+      <div className="flex items-center justify-center py-12">
         <div className="text-center">
           <div className="animate-pulse mb-4">
             <Heart className="w-12 h-12 text-red-500 mx-auto" />
@@ -141,7 +151,7 @@ const DonorDashboard = () => {
   const daysUntilEligible = nextDonationDate ? Math.ceil((nextDonationDate - new Date()) / (1000 * 60 * 60 * 24)) : 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 to-white p-6">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8">
         <div>
@@ -193,41 +203,97 @@ const DonorDashboard = () => {
 
       {/* Donor Profile Card */}
       {donor && (
-        <div className="bg-white rounded-2xl shadow-lg border border-red-100 p-6 mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
-              <User className="w-5 h-5 text-red-600" />
-              Donor Profile
-            </h2>
-            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-              isEligible ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"
-            }`}>
-              {isEligible ? "Eligible" : "Not Eligible"}
-            </span>
+        <div className="bg-white rounded-3xl shadow-xl border border-slate-100 p-6 sm:p-8 mb-8 transition-all duration-300 hover:shadow-2xl relative overflow-hidden">
+          {/* Decorative Background Accent Glows */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-red-100/30 rounded-full blur-3xl -z-10" />
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-rose-50/40 rounded-full blur-3xl -z-10" />
+
+          {/* Top Profile Header Section */}
+          <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start pb-6 border-b border-slate-100">
+            {/* Avatar - Circular with elegant double borders */}
+            <div className="relative flex-shrink-0 group">
+              <div className="absolute -inset-1 bg-gradient-to-tr from-red-600 to-rose-500 rounded-full blur opacity-25 group-hover:opacity-40 transition duration-300" />
+              <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-red-500 via-red-600 to-rose-600 flex items-center justify-center text-white font-extrabold text-3xl shadow-md border-4 border-white">
+                {(donor.user?.name || donor.name || "D").charAt(0).toUpperCase()}
+              </div>
+            </div>
+
+            {/* Name, Badges & Profile description */}
+            <div className="flex-1 text-center sm:text-left">
+              <h2 className="text-2xl font-black text-slate-800 tracking-tight">
+                {donor.user?.name || donor.name || "Blood Donor"}
+              </h2>
+              <div className="flex flex-wrap gap-2.5 mt-2.5 justify-center sm:justify-start">
+                <span className={`inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold ${
+                  isEligible 
+                    ? "bg-emerald-50 text-emerald-700 border border-emerald-200/60" 
+                    : "bg-amber-50 text-amber-700 border border-amber-200/60"
+                }`}>
+                  <span className={`w-2 h-2 rounded-full ${isEligible ? "bg-emerald-500" : "bg-amber-500"}`} />
+                  {isEligible ? "Eligible to Donate" : "Not Eligible"}
+                </span>
+                <span className="inline-flex items-center px-3.5 py-1 rounded-full text-xs font-bold bg-slate-50 text-slate-600 border border-slate-200/60">
+                  Donor
+                </span>
+              </div>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <LabInfo
-              icon={<Mail className="w-4 h-4" />}
-              label="Email"
-              value={donor.email}
-            />
-            <LabInfo
-              icon={<Phone className="w-4 h-4" />}
-              label="Phone"
-              value={donor.phone}
-            />
-            <LabInfo
-              icon={<Droplet className="w-4 h-4" />}
-              label="Blood Type"
-              value={donor.bloodGroup}
-            />
-            <LabInfo
-              icon={<MapPin className="w-4 h-4" />}
-              label="Location"
-              value={`${donor.address?.city || 'N/A'}, ${donor.address?.state || 'N/A'}`}
-              truncate
-            />
+          {/* Bottom Grid Details Section */}
+          <div className="pt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Email Detail Card */}
+            <div className="flex items-center gap-3.5 p-4 rounded-2xl bg-slate-50/50 border border-slate-100/80 hover:border-red-100 hover:bg-red-50/10 hover:shadow-sm transition-all duration-300">
+              <div className="p-3 bg-red-50 rounded-xl text-red-600 flex-shrink-0">
+                <Mail className="w-5 h-5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <span className="block text-xs font-bold text-slate-400 uppercase tracking-wider">Email Address</span>
+                <span className="block text-sm font-semibold text-slate-700 mt-0.5 break-all leading-snug">
+                  {donor.email || "—"}
+                </span>
+              </div>
+            </div>
+
+            {/* Phone Detail Card */}
+            <div className="flex items-center gap-3.5 p-4 rounded-2xl bg-slate-50/50 border border-slate-100/80 hover:border-red-100 hover:bg-red-50/10 hover:shadow-sm transition-all duration-300">
+              <div className="p-3 bg-red-50 rounded-xl text-red-600 flex-shrink-0">
+                <Phone className="w-5 h-5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <span className="block text-xs font-bold text-slate-400 uppercase tracking-wider">Phone Number</span>
+                <span className="block text-sm font-semibold text-slate-700 mt-0.5 break-all leading-snug">
+                  {donor.phone || donor.user?.phone || "—"}
+                </span>
+              </div>
+            </div>
+
+            {/* Blood Type Detail Card */}
+            <div className="flex items-center gap-3.5 p-4 rounded-2xl bg-slate-50/50 border border-slate-100/80 hover:border-red-100 hover:bg-red-50/10 hover:shadow-sm transition-all duration-300">
+              <div className="p-3 bg-red-50 rounded-xl text-red-600 flex-shrink-0">
+                <Droplet className="w-5 h-5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <span className="block text-xs font-bold text-slate-400 uppercase tracking-wider">Blood Type</span>
+                <span className="block text-base font-black text-red-600 mt-0.5 leading-snug">
+                  {donor.bloodGroup || "—"}
+                </span>
+              </div>
+            </div>
+
+            {/* Location Detail Card */}
+            <div className="flex items-center gap-3.5 p-4 rounded-2xl bg-slate-50/50 border border-slate-100/80 hover:border-red-100 hover:bg-red-50/10 hover:shadow-sm transition-all duration-300">
+              <div className="p-3 bg-red-50 rounded-xl text-red-600 flex-shrink-0">
+                <MapPin className="w-5 h-5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <span className="block text-xs font-bold text-slate-400 uppercase tracking-wider">Location</span>
+                <span className="block text-sm font-semibold text-slate-700 mt-0.5 truncate leading-snug" title={`${donor.address?.city || 'N/A'}, ${donor.address?.state || 'N/A'}`}>
+                  {donor.address?.city && donor.address?.state 
+                    ? `${donor.address.city}, ${donor.address.state}` 
+                    : "—"}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -282,7 +348,7 @@ const DonorDashboard = () => {
               icon={<Droplet className="w-8 h-8" />}
               message="No donation history yet"
               actionText="Make your first donation"
-              onAction={() => toast.success("Find nearby blood camps to get started!")}
+              onAction={() => navigate("/donor/camps")}
             />
           )}
         </Section>
@@ -320,28 +386,31 @@ const DonorDashboard = () => {
             icon={<Download className="w-5 h-5" />}
             title="Download Certificate"
             description="Get your donation certificate"
-            onClick={() => toast.success("Certificate download started!")}
+            onClick={() => navigate("/donor/certificates")}
             color="blue"
           />
           <ActionCard
             icon={<Share2 className="w-5 h-5" />}
             title="Share Achievement"
             description="Share your impact with others"
-            onClick={() => toast.success("Share your life-saving journey!")}
+            onClick={() => navigate("/donor/certificates")}
             color="green"
           />
           <ActionCard
             icon={<Calendar className="w-5 h-5" />}
             title="Schedule Donation"
             description="Book your next donation"
-            onClick={() => toast.success("Find nearby blood donation camps!")}
+            onClick={() => navigate("/donor/camps")}
             color="red"
           />
           <ActionCard
             icon={<Users className="w-5 h-5" />}
             title="Invite Friends"
             description="Grow the donor community"
-            onClick={() => toast.success("Invite friends to become donors!")}
+            onClick={() => {
+              navigator.clipboard.writeText(window.location.origin);
+              toast.success("LifeDrop registration link copied! Share it with your friends.");
+            }}
             color="purple"
           />
         </div>
@@ -443,7 +512,7 @@ const DonationHistoryItem = ({ donation }) => (
         <Droplet className="w-4 h-4" />
       </div>
       <div>
-        <p className="font-medium text-gray-800">{donation.Faculty || "Blood Donation Camp"}</p>
+        <p className="font-medium text-gray-800">{donation.Facility || "Blood Donation Camp"}</p>
         <p className="text-xs text-gray-500">
           {new Date(donation.donationDate || donation.date).toLocaleDateString()} • {donation.bloodType || donation.bloodGroup}
         </p>
@@ -459,12 +528,18 @@ const DonationHistoryItem = ({ donation }) => (
 const ActivityCard = ({ activity }) => (
   <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
     <div className="flex-1">
-      <h4 className="font-medium text-gray-800 mb-1">{activity.eventType || "Donation"}</h4>
-      <p className="text-sm text-gray-600">{activity.description || "Blood donation completed"}</p>
+      <h4 className="font-medium text-gray-800 mb-1">
+        {activity.Facility || activity.eventType || "Blood Donation"}
+      </h4>
+      <p className="text-sm text-gray-600">
+        {activity.Facility 
+          ? `Donated ${activity.quantity || 1} unit(s) at ${activity.Facility}`
+          : (activity.description || "Blood donation completed")}
+      </p>
     </div>
     <div className="text-right">
       <span className="text-xs text-gray-500">
-        {new Date(activity.date || activity.createdAt).toLocaleDateString()}
+        {new Date(activity.donationDate || activity.date || activity.createdAt).toLocaleDateString()}
       </span>
     </div>
   </div>
