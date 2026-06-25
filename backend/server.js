@@ -57,18 +57,39 @@ const parseOrigins = () => {
 
 const allowedOrigins = parseOrigins();
 
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "https://unpkg.com"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://unpkg.com", "https://fonts.googleapis.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        imgSrc: ["'self'", "data:", "https://unpkg.com", "https://*.tile.openstreetmap.org", "https://images.unsplash.com"],
+        connectSrc: ["'self'", "ws:", "wss:"],
+      },
+    },
+  }),
+);
 app.use(compression());
 app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error(`CORS blocked for origin: ${origin}`));
-      }
-    },
-    credentials: true,
+  cors((req, callback) => {
+    const origin = req.header("Origin");
+    const host = req.header("Host");
+    const protocol = req.secure ? "https" : "http";
+    const selfOrigin = `${protocol}://${host}`;
+
+    const allowed =
+      !origin ||
+      allowedOrigins.includes(origin) ||
+      origin === selfOrigin ||
+      (host && origin.includes(host));
+
+    if (allowed) {
+      callback(null, { origin: true, credentials: true });
+    } else {
+      callback(new Error(`CORS blocked for origin: ${origin}`));
+    }
   }),
 );
 app.use(express.json({ limit: "10mb" }));
