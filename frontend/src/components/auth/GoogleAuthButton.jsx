@@ -82,7 +82,7 @@ export default function GoogleAuthButton({ onNeedsProfile }) {
 
   // Check redirect result on mount
   useEffect(() => {
-    if (!isFirebaseConfigured()) return;
+    if (!auth || !isFirebaseConfigured()) return;
 
     const checkRedirectResult = async () => {
       try {
@@ -94,7 +94,10 @@ export default function GoogleAuthButton({ onNeedsProfile }) {
         }
       } catch (error) {
         console.error("Redirect sign-in error:", error);
-        handleError(error);
+        // Only show toast error if it is a real user auth error and not a startup config error
+        if (error.code && error.code !== "auth/internal-error" && error.code !== "auth/invalid-api-key") {
+          handleError(error);
+        }
       } finally {
         setLoading(false);
       }

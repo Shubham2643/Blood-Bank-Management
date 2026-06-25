@@ -16,23 +16,39 @@ const firebaseConfig = {
   appId: cleanEnv(import.meta.env.VITE_FIREBASE_APP_ID),
 };
 
-const isFirebaseConfigured = () =>
-  Boolean(
-    firebaseConfig.apiKey &&
-      firebaseConfig.authDomain &&
-      firebaseConfig.projectId &&
-      firebaseConfig.appId,
+const isFirebaseConfigured = () => {
+  const keys = [
+    firebaseConfig.apiKey,
+    firebaseConfig.authDomain,
+    firebaseConfig.projectId,
+    firebaseConfig.appId,
+  ];
+  return keys.every(
+    (k) =>
+      k &&
+      k.trim() !== "" &&
+      k !== "undefined" &&
+      k !== "null" &&
+      !k.startsWith("your-"),
   );
+};
 
 let app = null;
 let auth = null;
 let googleProvider = null;
 
 if (isFirebaseConfigured()) {
-  app = initializeApp(firebaseConfig);
-  auth = getAuth(app);
-  googleProvider = new GoogleAuthProvider();
-  googleProvider.setCustomParameters({ prompt: "select_account" });
+  try {
+    app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    googleProvider = new GoogleAuthProvider();
+    googleProvider.setCustomParameters({ prompt: "select_account" });
+  } catch (error) {
+    console.error("Firebase initialization failed:", error);
+    app = null;
+    auth = null;
+    googleProvider = null;
+  }
 }
 
 export { auth, googleProvider, isFirebaseConfigured };
