@@ -93,11 +93,7 @@ export default function GoogleAuthButton({ onNeedsProfile }) {
           await handleAuthPayload(result.user, idToken);
         }
       } catch (error) {
-        console.error("Redirect sign-in error:", error);
-        // Only show toast error if it is a real user auth error and not a startup config error
-        if (error.code && error.code !== "auth/internal-error" && error.code !== "auth/invalid-api-key") {
-          handleError(error);
-        }
+        console.error("Redirect sign-in error on mount (can be ignored if not signing in with Google):", error);
       } finally {
         setLoading(false);
       }
