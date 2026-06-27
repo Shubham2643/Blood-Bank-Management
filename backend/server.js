@@ -61,12 +61,13 @@ app.use(
   helmet({
     contentSecurityPolicy: {
       directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "'unsafe-inline'", "https://unpkg.com"],
+        defaultSrc: ["'self'", "https://*.firebaseapp.com"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "https://unpkg.com", "https://apis.google.com", "https://www.gstatic.com"],
         styleSrc: ["'self'", "'unsafe-inline'", "https://unpkg.com", "https://fonts.googleapis.com"],
         fontSrc: ["'self'", "https://fonts.gstatic.com"],
         imgSrc: ["'self'", "data:", "https://unpkg.com", "https://*.tile.openstreetmap.org", "https://images.unsplash.com"],
-        connectSrc: ["'self'", "ws:", "wss:"],
+        connectSrc: ["'self'", "ws:", "wss:", "https://*.googleapis.com", "https://securetoken.googleapis.com", "https://*.firebaseio.com"],
+        frameSrc: ["'self'", "https://*.firebaseapp.com"],
       },
     },
   }),
