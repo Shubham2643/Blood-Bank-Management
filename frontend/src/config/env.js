@@ -4,14 +4,27 @@ const clean = (value) =>
     .replace(/^["']|["'],?$/g, "")
     .replace(/,$/, "");
 
-export const API_BASE_URL =
-  clean(import.meta.env.VITE_API_URL) ||
-  (import.meta.env.PROD ? "/api" : "http://localhost:5001/api");
+let apiBaseUrl = clean(import.meta.env.VITE_API_URL);
+let socketUrl = clean(import.meta.env.VITE_SOCKET_URL);
 
-export const SOCKET_URL =
-  clean(import.meta.env.VITE_SOCKET_URL) ||
-  (import.meta.env.PROD
-    ? window.location.origin
-    : API_BASE_URL.replace(/\/api\/?$/, ""));
+if (import.meta.env.PROD) {
+  // Force relative path in production if empty or misconfigured to localhost
+  if (!apiBaseUrl || apiBaseUrl.includes("localhost") || apiBaseUrl.includes("127.0.0.1")) {
+    apiBaseUrl = "/api";
+  }
+  if (!socketUrl || socketUrl.includes("localhost") || socketUrl.includes("127.0.0.1")) {
+    socketUrl = window.location.origin;
+  }
+} else {
+  // Development fallbacks
+  if (!apiBaseUrl) {
+    apiBaseUrl = "http://localhost:5001/api";
+  }
+  if (!socketUrl) {
+    socketUrl = apiBaseUrl.replace(/\/api\/?$/, "");
+  }
+}
 
+export const API_BASE_URL = apiBaseUrl;
+export const SOCKET_URL = socketUrl;
 export const IS_DEV = import.meta.env.DEV;
