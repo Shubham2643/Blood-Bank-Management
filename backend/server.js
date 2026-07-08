@@ -156,7 +156,10 @@ if (process.env.SERVE_FRONTEND === "true") {
   } else {
     console.log(`Serving frontend from: ${frontendDist}`);
     app.use(express.static(frontendDist));
-    app.get(/^(?!\/api).*/, (req, res) => {
+    app.get("*", (req, res, next) => {
+      if (req.path.startsWith("/api") || req.path.startsWith("/health")) {
+        return next();
+      }
       res.sendFile(path.join(frontendDist, "index.html"));
     });
   }
