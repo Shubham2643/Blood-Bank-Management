@@ -5,8 +5,8 @@ import facility from "../models/facilityModel.js";
 import Admin from "../models/adminModel.js";
 import { sendEmail } from "../utils/emailService.js";
 import { generateToken, getRoleRedirect } from "../utils/token.js";
-import { verifyFirebaseToken } from "../config/firebaseAdmin.js";
-import { validateFirebaseRegistrationPayload } from "../utils/firebaseRegistrationValidator.js";
+import { verifyGoogleIdToken } from "../utils/verifyGoogleToken.js";
+import { validateGoogleRegistrationPayload } from "../utils/googleRegistrationValidator.js";
 
 const buildAuthResponse = (user, roleData = null) => ({
   success: true,
@@ -171,7 +171,7 @@ export const login = async (req, res) => {
       return res.status(400).json({
         success: false,
         message:
-          "This account uses Google Sign-In. Please continue with Google via Firebase.",
+          "This account uses Google Sign-In. Please continue with Google.",
       });
     }
 
@@ -259,19 +259,19 @@ export const getProfile = async (req, res) => {
   }
 };
 
-// @desc    Firebase Google sign-in
-// @route   POST /api/auth/firebase
+// @desc    Google OAuth sign-in
+// @route   POST /api/auth/google
 // @access  Public
-export const firebaseAuth = async (req, res) => {
+export const googleAuth = async (req, res) => {
   try {
     const { idToken } = req.body;
-    const decoded = await verifyFirebaseToken(idToken);
+    const decoded = await verifyGoogleIdToken(idToken);
 
-    const firebaseUid = decoded.uid;
+    const googleId = decoded.googleId;
     const email = decoded.email;
     const name = decoded.name || email?.split("@")[0];
-    const picture = decoded.picture;
-    const emailVerified = decoded.email_verified;
+    const picture = decoded.avatar;
+    const emailVerified = decoded.emailVerified;
 
     if (!email) {
       return res.status(400).json({
@@ -281,15 +281,18 @@ export const firebaseAuth = async (req, res) => {
     }
 
     let user = await User.findOne({
-      $or: [{ firebaseUid }, { email }],
+      $or: [{ googleId }, { email }],
     }).select("+password");
 
     if (user) {
       const updates = {};
-      if (!user.firebaseUid) updates.firebaseUid = firebaseUid;
+      if (!user.googleId) updates.googleId = googleId;
       if (picture && user.avatar !== picture) updates.avatar = picture;
       if (emailVerified) updates.isEmailVerified = true;
       updates.lastLogin = new Date();
+      if (user.authProvider === "firebase" || user.authProvider === "local") {
+        updates.authProvider = "google";
+      }
 
       if (Object.keys(updates).length > 0) {
         await User.findByIdAndUpdate(user._id, updates, { runValidators: false });
@@ -299,8 +302,8 @@ export const firebaseAuth = async (req, res) => {
       return res.status(200).json({
         success: true,
         needsProfile: true,
-        firebaseProfile: {
-          firebaseUid,
+        googleProfile: {
+          googleId,
           email,
           name,
           avatar: picture,
@@ -339,36 +342,36 @@ export const firebaseAuth = async (req, res) => {
     }
 
     res.json({
-      message: "Firebase Google sign-in successful",
+      message: "Google sign-in successful",
       ...buildAuthResponse(user, roleData),
     });
   } catch (error) {
-    console.error("Firebase auth error:", error);
+    console.error("Google auth error:", error);
     res.status(401).json({
       success: false,
       message:
-        error.message || "Firebase authentication failed. Please try again.",
+        error.message || "Google authentication failed. Please try again.",
     });
   }
 };
 
-// @desc    Complete Firebase registration with role-specific profile
-// @route   POST /api/auth/firebase/complete
+// @desc    Complete Google registration with role-specific profile
+// @route   POST /api/auth/google/complete
 // @access  Public
-export const completeFirebaseRegistration = async (req, res) => {
+export const completeGoogleRegistration = async (req, res) => {
   try {
-    const { idToken, firebaseUid, email, name, avatar, role, phone, ...roleSpecificData } =
+    const { idToken, googleId, email, name, avatar, role, phone, ...roleSpecificData } =
       req.body;
 
-    const decoded = await verifyFirebaseToken(idToken);
+    const decoded = await verifyGoogleIdToken(idToken);
 
-    validateFirebaseRegistrationPayload(
-      { idToken, firebaseUid, email, role, phone, ...roleSpecificData },
-      { firebaseUid: decoded.uid, email: decoded.email },
+    validateGoogleRegistrationPayload(
+      { idToken, googleId, email, role, phone, ...roleSpecificData },
+      { googleId: decoded.googleId, email: decoded.email },
     );
 
     const existing = await User.findOne({
-      $or: [{ firebaseUid: decoded.uid }, { email: decoded.email }],
+      $or: [{ googleId: decoded.googleId }, { email: decoded.email }],
     });
     if (existing) {
       return res.status(400).json({
@@ -382,10 +385,10 @@ export const completeFirebaseRegistration = async (req, res) => {
       email: decoded.email,
       role,
       phone: phone || undefined,
-      firebaseUid: decoded.uid,
-      authProvider: "firebase",
-      avatar: avatar || decoded.picture,
-      isEmailVerified: decoded.email_verified,
+      googleId: decoded.googleId,
+      authProvider: "google",
+      avatar: avatar || decoded.avatar,
+      isEmailVerified: decoded.emailVerified,
     });
 
     if (role === "donor") {
@@ -441,7 +444,7 @@ export const completeFirebaseRegistration = async (req, res) => {
       ...buildAuthResponse(user),
     });
   } catch (error) {
-    console.error("Firebase registration completion error:", error);
+    console.error("Google registration completion error:", error);
     res.status(error.statusCode || 500).json({
       success: false,
       message: error.message || "Registration failed",

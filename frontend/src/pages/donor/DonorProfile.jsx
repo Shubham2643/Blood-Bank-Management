@@ -355,7 +355,6 @@ const DonorProfile = () => {
 
   const hasErrors = Object.keys(errors).length > 0;
   const totalDonations = donor.donationHistory?.length || 0;
-  const livesSaved = totalDonations * 3;
   const currentTier = totalDonations >= 10 ? "Gold" : totalDonations >= 5 ? "Silver" : "Bronze";
   const nextLevel = totalDonations < 5 ? "Silver" : totalDonations < 10 ? "Gold" : "Max Level";
   const targetDonations = totalDonations < 5 ? 5 : totalDonations < 10 ? 10 : 10;

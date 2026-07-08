@@ -4,8 +4,8 @@ import {
   login,
   getProfile,
   logout,
-  firebaseAuth,
-  completeFirebaseRegistration,
+  googleAuth,
+  completeGoogleRegistration,
 } from "../controllers/authController.js";
 import { protect } from "../middlewares/authMiddleware.js";
 
@@ -13,16 +13,16 @@ const router = express.Router();
 
 router.post("/register", register);
 router.post("/login", login);
-router.post("/firebase", firebaseAuth);
-router.post("/firebase/complete", completeFirebaseRegistration);
+router.post("/google", googleAuth);
+router.post("/google/complete", completeGoogleRegistration);
 
-router.get("/firebase/status", (req, res) => {
-  const projectId = process.env.FIREBASE_PROJECT_ID;
+router.get("/google/status", (req, res) => {
+  const clientId = process.env.GOOGLE_CLIENT_ID;
   res.json({
     success: true,
-    configured: Boolean(projectId),
-    projectId: projectId || null,
-    method: projectId ? "jwks-or-admin" : "not-configured",
+    configured: Boolean(clientId),
+    clientId: clientId || null,
+    method: clientId ? "gsi-id-token" : "not-configured",
   });
 });
 router.post("/logout", protect, logout);

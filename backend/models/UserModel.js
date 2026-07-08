@@ -62,8 +62,8 @@ userSchema.pre("validate", function (next) {
       this.invalidate("phone", "Phone number is required for local accounts");
     }
   }
-  if (this.authProvider === "firebase" && !this.firebaseUid) {
-    this.invalidate("firebaseUid", "Firebase UID is required for Firebase accounts");
+  if (this.authProvider === "google" && !this.googleId) {
+    this.invalidate("googleId", "Google ID is required for Google accounts");
   }
   next();
 });

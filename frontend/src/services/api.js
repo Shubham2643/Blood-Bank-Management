@@ -38,9 +38,9 @@ api.interceptors.response.use(
 export const authApi = {
   login: (data) => api.post("/auth/login", data),
   register: (data) => api.post("/auth/register", data),
-  firebaseAuth: (idToken) => api.post("/auth/firebase", { idToken }),
-  completeFirebaseRegistration: (data) =>
-    api.post("/auth/firebase/complete", data),
+  googleAuth: (idToken) => api.post("/auth/google", { idToken }),
+  completeGoogleRegistration: (data) =>
+    api.post("/auth/google/complete", data),
   getProfile: () => api.get("/auth/profile"),
   verify: () => api.get("/auth/verify"),
   logout: () => api.post("/auth/logout"),

@@ -61,13 +61,13 @@ app.use(
   helmet({
     contentSecurityPolicy: {
       directives: {
-        defaultSrc: ["'self'", "https://*.firebaseapp.com"],
-        scriptSrc: ["'self'", "'unsafe-inline'", "https://unpkg.com", "https://apis.google.com", "https://www.gstatic.com"],
+        defaultSrc: ["'self'", "https://accounts.google.com"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "https://unpkg.com", "https://apis.google.com", "https://accounts.google.com", "https://www.gstatic.com"],
         styleSrc: ["'self'", "'unsafe-inline'", "https://unpkg.com", "https://fonts.googleapis.com"],
         fontSrc: ["'self'", "https://fonts.gstatic.com"],
-        imgSrc: ["'self'", "data:", "https://unpkg.com", "https://*.tile.openstreetmap.org", "https://images.unsplash.com"],
-        connectSrc: ["'self'", "ws:", "wss:", "https://*.googleapis.com", "https://securetoken.googleapis.com", "https://*.firebaseio.com", "https://unpkg.com"],
-        frameSrc: ["'self'", "https://*.firebaseapp.com"],
+        imgSrc: ["'self'", "data:", "https://unpkg.com", "https://*.tile.openstreetmap.org", "https://images.unsplash.com", "https://*.googleusercontent.com"],
+        connectSrc: ["'self'", "ws:", "wss:", "https://*.googleapis.com", "https://accounts.google.com", "https://unpkg.com"],
+        frameSrc: ["'self'", "https://accounts.google.com"],
       },
     },
   }),
@@ -138,7 +138,7 @@ app.get("/health", (req, res) => {
     timestamp: new Date(),
     environment: process.env.NODE_ENV || "development",
     database: dbStatus[dbState] || "unknown",
-    firebase: Boolean(process.env.FIREBASE_PROJECT_ID),
+    googleAuth: Boolean(process.env.GOOGLE_CLIENT_ID),
   });
 });
 

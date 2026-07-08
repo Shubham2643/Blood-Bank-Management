@@ -8,14 +8,13 @@ import {
   getDashboardPath,
   persistAuthSession,
 } from "../../utils/rolePaths";
-import { getFirebaseIdToken } from "../../utils/firebaseAuth";
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"];
 
 export default function GoogleCompleteProfile() {
   const location = useLocation();
   const navigate = useNavigate();
-  const firebaseProfile = location.state?.firebaseProfile;
+  const firebaseProfile = location.state?.firebaseProfile || location.state?.googleProfile;
   const storedIdToken = location.state?.idToken;
 
   const [role, setRole] = useState("donor");
@@ -43,7 +42,7 @@ export default function GoogleCompleteProfile() {
               Session expired
             </h2>
             <p className="text-gray-600 mb-6">
-              Please sign in with Google (Firebase) again to complete your profile.
+              Please sign in with Google again to complete your profile.
             </p>
             <Link
               to="/login"
@@ -67,16 +66,15 @@ export default function GoogleCompleteProfile() {
     setLoading(true);
 
     try {
-      const idToken =
-        (await getFirebaseIdToken(true)) || storedIdToken;
-
+      const idToken = storedIdToken;
+      
       if (!idToken) {
         toast.error("Session expired. Please sign in with Google again.");
         navigate("/login", { replace: true });
         return;
       }
 
-      const { data } = await authApi.completeFirebaseRegistration({
+      const { data } = await authApi.completeGoogleRegistration({
         idToken,
         ...firebaseProfile,
         role,
@@ -105,7 +103,7 @@ export default function GoogleCompleteProfile() {
               Complete Your Profile
             </h1>
             <p className="text-gray-600 mt-2">
-              Signed in as {firebaseProfile.email}
+              Signed in as {firebaseProfile?.email}
             </p>
           </div>
 

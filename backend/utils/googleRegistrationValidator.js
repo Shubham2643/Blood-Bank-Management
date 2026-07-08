@@ -1,7 +1,7 @@
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"];
 const ROLES = ["donor", "hospital", "blood-lab"];
 
-export const validateFirebaseRegistrationPayload = (body, claims) => {
+export const validateGoogleRegistrationPayload = (body, claims) => {
   const errors = [];
 
   if (!body.idToken) {
@@ -12,7 +12,7 @@ export const validateFirebaseRegistrationPayload = (body, claims) => {
     errors.push("Valid role is required (donor, hospital, blood-lab)");
   }
 
-  if (claims.firebaseUid && claims.firebaseUid !== body.firebaseUid) {
+  if (claims.googleId && claims.googleId !== body.googleId) {
     errors.push("Token user id does not match profile data");
   }
 

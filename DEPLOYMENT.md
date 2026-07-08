@@ -4,7 +4,7 @@
 
 - Node.js 20+
 - MongoDB (local or Atlas)
-- Firebase project with Google sign-in enabled
+- Google Cloud Console project with Google OAuth2 enabled
 
 ## Environment Variables
 
@@ -16,7 +16,7 @@ JWT_SECRET=long_random_secret_here
 PORT=5001
 NODE_ENV=production
 CLIENT_URL=https://yourdomain.com,https://www.yourdomain.com
-FIREBASE_PROJECT_ID=your-project-id
+GOOGLE_CLIENT_ID=your-google-client-id-here.apps.googleusercontent.com
 ADMIN_EMAIL=admin@yourdomain.com
 ADMIN_PASSWORD=strong_password_here
 SERVE_FRONTEND=true
@@ -27,12 +27,7 @@ SERVE_FRONTEND=true
 ```env
 VITE_API_URL=https://api.yourdomain.com/api
 VITE_SOCKET_URL=https://api.yourdomain.com
-VITE_FIREBASE_API_KEY=...
-VITE_FIREBASE_AUTH_DOMAIN=...
-VITE_FIREBASE_PROJECT_ID=...
-VITE_FIREBASE_STORAGE_BUCKET=...
-VITE_FIREBASE_MESSAGING_SENDER_ID=...
-VITE_FIREBASE_APP_ID=...
+VITE_GOOGLE_CLIENT_ID=your-google-client-id-here.apps.googleusercontent.com
 ```
 
 ## Local Development
@@ -80,7 +75,7 @@ ADMIN_EMAIL=admin@example.com ADMIN_PASSWORD=YourSecurePass123 npm run seed:admi
 
 ## Health Check
 
-`GET /health` — returns database and Firebase status.
+`GET /health` — returns database and Google Sign-in configuration status.
 
 ## Deployment Options
 
@@ -95,6 +90,6 @@ ADMIN_EMAIL=admin@example.com ADMIN_PASSWORD=YourSecurePass123 npm run seed:admi
 - [ ] Rotate JWT_SECRET and email credentials
 - [ ] Use MongoDB Atlas with TLS
 - [ ] Set CLIENT_URL to production domain(s)
-- [ ] Add production domain to Firebase Authorized Domains
+- [ ] Add production domain to Google Cloud Console Authorized JavaScript origins (Credentials page)
 - [ ] Run `npm run seed:admin` with strong password
 - [ ] Enable HTTPS (reverse proxy / load balancer)

@@ -91,7 +91,7 @@ function App() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route
-          path="/auth/firebase/complete"
+          path="/auth/google/complete"
           element={<GoogleCompleteProfile />}
         />
         <Route path="/news" element={<News />} />

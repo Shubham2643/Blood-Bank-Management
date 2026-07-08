@@ -310,7 +310,7 @@ export const DonorCampsList = () => {
   const [showQuizModal, setShowQuizModal] = useState(false);
   const [quizCampId, setQuizCampId] = useState(null);
   const [currentQuizIndex, setCurrentQuizIndex] = useState(0);
-  const [quizAnswers, setQuizAnswers] = useState({});
+  const [_quizAnswers, setQuizAnswers] = useState({});
   const [quizIneligible, setQuizIneligible] = useState(false);
   const [quizFinished, setQuizFinished] = useState(false);
 
