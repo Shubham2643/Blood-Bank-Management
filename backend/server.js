@@ -16,7 +16,7 @@ import connectDB from "./config/db.js";
 import { errorHandler } from "./utils/errorHandler.js";
 import { initializeSocket } from "./socket/index.js";
 import { seedCampsIfEmpty } from "./controllers/publicController.js";
-import { seedAdminIfEmpty } from "./utils/seedAdminHelper.js";
+import { seedAdminIfEmpty, seedDemoDataIfEmpty } from "./utils/seedAdminHelper.js";
 
 import authRoutes from "./routes/authRoutes.js";
 import donorRoutes from "./routes/donorRoutes.js";
@@ -39,6 +39,7 @@ connectDB().then(() => {
   // Seed camp data on startup if DB is empty
   seedCampsIfEmpty();
   seedAdminIfEmpty();
+  seedDemoDataIfEmpty();
 });
 
 const app = express();
