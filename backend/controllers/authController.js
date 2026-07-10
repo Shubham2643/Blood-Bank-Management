@@ -7,6 +7,8 @@ import { sendEmail } from "../utils/emailService.js";
 import { generateToken, getRoleRedirect } from "../utils/token.js";
 import { verifyGoogleIdToken } from "../utils/verifyGoogleToken.js";
 import { validateGoogleRegistrationPayload } from "../utils/googleRegistrationValidator.js";
+import { emitToAdmin, SocketEvents } from "../socket/index.js";
+import { notifyRole } from "../utils/notification.js";
 
 const buildAuthResponse = (user, roleData = null) => ({
   success: true,
@@ -100,9 +102,19 @@ export const register = async (req, res) => {
             pincode: roleSpecificData.pincode,
           },
         };
-        await Donor.create(donorData);
+        const newDonor = await Donor.create(donorData);
+        // Notify admin of new donor registration
+        try {
+          emitToAdmin(SocketEvents.NEW_DONOR_REGISTRATION, {
+            donor: { id: newDonor._id, bloodGroup: newDonor.bloodGroup, city: newDonor.address?.city },
+            message: `New donor registered: ${user.name} (${newDonor.bloodGroup})`,
+            timestamp: new Date()
+          });
+        } catch (notifError) {
+          console.error("Admin notification error:", notifError.message);
+        }
       } else if (role === "hospital" || role === "blood-lab") {
-        await facility.create({
+        const newFacility = await facility.create({
           user: userId,
           name,
           email,
@@ -110,6 +122,17 @@ export const register = async (req, res) => {
           facilityType: role,
           ...roleSpecificData,
         });
+        // Notify admin of new facility registration
+        try {
+          emitToAdmin(SocketEvents.NEW_FACILITY_REGISTRATION, {
+            facility: { id: newFacility._id, name: newFacility.name, type: newFacility.facilityType, status: 'pending' },
+            message: `New ${newFacility.facilityType} registered: ${newFacility.name}`,
+            timestamp: new Date()
+          });
+          await notifyRole('admin', `New ${newFacility.facilityType} registration: ${newFacility.name} is awaiting approval`, 'info');
+        } catch (notifError) {
+          console.error("Admin notification error:", notifError.message);
+        }
       }
 
       try {

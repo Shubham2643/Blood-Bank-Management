@@ -241,6 +241,19 @@ export const emitToAll = (event, data) => {
 };
 
 /**
+ * Emit event to admin namespace
+ * @param {string} event - Event name
+ * @param {any} data - Event data
+ */
+export const emitToAdmin = (event, data) => {
+  if (!io) {
+    console.error("Socket.io not initialized");
+    return;
+  }
+  io.of("/admin").emit(event, data);
+};
+
+/**
  * Broadcast camp lifecycle events to donors, labs, hospitals, and public clients.
  */
 export const broadcastCampEvent = (event, payload = {}) => {
@@ -329,6 +342,9 @@ export const SocketEvents = {
   // Admin events
   ADMIN_STATS_UPDATE: "admin-stats-update",
   ADMIN_ALERT: "admin-alert",
+  NEW_FACILITY_REGISTRATION: "new-facility-registration",
+  NEW_DONOR_REGISTRATION: "new-donor-registration",
+  NEW_BLOOD_REQUEST: "new-blood-request",
 };
 
 export default {
@@ -338,6 +354,7 @@ export default {
   emitToRole,
   emitToFacility,
   emitToAll,
+  emitToAdmin,
   broadcastCampEvent,
   getOnlineStats,
   SocketEvents,

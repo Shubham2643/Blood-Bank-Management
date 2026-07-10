@@ -104,14 +104,57 @@ export const facilityApi = {
 };
 
 export const adminApi = {
-  getDashboard: () => api.get("/admin/dashboard"),
-  getFacilities: () => api.get("/admin/facilities"),
-  getDonors: () => api.get("/admin/donors"),
+  getDashboard: (config) => api.get("/admin/dashboard", config),
+  getFacilities: (config) => api.get("/admin/facilities", config),
+  getDonors: (config) => api.get("/admin/donors", config),
   approveFacility: (id) => api.put(`/admin/facility/approve/${id}`),
   rejectFacility: (id, data) => api.put(`/admin/facility/reject/${id}`, data),
-  getContactMessages: () => api.get("/admin/contact-messages"),
+  getContactMessages: (config) => api.get("/admin/contact-messages", config),
   replyToContactMessage: (id, data) =>
     api.post(`/admin/contact-messages/${id}/reply`, data),
+  
+  // User Management
+  getUsers: (config) => api.get("/admin/users", config),
+  getUserById: (id) => api.get(`/admin/users/${id}`),
+  toggleUserActive: (id) => api.put(`/admin/users/${id}/toggle-active`),
+  deleteUser: (id) => api.delete(`/admin/users/${id}`),
+  
+  // Facility Management
+  getFacilityById: (id) => api.get(`/admin/facilities/${id}`),
+  updateFacility: (id, data) => api.put(`/admin/facilities/${id}`, data),
+  deleteFacility: (id) => api.delete(`/admin/facilities/${id}`),
+  suspendFacility: (id) => api.put(`/admin/facility/suspend/${id}`),
+  
+  // Donor Management
+  getDonorById: (id) => api.get(`/admin/donors/${id}`),
+  updateDonor: (id, data) => api.put(`/admin/donors/${id}`, data),
+  toggleDonorEligibility: (id) => api.put(`/admin/donors/${id}/eligibility`),
+  deleteDonor: (id) => api.delete(`/admin/donors/${id}`),
+  
+  // Blood Inventory
+  getBloodInventory: (config) => api.get("/admin/blood-inventory", config),
+  getBloodInventoryStats: () => api.get("/admin/blood-inventory/stats"),
+  updateBloodStatus: (id, data) => api.put(`/admin/blood-inventory/${id}`, data),
+  deleteBloodUnit: (id) => api.delete(`/admin/blood-inventory/${id}`),
+  
+  // Blood Requests
+  getBloodRequests: (config) => api.get("/admin/blood-requests", config),
+  getPublicRequests: (config) => api.get("/admin/public-requests", config),
+  updateRequestStatus: (id, data) => api.put(`/admin/blood-requests/${id}`, data),
+  
+  // Camps
+  getCamps: (config) => api.get("/admin/camps", config),
+  updateCampStatus: (id, data) => api.put(`/admin/camps/${id}/status`, data),
+  deleteCamp: (id) => api.delete(`/admin/camps/${id}`),
+  
+  // Reports
+  getDonationReport: (config) => api.get("/admin/reports/donations", config),
+  getBloodUsageReport: (config) => api.get("/admin/reports/blood-usage", config),
+  getFacilityPerformanceReport: (config) => api.get("/admin/reports/facility-performance", config),
+  
+  // System
+  getOnlineUsers: () => api.get("/admin/online-users"),
+  getAuditLog: (config) => api.get("/admin/audit-log", config),
 };
 
 export const publicApi = {

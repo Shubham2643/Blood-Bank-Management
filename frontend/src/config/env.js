@@ -7,6 +7,10 @@ const clean = (value) =>
 let apiBaseUrl = clean(import.meta.env.VITE_API_URL);
 let socketUrl = clean(import.meta.env.VITE_SOCKET_URL);
 
+if (apiBaseUrl && !apiBaseUrl.endsWith("/api") && !apiBaseUrl.endsWith("/api/")) {
+  apiBaseUrl = apiBaseUrl.replace(/\/$/, "") + "/api";
+}
+
 if (import.meta.env.PROD) {
   // Force relative path in production if empty or misconfigured to localhost
   if (!apiBaseUrl || apiBaseUrl.includes("localhost") || apiBaseUrl.includes("127.0.0.1")) {

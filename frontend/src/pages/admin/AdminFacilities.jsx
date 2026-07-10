@@ -14,726 +14,462 @@ import {
   Download,
   Eye,
   RefreshCw,
-  AlertCircle,
   Search,
   Filter,
-  ChevronDown,
-  ChevronUp,
-  UserCheck,
-  UserX,
-  MoreVertical,
-  Star,
-  Award,
-  TrendingUp,
-  Globe,
-  Clock3,
 } from "lucide-react";
 import { adminApi } from "../../services/api.js";
 
 const FacilityApproval = () => {
   const [facilities, setFacilities] = useState([]);
-  const [filteredFacilities, setFilteredFacilities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedFacility, setSelectedFacility] = useState(null);
   const [rejectionReason, setRejectionReason] = useState("");
-  const [actionLoading, setActionLoading] = useState(null);
+  
+  // Separate loading states
+  const [approveLoading, setApproveLoading] = useState(false);
+  const [rejectLoading, setRejectLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+
+  // Search & Pagination
   const [searchTerm, setSearchTerm] = useState("");
-  const [filters, setFilters] = useState({
-    type: "all",
-    status: "all",
-    category: "all",
-  });
-  const [showFilters, setShowFilters] = useState(false);
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalFacilities, setTotalFacilities] = useState(0);
+
+  // Confirmations
+  const [confirmModal, setConfirmModal] = useState(null); // { type: 'approve'|'reject', facilityId }
+
+  // Stats
   const [stats, setStats] = useState({
     total: 0,
     pending: 0,
     approved: 0,
     rejected: 0,
-    hospitals: 0,
-    labs: 0,
   });
 
-  // Fetch pending facilities
-  const fetchPendingFacilities = useCallback(
+  // Debounce search
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+      setCurrentPage(1);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [searchTerm]);
+
+  // Clear rejection reason on selection change
+  useEffect(() => {
+    setRejectionReason("");
+  }, [selectedFacility?._id]);
+
+  // Fetch Facilities
+  const fetchFacilities = useCallback(
     async (showToast = false) => {
       try {
         if (showToast) setRefreshing(true);
         else setLoading(true);
 
-        const res = await adminApi.getFacilities();
+        const params = {
+          page: currentPage,
+          limit: 10,
+          status: statusFilter,
+          type: typeFilter,
+        };
+        if (debouncedSearch) params.search = debouncedSearch;
+
+        const res = await adminApi.getFacilities({ params });
         const data = res.data?.data || res.data;
         const facilitiesList = data.facilities || [];
 
         setFacilities(facilitiesList);
+        setTotalPages(data.pagination?.pages || 1);
+        setTotalFacilities(data.pagination?.total || 0);
 
-        // Calculate stats
-        const newStats = {
-          total: facilitiesList.length,
-          pending: facilitiesList.filter((f) => f.status === "pending").length,
-          approved: facilitiesList.filter((f) => f.status === "approved")
-            .length,
-          rejected: facilitiesList.filter((f) => f.status === "rejected")
-            .length,
-          hospitals: facilitiesList.filter((f) => f.facilityType === "hospital")
-            .length,
-          labs: facilitiesList.filter((f) => f.facilityType === "blood-lab")
-            .length,
-        };
-        setStats(newStats);
+        // Fetch dashboard stats just to sync facility status overview
+        const dashRes = await adminApi.getDashboard();
+        const dashData = dashRes.data?.data || dashRes.data;
+        if (dashData?.overview) {
+          setStats({
+            total: dashData.overview.totalFacilities || 0,
+            pending: dashData.overview.pendingFacilities || 0,
+            approved: dashData.overview.approvedFacilities || 0,
+            rejected: (dashData.overview.totalFacilities - dashData.overview.approvedFacilities - dashData.overview.pendingFacilities) || 0,
+          });
+        }
 
         if (showToast) {
-          toast.success(`Found ${newStats.pending} pending facilities`);
+          toast.success("Facility list refreshed");
         }
       } catch (error) {
         console.error("Fetch facilities error:", error);
-        toast.error("Failed to load facilities");
+        toast.error("Failed to load facilities directory");
       } finally {
         setLoading(false);
         setRefreshing(false);
       }
     },
-    [],
+    [currentPage, statusFilter, typeFilter, debouncedSearch]
   );
 
   useEffect(() => {
-    fetchPendingFacilities();
-  }, [fetchPendingFacilities]);
-
-  // Apply filters
-  useEffect(() => {
-    let filtered = [...facilities];
-
-    // Search filter
-    if (searchTerm) {
-      filtered = filtered.filter(
-        (f) =>
-          f.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          f.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          f.registrationNumber
-            ?.toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
-          f.phone?.includes(searchTerm),
-      );
-    }
-
-    // Type filter
-    if (filters.type !== "all") {
-      filtered = filtered.filter((f) => f.facilityType === filters.type);
-    }
-
-    // Status filter
-    if (filters.status !== "all") {
-      filtered = filtered.filter((f) => f.status === filters.status);
-    }
-
-    // Category filter
-    if (filters.category !== "all") {
-      filtered = filtered.filter(
-        (f) => f.facilityCategory === filters.category,
-      );
-    }
-
-    setFilteredFacilities(filtered);
-  }, [facilities, searchTerm, filters]);
+    fetchFacilities();
+  }, [fetchFacilities]);
 
   const handleApprove = async (facilityId) => {
-    if (!facilityId) {
-      toast.error("Invalid facility ID");
-      return;
-    }
-
-    setActionLoading(facilityId);
-
     try {
+      setApproveLoading(true);
       const res = await adminApi.approveFacility(facilityId);
-      const data = res.data;
-
       if (res.status >= 200 && res.status < 300) {
-        toast.success("Facility approved successfully!");
-        await fetchPendingFacilities();
+        toast.success("Facility account approved successfully!");
+        setConfirmModal(null);
         setSelectedFacility(null);
-      } else {
-        throw new Error(data.message || "Approval failed");
+        fetchFacilities();
       }
     } catch (error) {
-      console.error("Approval error:", error);
-      toast.error(error.message || "Error approving facility");
+      toast.error(error.response?.data?.message || "Failed to approve facility");
     } finally {
-      setActionLoading(null);
+      setApproveLoading(false);
     }
   };
 
   const handleReject = async (facilityId) => {
-    if (!facilityId) {
-      toast.error("Invalid facility ID");
-      return;
-    }
-
     if (!rejectionReason.trim()) {
       toast.error("Please provide a rejection reason");
       return;
     }
 
-    setActionLoading(facilityId);
-
     try {
+      setRejectLoading(true);
       const res = await adminApi.rejectFacility(facilityId, { rejectionReason });
-      const data = res.data;
-
       if (res.status >= 200 && res.status < 300) {
-        toast.success("Facility rejected successfully!");
-        await fetchPendingFacilities();
+        toast.success("Facility registration rejected");
+        setConfirmModal(null);
         setSelectedFacility(null);
-        setRejectionReason("");
-      } else {
-        throw new Error(data.message || "Rejection failed");
+        fetchFacilities();
       }
     } catch (error) {
-      console.error("Rejection error:", error);
-      toast.error(error.message || "Error rejecting facility");
+      toast.error(error.response?.data?.message || "Failed to reject facility");
     } finally {
-      setActionLoading(null);
+      setRejectLoading(false);
     }
   };
 
-  const handleViewDocument = (documentUrl, filename = "document") => {
+  const handleViewDocument = (documentUrl) => {
     if (!documentUrl) {
-      toast.error("Document not available");
+      toast.error("Document proof is not uploaded");
       return;
     }
-
-    console.log("Opening file:", filename);
     window.open(documentUrl, "_blank");
   };
 
-  const handleDownloadDocument = (documentUrl, filename = "document") => {
-    if (!documentUrl) {
-      toast.error("Document not available");
-      return;
-    }
-
-    const link = document.createElement("a");
-    link.href = documentUrl;
-    link.download = filename;
-    link.target = "_blank";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
   const getStatusBadge = (status) => {
-    const statusConfig = {
-      pending: {
-        color: "bg-yellow-100 text-yellow-800 border-yellow-200",
-        icon: Clock,
-        label: "Pending Review",
-      },
-      approved: {
-        color: "bg-green-100 text-green-800 border-green-200",
-        icon: CheckCircle,
-        label: "Approved",
-      },
-      rejected: {
-        color: "bg-red-100 text-red-800 border-red-200",
-        icon: XCircle,
-        label: "Rejected",
-      },
+    const configs = {
+      pending: "bg-yellow-50 text-yellow-700 border-yellow-100",
+      approved: "bg-emerald-50 text-emerald-700 border-emerald-100",
+      rejected: "bg-red-50 text-red-700 border-red-100",
     };
-
-    const config = statusConfig[status] || statusConfig.pending;
-    const Icon = config.icon;
-
     return (
-      <span
-        className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border ${config.color}`}
-      >
-        <Icon size={12} />
-        {config.label}
+      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold border ${configs[status] || "bg-gray-50 text-gray-700"}`}>
+        {status?.toUpperCase()}
       </span>
     );
   };
-
-  const getFacilityTypeBadge = (type) => {
-    const isHospital = type === "hospital";
-    return (
-      <span
-        className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border ${
-          isHospital
-            ? "bg-blue-100 text-blue-800 border-blue-200"
-            : "bg-purple-100 text-purple-800 border-purple-200"
-        }`}
-      >
-        <Building size={12} />
-        {isHospital ? "Hospital" : "Blood Lab"}
-      </span>
-    );
-  };
-
-  if (loading) {
-    return (
-      <div className="space-y-6">
-        <div className="text-center">
-          <div className="relative">
-            <div className="w-16 h-16 border-4 border-red-200 border-t-red-600 rounded-full animate-spin"></div>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <Shield className="w-6 h-6 text-red-500 animate-pulse" />
-            </div>
-          </div>
-          <h2 className="text-xl font-semibold text-gray-700 mt-4">
-            Loading Facility Approvals
-          </h2>
-          <p className="text-gray-500 mt-2">
-            Fetching registration requests...
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div className="space-y-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
-                <div className="p-2 bg-red-100 rounded-xl">
-                  <Shield className="w-6 h-6 text-red-600" />
-                </div>
-                Facility Verification
-              </h1>
-              <p className="text-gray-600 mt-2">
-                Review and verify hospital and blood lab registration requests
-              </p>
-            </div>
+    <div className="p-6 max-w-7xl mx-auto space-y-6">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <Building className="w-7 h-7 text-red-600" />
+            Facility Verifications
+          </h1>
+          <p className="text-gray-500 mt-1">Approve or reject medical facilities, blood labs, and emergency hospitals</p>
+        </div>
+        <button
+          onClick={() => fetchFacilities(true)}
+          className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-200 rounded-xl bg-white hover:bg-gray-50 text-gray-600 font-medium text-sm transition-all shadow-sm"
+        >
+          <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
+          Refresh
+        </button>
+      </div>
 
-            <button
-              onClick={() => fetchPendingFacilities(true)}
-              disabled={refreshing}
-              className="flex items-center gap-2 px-4 py-2 bg-white border border-red-200 rounded-lg text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
-            >
-              <RefreshCw
-                className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`}
+      {/* Stats Summary Panel */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+          <span className="text-gray-500 text-xs block font-semibold uppercase">Total Registered</span>
+          <strong className="text-2xl font-bold text-gray-900 mt-1 block">{stats.total}</strong>
+        </div>
+        <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm border-l-yellow-400 border-l-4">
+          <span className="text-gray-500 text-xs block font-semibold uppercase text-yellow-600">Pending Review</span>
+          <strong className="text-2xl font-bold text-yellow-600 mt-1 block">{stats.pending}</strong>
+        </div>
+        <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm border-l-emerald-400 border-l-4">
+          <span className="text-gray-500 text-xs block font-semibold uppercase text-emerald-600">Approved</span>
+          <strong className="text-2xl font-bold text-emerald-600 mt-1 block">{stats.approved}</strong>
+        </div>
+        <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm border-l-red-400 border-l-4">
+          <span className="text-gray-500 text-xs block font-semibold uppercase text-red-600">Rejected</span>
+          <strong className="text-2xl font-bold text-red-600 mt-1 block">{stats.rejected}</strong>
+        </div>
+      </div>
+
+      {/* Main split dashboard grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Side: Filter and List */}
+        <div className="lg:col-span-2 space-y-4">
+          {/* Filters & Search */}
+          <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
+            <div className="relative w-full md:w-60">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                type="text"
+                placeholder="Search name, email, reg..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-11 pr-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 text-sm transition-all bg-gray-50/50"
               />
-              {refreshing ? "Refreshing..." : "Refresh"}
-            </button>
-          </div>
+            </div>
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-6">
-            <div className="bg-white p-4 rounded-xl shadow-lg border-l-4 border-l-gray-400">
-              <div className="text-2xl font-bold text-gray-800">
-                {stats.total}
-              </div>
-              <div className="text-sm text-gray-600">Total</div>
-            </div>
-            <div className="bg-white p-4 rounded-xl shadow-lg border-l-4 border-l-yellow-400">
-              <div className="text-2xl font-bold text-yellow-600">
-                {stats.pending}
-              </div>
-              <div className="text-sm text-gray-600">Pending</div>
-            </div>
-            <div className="bg-white p-4 rounded-xl shadow-lg border-l-4 border-l-green-400">
-              <div className="text-2xl font-bold text-green-600">
-                {stats.approved}
-              </div>
-              <div className="text-sm text-gray-600">Approved</div>
-            </div>
-            <div className="bg-white p-4 rounded-xl shadow-lg border-l-4 border-l-red-400">
-              <div className="text-2xl font-bold text-red-600">
-                {stats.rejected}
-              </div>
-              <div className="text-sm text-gray-600">Rejected</div>
-            </div>
-            <div className="bg-white p-4 rounded-xl shadow-lg border-l-4 border-l-blue-400">
-              <div className="text-2xl font-bold text-blue-600">
-                {stats.hospitals}
-              </div>
-              <div className="text-sm text-gray-600">Hospitals</div>
-            </div>
-            <div className="bg-white p-4 rounded-xl shadow-lg border-l-4 border-l-purple-400">
-              <div className="text-2xl font-bold text-purple-600">
-                {stats.labs}
-              </div>
-              <div className="text-sm text-gray-600">Blood Labs</div>
-            </div>
-          </div>
-
-          {/* Search and Filters */}
-          <div className="bg-white rounded-2xl shadow-lg border border-red-100 p-6">
-            <div className="flex flex-col lg:flex-row gap-4">
-              <div className="flex-1">
-                <div className="relative">
-                  <Search
-                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                    size={18}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Search by name, email, registration number..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                  />
-                </div>
-              </div>
-
-              <button
-                onClick={() => setShowFilters(!showFilters)}
-                className="lg:w-48 flex items-center justify-center gap-2 px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            <div className="flex gap-2 w-full md:w-auto">
+              <select
+                value={statusFilter}
+                onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
+                className="bg-gray-50 border border-gray-100 rounded-xl px-3 py-2 text-sm text-gray-700 font-medium focus:outline-none cursor-pointer"
               >
-                <Filter size={18} />
-                Filters
-                {showFilters ? (
-                  <ChevronUp size={16} />
-                ) : (
-                  <ChevronDown size={16} />
-                )}
-              </button>
+                <option value="all">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+              </select>
+
+              <select
+                value={typeFilter}
+                onChange={(e) => { setTypeFilter(e.target.value); setCurrentPage(1); }}
+                className="bg-gray-50 border border-gray-100 rounded-xl px-3 py-2 text-sm text-gray-700 font-medium focus:outline-none cursor-pointer"
+              >
+                <option value="all">All Types</option>
+                <option value="hospital">Hospitals</option>
+                <option value="blood-lab">Blood Labs</option>
+              </select>
             </div>
-
-            {showFilters && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 pt-4 border-t border-gray-200">
-                <select
-                  value={filters.type}
-                  onChange={(e) =>
-                    setFilters((prev) => ({ ...prev, type: e.target.value }))
-                  }
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                >
-                  <option value="all">All Types</option>
-                  <option value="hospital">Hospitals</option>
-                  <option value="blood-lab">Blood Labs</option>
-                </select>
-
-                <select
-                  value={filters.status}
-                  onChange={(e) =>
-                    setFilters((prev) => ({ ...prev, status: e.target.value }))
-                  }
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                >
-                  <option value="all">All Status</option>
-                  <option value="pending">Pending</option>
-                  <option value="approved">Approved</option>
-                  <option value="rejected">Rejected</option>
-                </select>
-
-                <select
-                  value={filters.category}
-                  onChange={(e) =>
-                    setFilters((prev) => ({
-                      ...prev,
-                      category: e.target.value,
-                    }))
-                  }
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                >
-                  <option value="all">All Categories</option>
-                  <option value="Government">Government</option>
-                  <option value="Private">Private</option>
-                  <option value="Trust">Trust</option>
-                  <option value="Charity">Charity</option>
-                </select>
-              </div>
-            )}
           </div>
-        </div>
 
-        {/* Results Info */}
-        <div className="mb-4 flex justify-between items-center">
-          <p className="text-gray-600">
-            Showing{" "}
-            <span className="font-semibold">{filteredFacilities.length}</span>{" "}
-            of <span className="font-semibold">{facilities.length}</span>{" "}
-            facilities
-          </p>
-          {searchTerm && (
-            <button
-              onClick={() => setSearchTerm("")}
-              className="text-sm text-red-600 hover:text-red-700"
-            >
-              Clear search
-            </button>
-          )}
-        </div>
-
-        {/* Facilities Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Facilities List */}
-          <div className="space-y-4 max-h-[800px] overflow-y-auto pr-4">
-            {filteredFacilities.length === 0 ? (
-              <div className="text-center py-12 bg-white rounded-2xl shadow-lg border border-red-100">
-                <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                  No Facilities Found
-                </h3>
-                <p className="text-gray-600">
-                  No facilities match your current filters
-                </p>
+          {/* List panel */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden divide-y divide-gray-100">
+            {loading ? (
+              <div className="p-10 space-y-4 animate-pulse">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="h-12 bg-gray-100 rounded-xl w-full"></div>
+                ))}
+              </div>
+            ) : facilities.length === 0 ? (
+              <div className="p-16 text-center text-gray-400 flex flex-col items-center">
+                <Building className="w-12 h-12 mb-3" />
+                <h4 className="font-bold text-gray-700 text-sm">No registration requests found</h4>
               </div>
             ) : (
-              filteredFacilities.map((facility) => (
+              facilities.map((fac) => (
                 <div
-                  key={facility._id}
-                  className={`bg-white rounded-2xl shadow-lg border-2 p-6 cursor-pointer transition-all duration-200 hover:shadow-xl ${
-                    selectedFacility?._id === facility._id
-                      ? "border-red-300 bg-red-50"
-                      : "border-red-100 hover:border-red-300"
-                  }`}
-                  onClick={() => setSelectedFacility(facility)}
+                  key={fac._id}
+                  onClick={() => setSelectedFacility(fac)}
+                  className={`p-4.5 flex items-center justify-between cursor-pointer transition-all hover:bg-gray-50/50 ${selectedFacility?._id === fac._id ? "bg-red-50/10 border-l-red-500 border-l-4" : ""}`}
                 >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-lg font-semibold text-gray-900 line-clamp-1">
-                          {facility.name}
-                        </h3>
-                        {getFacilityTypeBadge(facility.facilityType)}
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-red-50 text-red-500 flex items-center justify-center font-extrabold text-sm">
+                      {fac.name?.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-gray-900 text-sm">{fac.name}</h4>
+                      <div className="flex items-center gap-1.5 text-xs text-gray-500 mt-1">
+                        <span className="capitalize font-semibold text-gray-600">{fac.facilityType}</span>
+                        <span>·</span>
+                        <span>{fac.email}</span>
                       </div>
-                      <p className="text-gray-600 text-sm flex items-center gap-1 mb-1">
-                        <Mail size={14} />
-                        {facility.email}
-                      </p>
-                      <p className="text-gray-600 text-sm flex items-center gap-1">
-                        <Phone size={14} />
-                        {facility.phone || "No phone provided"}
-                      </p>
                     </div>
-                    {getStatusBadge(facility.status)}
                   </div>
 
-                  <div className="space-y-2 text-sm text-gray-600">
-                    <p className="flex items-center gap-1">
-                      <MapPin size={14} />
-                      {facility.address?.street || "Address not provided"},{" "}
-                      {facility.address?.city}, {facility.address?.state} -{" "}
-                      {facility.address?.pincode}
-                    </p>
-                    <p className="flex items-center gap-1">
-                      <FileText size={14} />
-                      Reg: {facility.registrationNumber || "Not provided"}
-                    </p>
-                    <p className="flex items-center gap-1">
-                      <Calendar size={14} />
-                      Registered:{" "}
-                      {new Date(facility.createdAt).toLocaleDateString()}
-                    </p>
+                  <div className="flex items-center gap-3">
+                    {getStatusBadge(fac.status)}
+                    <Eye className="w-4 h-4 text-gray-400 hover:text-red-500" />
                   </div>
-
-                  {facility.documents?.registrationProof && (
-                    <div className="mt-4 flex gap-2">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleViewDocument(
-                            facility.documents.registrationProof.url,
-                            facility.documents.registrationProof.filename,
-                          );
-                        }}
-                        className="flex items-center gap-1 px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors border border-gray-300"
-                      >
-                        <Eye size={14} />
-                        View
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDownloadDocument(
-                            facility.documents.registrationProof.url,
-                            facility.documents.registrationProof.filename,
-                          );
-                        }}
-                        className="flex items-center gap-1 px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors border border-blue-300"
-                      >
-                        <Download size={14} />
-                        Download
-                      </button>
-                    </div>
-                  )}
                 </div>
               ))
             )}
-          </div>
 
-          {/* Facility Details & Actions */}
-          <div className="lg:sticky lg:top-6 lg:h-fit">
-            {selectedFacility ? (
-              <div className="bg-white rounded-2xl shadow-lg border border-red-100 p-6">
-                <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2">
-                  <Building className="w-5 h-5 text-red-600" />
-                  Review Facility
-                </h2>
-
-                {/* Facility Details */}
-                <div className="space-y-6">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Facility Name
-                      </label>
-                      <p className="text-gray-900 font-semibold">
-                        {selectedFacility.name}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Type
-                      </label>
-                      {getFacilityTypeBadge(selectedFacility.facilityType)}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Email
-                    </label>
-                    <p className="text-gray-900">{selectedFacility.email}</p>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Phone
-                      </label>
-                      <p className="text-gray-900">
-                        {selectedFacility.phone || "Not provided"}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Emergency Contact
-                      </label>
-                      <p className="text-gray-900">
-                        {selectedFacility.emergencyContact || "Not provided"}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Address
-                    </label>
-                    <p className="text-gray-900">
-                      {selectedFacility.address?.street || "Street not provided"}
-                      , {selectedFacility.address?.city}
-                      <br />
-                      {selectedFacility.address?.state} -{" "}
-                      {selectedFacility.address?.pincode}
-                    </p>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Registration Number
-                    </label>
-                    <p className="text-gray-900 font-mono">
-                      {selectedFacility.registrationNumber || "Not provided"}
-                    </p>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Category
-                    </label>
-                    <p className="text-gray-900 capitalize">
-                      {selectedFacility.facilityCategory || "Not specified"}
-                    </p>
-                  </div>
-
-                  {selectedFacility.operatingHours && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Operating Hours
-                      </label>
-                      <p className="text-gray-900">
-                        {selectedFacility.operatingHours.open} -{" "}
-                        {selectedFacility.operatingHours.close}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        {selectedFacility.operatingHours.workingDays?.join(
-                          ", ",
-                        ) || "Not specified"}
-                        {selectedFacility.is24x7 && " • 24/7 Service"}
-                      </p>
-                    </div>
-                  )}
-
-                  {selectedFacility.emergencyServices && (
-                    <div className="p-3 bg-red-50 rounded-lg border border-red-200">
-                      <p className="text-red-700 font-semibold flex items-center gap-2">
-                        <Shield size={16} />
-                        Emergency Services Available
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Action Buttons */}
-                <div className="mt-8 space-y-4">
+            {/* Pagination */}
+            {!loading && totalPages > 1 && (
+              <div className="bg-gray-50/50 px-6 py-4 flex items-center justify-between gap-4">
+                <span className="text-sm text-gray-500">
+                  Page <strong className="font-semibold text-gray-900">{currentPage}</strong> of <strong className="font-semibold text-gray-900">{totalPages}</strong>
+                </span>
+                <div className="flex gap-1.5">
                   <button
-                    onClick={() => handleApprove(selectedFacility._id)}
-                    disabled={actionLoading === selectedFacility._id}
-                    className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-semibold shadow-lg"
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="px-3 py-1.5 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-600 text-sm font-semibold disabled:opacity-50"
                   >
-                    {actionLoading === selectedFacility._id ? (
-                      <RefreshCw className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <CheckCircle size={20} />
-                    )}
-                    {actionLoading === selectedFacility._id
-                      ? "Approving..."
-                      : "Approve Facility"}
+                    Prev
                   </button>
-
-                  <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">
-                      Rejection Reason (required)
-                    </label>
-                    <textarea
-                      value={rejectionReason}
-                      onChange={(e) => setRejectionReason(e.target.value)}
-                      placeholder="Provide specific reason for rejection..."
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-red-500 focus:ring-2 focus:ring-red-200 resize-none transition-colors"
-                      rows="3"
-                    />
-                    <button
-                      onClick={() => handleReject(selectedFacility._id)}
-                      disabled={
-                        actionLoading === selectedFacility._id ||
-                        !rejectionReason.trim()
-                      }
-                      className="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white py-3 px-4 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-semibold shadow-lg"
-                    >
-                      {actionLoading === selectedFacility._id ? (
-                        <RefreshCw className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <XCircle size={20} />
-                      )}
-                      {actionLoading === selectedFacility._id
-                        ? "Rejecting..."
-                        : "Reject Facility"}
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-1.5 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-600 text-sm font-semibold disabled:opacity-50"
+                  >
+                    Next
+                  </button>
                 </div>
-              </div>
-            ) : (
-              <div className="bg-white rounded-2xl shadow-lg border border-red-100 p-12 text-center">
-                <Building className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-600 mb-2">
-                  Select a Facility
-                </h3>
-                <p className="text-gray-500">
-                  Click on any facility from the list to review details and take
-                  action
-                </p>
               </div>
             )}
           </div>
         </div>
+
+        {/* Right Side: Selected details Panel */}
+        <div className="lg:col-span-1">
+          {selectedFacility ? (
+            <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm space-y-6 sticky top-6">
+              {/* Header */}
+              <div className="pb-4 border-b border-gray-100">
+                <h3 className="font-bold text-gray-900 text-base">Verification File</h3>
+                <div className="flex items-center gap-2 mt-2">
+                  <span className="text-xs font-semibold px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full capitalize">
+                    {selectedFacility.facilityType}
+                  </span>
+                  {getStatusBadge(selectedFacility.status)}
+                </div>
+              </div>
+
+              {/* Details List */}
+              <div className="space-y-4 text-sm">
+                <div>
+                  <span className="text-gray-400 block text-xs font-bold uppercase">Official Name</span>
+                  <strong className="text-gray-800 text-base">{selectedFacility.name}</strong>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <span className="text-gray-400 block text-xs font-bold uppercase">Phone</span>
+                    <strong className="text-gray-700">{selectedFacility.phone || "N/A"}</strong>
+                  </div>
+                  <div>
+                    <span className="text-gray-400 block text-xs font-bold uppercase">Category</span>
+                    <strong className="text-gray-700 capitalize">{selectedFacility.facilityCategory || "Private"}</strong>
+                  </div>
+                </div>
+
+                <div>
+                  <span className="text-gray-400 block text-xs font-bold uppercase">Registration Number</span>
+                  <strong className="text-gray-700 font-mono text-xs">{selectedFacility.registrationNumber}</strong>
+                </div>
+
+                <div>
+                  <span className="text-gray-400 block text-xs font-bold uppercase">Verification Documents</span>
+                  {selectedFacility.documents?.registrationProof?.url ? (
+                    <button
+                      onClick={() => handleViewDocument(selectedFacility.documents.registrationProof.url)}
+                      className="mt-2.5 flex items-center justify-center gap-2 px-4 py-2 border border-red-200 hover:bg-red-50 text-red-600 rounded-xl text-xs font-bold shadow-sm transition-all"
+                    >
+                      <FileText className="w-4 h-4" />
+                      View Registration Proof
+                    </button>
+                  ) : (
+                    <span className="text-gray-400 text-xs italic mt-1.5 block">No registration proof documents uploaded.</span>
+                  )}
+                </div>
+
+                {selectedFacility.address && (
+                  <div className="border-t border-gray-100 pt-4">
+                    <span className="text-gray-400 block text-xs font-bold uppercase mb-1">Registered Address</span>
+                    <span className="text-gray-600 text-xs leading-relaxed block">
+                      {selectedFacility.address.street}, {selectedFacility.address.city}, {selectedFacility.address.state} - {selectedFacility.address.pincode}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Action Buttons: Only show if pending */}
+              {selectedFacility.status === "pending" ? (
+                <div className="border-t border-gray-100 pt-5 space-y-4">
+                  <button
+                    onClick={() => setConfirmModal({ type: "approve", facilityId: selectedFacility._id })}
+                    className="w-full py-2.5 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-bold text-sm rounded-xl transition-all shadow-sm flex items-center justify-center gap-1.5"
+                  >
+                    <CheckCircle className="w-4.5 h-4.5" />
+                    Approve Facility
+                  </button>
+
+                  <div className="space-y-2 pt-1">
+                    <label className="text-xs text-gray-500 font-bold uppercase tracking-wider">Rejection Reason</label>
+                    <textarea
+                      placeholder="Specify reason for rejection..."
+                      value={rejectionReason}
+                      onChange={(e) => setRejectionReason(e.target.value)}
+                      className="w-full border border-gray-200 rounded-xl p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-red-500/20"
+                      rows={3}
+                    />
+                    <button
+                      onClick={() => setConfirmModal({ type: "reject", facilityId: selectedFacility._id })}
+                      disabled={!rejectionReason.trim()}
+                      className="w-full py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold text-sm rounded-xl disabled:opacity-50 transition-all flex items-center justify-center gap-1.5"
+                    >
+                      <XCircle className="w-4.5 h-4.5" />
+                      Reject Registration
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-gray-50 p-4 border border-gray-100 rounded-xl text-center text-xs text-gray-500 font-medium leading-relaxed">
+                  No pending action required. Registration file is verified and finalized.
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="bg-white rounded-2xl border border-dashed border-gray-200 p-16 text-center text-gray-400">
+              <Building className="w-12 h-12 mx-auto mb-3" />
+              <p className="text-xs font-semibold">Select a facility to view full documents & review registration status</p>
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Confirmation Dialogs */}
+      {confirmModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm bg-black/40 animate-fadeIn">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-gray-100 animate-scaleIn">
+            <h3 className="text-lg font-bold text-gray-900">
+              {confirmModal.type === "approve" ? "Approve Facility Request?" : "Reject Facility Request?"}
+            </h3>
+            <p className="text-gray-500 mt-2 text-sm">
+              {confirmModal.type === "approve"
+                ? "Are you sure you want to verify and activate this facility? The facility will be notified and granted immediate access to their dashboard."
+                : `Are you sure you want to reject this facility registration request? Reason: "${rejectionReason}"`}
+            </p>
+            <div className="flex items-center justify-end gap-3 mt-6">
+              <button
+                onClick={() => setConfirmModal(null)}
+                className="px-4 py-2 border border-gray-200 rounded-xl hover:bg-gray-50 text-gray-600 text-sm font-medium transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() =>
+                  confirmModal.type === "approve"
+                    ? handleApprove(confirmModal.facilityId)
+                    : handleReject(confirmModal.facilityId)
+                }
+                disabled={approveLoading || rejectLoading}
+                className={`px-5 py-2 rounded-xl text-white text-sm font-semibold transition-all shadow-sm flex items-center gap-2 ${confirmModal.type === "approve" ? "bg-emerald-600 hover:bg-emerald-700" : "bg-red-600 hover:bg-red-700"}`}
+              >
+                {(approveLoading || rejectLoading) && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
+                Confirm Action
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

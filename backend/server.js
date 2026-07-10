@@ -1,6 +1,6 @@
+import "dotenv/config";
 import express from "express";
 import mongoose from "mongoose";
-import dotenv from "dotenv";
 import cors from "cors";
 import helmet from "helmet";
 import compression from "compression";
@@ -16,6 +16,7 @@ import connectDB from "./config/db.js";
 import { errorHandler } from "./utils/errorHandler.js";
 import { initializeSocket } from "./socket/index.js";
 import { seedCampsIfEmpty } from "./controllers/publicController.js";
+import { seedAdminIfEmpty } from "./utils/seedAdminHelper.js";
 
 import authRoutes from "./routes/authRoutes.js";
 import donorRoutes from "./routes/donorRoutes.js";
@@ -33,11 +34,11 @@ import userRoutes from "./routes/userRoutes.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-dotenv.config();
 
 connectDB().then(() => {
   // Seed camp data on startup if DB is empty
   seedCampsIfEmpty();
+  seedAdminIfEmpty();
 });
 
 const app = express();

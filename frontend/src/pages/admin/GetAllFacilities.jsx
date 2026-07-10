@@ -1,422 +1,416 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { toast } from 'react-hot-toast';
+import React, { useState, useEffect, useCallback } from "react";
+import { toast } from "react-hot-toast";
 import {
-  Hospital,
-  Mail,
-  Phone,
+  Building,
   MapPin,
+  Phone,
+  Mail,
   RefreshCw,
-  CheckCircle,
-  XCircle,
-  Clock,
   Search,
-  ChevronDown,
-  ChevronUp,
-  Tag,
-  Shield,
+  Eye,
+  Trash2,
   AlertTriangle,
-  Building2
-} from 'lucide-react';
-import { adminApi } from '../../services/api.js';
+  Clock,
+  CheckCircle,
+} from "lucide-react";
+import { adminApi } from "../../services/api.js";
 
 function GetAllFacilities() {
   const [facilities, setFacilities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [filters, setFilters] = useState({
-    search: '',
-    facilityType: 'all',
-    status: 'all',
-    sortBy: 'name',
-    sortOrder: 'asc'
-  });
 
-  // Facility status and types for filters
-  const facilityTypes = ['hospital', 'blood-lab'];
-  const statuses = ['pending', 'approved', 'rejected'];
+  // Search & Pagination
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalFacilities, setTotalFacilities] = useState(0);
 
-  // Fetch facilities Function
-  const fetchAllFacilities = useCallback(
-    async (showToast = false) => {
-      try {
-        if (showToast) setRefreshing(true);
-        else setLoading(true);
+  // Selection
+  const [selectedFacility, setSelectedFacility] = useState(null);
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [confirmModal, setConfirmModal] = useState(null); // { type: 'delete'|'suspend', facility }
+  const [actionLoading, setActionLoading] = useState(false);
 
-        console.log("🔄 Fetching facilities...");
+  // Debounce search
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+      setCurrentPage(1);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [searchTerm]);
 
-        const res = await adminApi.getFacilities();
-        const data = res.data?.data || res.data;
-        console.log("✅ facilities data:", data);
-        setFacilities(data.facilities || []);
+  // Fetch Facilities
+  const fetchFacilities = useCallback(async (showIndicator = false) => {
+    try {
+      if (showIndicator) setRefreshing(true);
+      else setLoading(true);
 
-        if (showToast) {
-          toast.success(`Loaded ${data.facilities?.length || 0} facilities`);
-        }
-      } catch (error) {
-        console.error("🚨 Fetch facilities error:", error);
-        toast.error(error.message || "Failed to load Facility data.");
-      } finally {
-        setLoading(false);
-        setRefreshing(false);
-      }
-    },
-    [],
-  );
+      const params = {
+        page: currentPage,
+        limit: 12, // fits 3x4 grid
+        status: statusFilter,
+        type: typeFilter,
+      };
+      if (debouncedSearch) params.search = debouncedSearch;
+
+      const { data } = await adminApi.getFacilities({ params });
+      setFacilities(data.facilities || []);
+      setTotalPages(data.pagination?.pages || 1);
+      setTotalFacilities(data.pagination?.total || 0);
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to load facilities");
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, [currentPage, statusFilter, typeFilter, debouncedSearch]);
 
   useEffect(() => {
-    fetchAllFacilities();
-  }, [fetchAllFacilities]);
+    fetchFacilities();
+  }, [fetchFacilities]);
 
-  // Filter and sort facilities
-  const filteredFacilities = facilities
-    .filter(facility => {
-      const matchesSearch = !filters.search || 
-        facility.name?.toLowerCase().includes(filters.search.toLowerCase()) ||
-        facility.email?.toLowerCase().includes(filters.search.toLowerCase()) ||
-        facility.registrationNumber?.toLowerCase().includes(filters.search.toLowerCase()) ||
-        facility.phone?.includes(filters.search);
-      
-      const matchesType = filters.facilityType === 'all' || facility.facilityType === filters.facilityType;
-      
-      const matchesStatus = filters.status === 'all' || facility.status === filters.status;
-      
-      return matchesSearch && matchesType && matchesStatus;
-    })
-    .sort((a, b) => {
-      let aValue, bValue;
-      
-      switch (filters.sortBy) {
-        case 'name':
-          aValue = a.name?.toLowerCase();
-          bValue = b.name?.toLowerCase();
-          break;
-        case 'status':
-          aValue = a.status?.toLowerCase();
-          bValue = b.status?.toLowerCase();
-          break;
-        case 'type':
-          aValue = a.facilityType?.toLowerCase();
-          bValue = b.facilityType?.toLowerCase();
-          break;
-        default:
-          aValue = a.name?.toLowerCase();
-          bValue = b.name?.toLowerCase();
-      }
-      
-      if (filters.sortOrder === 'desc') {
-        return aValue < bValue ? 1 : -1;
-      }
-      return aValue > bValue ? 1 : -1;
-    });
+  // View details
+  const handleOpenDetails = async (fac) => {
+    try {
+      const { data } = await adminApi.getFacilityById(fac._id);
+      setSelectedFacility(data);
+      setDetailModalOpen(true);
+    } catch (error) {
+      toast.error("Failed to load facility info");
+    }
+  };
 
-  // Helper to get the status badge
+  // Suspend facility
+  const handleSuspendFacility = async (fac) => {
+    try {
+      setActionLoading(true);
+      await adminApi.suspendFacility(fac._id);
+      toast.success("Facility status set to SUSPENDED");
+      setConfirmModal(null);
+      fetchFacilities();
+    } catch (error) {
+      toast.error("Failed to suspend facility");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Delete facility
+  const handleDeleteFacility = async (fac) => {
+    try {
+      setActionLoading(true);
+      await adminApi.deleteFacility(fac._id);
+      toast.success("Facility and user account deleted successfully");
+      setConfirmModal(null);
+      fetchFacilities();
+    } catch (error) {
+      toast.error("Failed to delete facility");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const getStatusBadge = (status) => {
-    const statusConfig = {
-      approved: {
-        color: "bg-green-100 text-green-800 border-green-200",
-        icon: <CheckCircle size={12} />,
-        label: "Approved"
-      },
-      rejected: {
-        color: "bg-red-100 text-red-800 border-red-200", 
-        icon: <XCircle size={12} />,
-        label: "Rejected"
-      },
-      pending: {
-        color: "bg-yellow-100 text-yellow-800 border-yellow-200",
-        icon: <Clock size={12} />,
-        label: "Pending Review"
-      }
+    const styles = {
+      pending: "bg-yellow-50 text-yellow-700 border-yellow-100",
+      approved: "bg-emerald-50 text-emerald-700 border-emerald-100",
+      rejected: "bg-red-50 text-red-700 border-red-100",
     };
-
-    const config = statusConfig[status] || statusConfig.pending;
-
     return (
-      <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border ${config.color}`}>
-        {config.icon}
-        {config.label}
+      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border uppercase ${styles[status] || "bg-gray-50 text-gray-700"}`}>
+        {status}
       </span>
     );
   };
-
-  const getTypeBadge = (type) => {
-    if (!type) return null;
-    const typeDisplay = type.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' ');
-    const isHospital = type === 'hospital';
-    
-    return (
-      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold border ${
-        isHospital 
-          ? 'bg-blue-50 text-blue-700 border-blue-200' 
-          : 'bg-purple-50 text-purple-700 border-purple-200'
-      }`}>
-        <Building2 size={10} />
-        {typeDisplay}
-      </span>
-    );
-  };
-
-  if (loading) {
-    return (
-      <div className="space-y-6">
-        <div className="text-center">
-          <div className="animate-pulse mb-4">
-            <Hospital className="w-12 h-12 text-red-500 mx-auto" />
-          </div>
-          <h2 className="text-xl font-semibold text-gray-700 mb-2">
-            Loading Facility Database
-          </h2>
-          <p className="text-gray-500">Fetching all registered medical facilities...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Count for stats card
-  const approvedCount = facilities.filter(f => f.status === 'approved').length;
-  const pendingCount = facilities.filter(f => f.status === 'pending').length;
-  const rejectedCount = facilities.filter(f => f.status === 'rejected').length;
-  const hospitalCount = facilities.filter(f => f.facilityType === 'hospital').length;
-  const labCount = facilities.filter(f => f.facilityType === 'blood-lab').length;
 
   return (
-    <div className="space-y-6">
-      <div className="max-w-7xl mx-auto">
-        
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
-            <div className="flex items-center gap-4">
-              <div className="p-2 bg-red-100 rounded-xl">
-                <Hospital className="w-6 h-6 text-red-600" />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold text-gray-800">Medical Facilities</h1>
-                <p className="text-gray-600 mt-1">
-                  Manage and view all registered hospitals and blood laboratories
-                </p>
-              </div>
-            </div>
-            
-            <button
-              onClick={() => fetchAllFacilities(true)}
-              disabled={refreshing}
-              className="flex items-center gap-2 px-4 py-2 bg-white border border-red-200 rounded-lg text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
-            >
-              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-              {refreshing ? 'Refreshing...' : 'Refresh Data'}
-            </button>
-          </div>
-
-          {/* Stats Card */}
-          <div className="bg-white rounded-2xl shadow-lg border border-red-100 p-6 mb-6">
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-gray-800">{facilities.length}</div>
-                <div className="text-sm text-gray-600">Total Facilities</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">{approvedCount}</div>
-                <div className="text-sm text-gray-600">Approved</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-yellow-600">{pendingCount}</div>
-                <div className="text-sm text-gray-600">Pending</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-red-600">{rejectedCount}</div>
-                <div className="text-sm text-gray-600">Rejected</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">{hospitalCount}H {labCount}L</div>
-                <div className="text-sm text-gray-600">Hospitals & Labs</div>
-              </div>
-            </div>
-          </div>
+    <div className="p-6 max-w-7xl mx-auto space-y-6">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <Building className="w-7 h-7 text-red-600" />
+            Facilities Directory
+          </h1>
+          <p className="text-gray-500 mt-1">Audit blood stock centers, hospitals, emergency labs, and locations</p>
         </div>
-        
-        {/* Filters */}
-        <div className="bg-white rounded-2xl shadow-lg border border-red-100 p-6 mb-6">
-          <div className="flex flex-col lg:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-                <input
-                  type="text"
-                  placeholder="Search facilities by name, email, or registration number..."
-                  value={filters.search}
-                  onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                />
-              </div>
-            </div>
-            
-            <select
-              value={filters.facilityType}
-              onChange={(e) => setFilters(prev => ({ ...prev, facilityType: e.target.value }))}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-            >
-              <option value="all">All Types</option>
-              {facilityTypes.map(type => (
-                <option key={type} value={type}>
-                  {type.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' ')}
-                </option>
-              ))}
-            </select>
-            
-            <select
-              value={filters.status}
-              onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-            >
-              <option value="all">All Status</option>
-              {statuses.map(status => (
-                <option key={status} value={status}>
-                  {status.charAt(0).toUpperCase() + status.slice(1)}
-                </option>
-              ))}
-            </select>
-            
-            <select
-              value={filters.sortBy}
-              onChange={(e) => setFilters(prev => ({ ...prev, sortBy: e.target.value }))}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-            >
-              <option value="name">Sort by Name</option>
-              <option value="status">Sort by Status</option>
-              <option value="type">Sort by Type</option>
-            </select>
-            
-            <button
-              onClick={() => setFilters(prev => ({ 
-                ...prev, 
-                sortOrder: prev.sortOrder === 'asc' ? 'desc' : 'asc' 
-              }))}
-              className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              {filters.sortOrder === 'asc' ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-            </button>
-          </div>
-        </div>
-
-        {/* Results Info */}
-        <div className="mb-4 flex justify-between items-center">
-          <p className="text-gray-600">
-            Showing <span className="font-semibold">{filteredFacilities.length}</span> of <span className="font-semibold">{facilities.length}</span> facilities
-          </p>
-          {filters.search && (
-            <p className="text-sm text-red-600">
-              Filtered by: "{filters.search}"
-            </p>
-          )}
-        </div>
-
-        {/* Alert for pending facilities */}
-        {pendingCount > 0 && (
-          <div className="mb-6 bg-amber-50 border border-amber-200 rounded-2xl p-4">
-            <div className="flex items-center gap-3">
-              <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0" />
-              <div>
-                <p className="font-semibold text-amber-800">{pendingCount} Facility Approval{pendingCount !== 1 ? 's' : ''} Pending</p>
-                <p className="text-amber-700 text-sm">
-                  {pendingCount} medical facility{pendingCount !== 1 ? 's' : ''} awaiting administrative review and approval
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Facility Grid */}
-        {filteredFacilities.length === 0 ? (
-          <div className="text-center py-16 bg-white rounded-2xl shadow-lg border border-red-100">
-            <Hospital className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">
-              {facilities.length === 0 ? 'No Facilities Found' : 'No Matching Facilities'}
-            </h3>
-            <p className="text-gray-600">
-              {facilities.length === 0 
-                ? 'The medical facility database is currently empty.' 
-                : 'No facilities match your current search criteria.'}
-            </p>
-            {filters.search && (
-              <button
-                onClick={() => setFilters(prev => ({ ...prev, search: '' }))}
-                className="mt-4 text-red-600 hover:text-red-700 underline transition-colors"
-              >
-                Clear search filters
-              </button>
-            )}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredFacilities.map((facility) => (
-              <div
-                key={facility._id}
-                className="bg-white rounded-2xl shadow-lg border border-red-100 p-6 transition-all duration-300 hover:shadow-xl hover:scale-[1.02] group"
-              >
-                {/* Header with Name and Badges */}
-                <div className="flex items-start justify-between mb-4 pb-4 border-b border-gray-100">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-lg font-bold text-gray-800 line-clamp-1 group-hover:text-red-600 transition-colors">
-                      {facility.name}
-                    </h3>
-                    <p className="text-sm text-gray-500 mt-1 line-clamp-1">{facility.email}</p>
-                  </div>
-                  <div className="flex flex-col gap-2 items-end">
-                    {getStatusBadge(facility.status)}
-                    {getTypeBadge(facility.facilityType)}
-                  </div>
-                </div>
-
-                {/* Facility Details */}
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3 text-sm">
-                    <Tag className="w-4 h-4 text-red-500 flex-shrink-0" />
-                    <span className="text-gray-700 font-medium">Reg: {facility.registrationNumber}</span>
-                  </div>
-                  
-                  <div className="flex items-center gap-3 text-sm">
-                    <Phone className="w-4 h-4 text-red-500 flex-shrink-0" />
-                    <span className="text-gray-700">{facility.phone || 'Not provided'}</span>
-                  </div>
-                  
-                  <div className="flex items-center gap-3 text-sm">
-                    <Building2 className="w-4 h-4 text-red-500 flex-shrink-0" />
-                    <span className="text-gray-700 capitalize">{facility.facilityType || 'General'}</span>
-                  </div>
-
-                  {/* Operational Status */}
-                  <div className="flex items-center gap-3 text-sm">
-                    <Clock className={`w-4 h-4 flex-shrink-0 ${
-                      facility.is24x7 ? 'text-green-500' : 'text-gray-500'
-                    }`} />
-                    <span className="text-gray-700 font-medium">
-                      {facility.is24x7 ? '24/7 Service Available' : `Hours: ${facility.operatingHours?.open || 'N/A'} - ${facility.operatingHours?.close || 'N/A'}`}
-                    </span>
-                  </div>
-
-                  {facility.emergencyServices && (
-                    <div className="flex items-center gap-3 text-sm">
-                      <Shield className="w-4 h-4 text-red-500 flex-shrink-0" />
-                      <span className="text-red-600 font-medium">Emergency Services</span>
-                    </div>
-                  )}
-
-                  {/* Address */}
-                  <div className="flex items-start gap-3 text-sm pt-2 border-t border-gray-100">
-                    <MapPin className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
-                    <div className="text-gray-700 line-clamp-2">
-                      {facility.address?.street && `${facility.address.street}, `}
-                      {facility.address?.city}, {facility.address?.state}
-                      {facility.address?.pincode && ` - ${facility.address.pincode}`}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        <button
+          onClick={() => fetchFacilities(true)}
+          className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-200 rounded-xl bg-white hover:bg-gray-50 text-gray-600 font-medium text-sm transition-all shadow-sm"
+        >
+          <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
+          Refresh
+        </button>
       </div>
+
+      {/* Filters & Search */}
+      <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
+        <div className="relative w-full md:w-80">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <input
+            type="text"
+            placeholder="Search by name, email, or registration..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-11 pr-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 text-sm transition-all bg-gray-50/50"
+          />
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+          {/* Type Filter */}
+          <select
+            value={typeFilter}
+            onChange={(e) => { setTypeFilter(e.target.value); setCurrentPage(1); }}
+            className="bg-gray-50 border border-gray-100 rounded-xl px-3 py-2 text-sm text-gray-700 font-medium focus:outline-none cursor-pointer"
+          >
+            <option value="all">All Types</option>
+            <option value="hospital">Hospitals Only</option>
+            <option value="blood-lab">Blood Labs Only</option>
+          </select>
+
+          {/* Status Filter */}
+          <select
+            value={statusFilter}
+            onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
+            className="bg-gray-50 border border-gray-100 rounded-xl px-3 py-2 text-sm text-gray-700 font-medium focus:outline-none cursor-pointer"
+          >
+            <option value="all">All Status</option>
+            <option value="pending">Pending Review</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected / Suspended</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Grid of facilities */}
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="h-48 bg-gray-100 rounded-2xl"></div>
+          ))}
+        </div>
+      ) : facilities.length === 0 ? (
+        <div className="bg-white rounded-2xl border border-gray-100 p-20 text-center flex flex-col items-center">
+          <div className="w-16 h-16 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center mb-4">
+            <Building className="w-8 h-8" />
+          </div>
+          <h3 className="text-lg font-bold text-gray-900">No Facilities Found</h3>
+          <p className="text-gray-500 max-w-sm mt-1">We couldn't find any hospitals or labs matching your filters.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {facilities.map((fac) => (
+            <div
+              key={fac._id}
+              className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-red-50 text-red-600 flex items-center justify-center font-bold">
+                      {fac.name?.charAt(0).toUpperCase()}
+                    </div>
+                    <h3 className="font-bold text-gray-900 leading-snug line-clamp-1">{fac.name}</h3>
+                  </div>
+                  {getStatusBadge(fac.status)}
+                </div>
+
+                <div className="mt-4 space-y-2 text-xs text-gray-600 bg-gray-50/50 p-3 rounded-xl border border-gray-100/50">
+                  <div className="flex items-center gap-2"><Mail className="w-4 h-4 text-gray-400" /> <span>{fac.email}</span></div>
+                  <div className="flex items-center gap-2"><Phone className="w-4 h-4 text-gray-400" /> <span>{fac.phone || "N/A"}</span></div>
+                  <div className="flex items-center gap-2"><MapPin className="w-4 h-4 text-gray-400" /> <span className="line-clamp-1">{fac.address?.city}, {fac.address?.state}</span></div>
+                </div>
+              </div>
+
+              <div className="mt-5 pt-3 border-t border-gray-100 flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-400 block text-[9px] uppercase font-bold">Type</span>
+                  <strong className="text-gray-700 font-bold uppercase">{fac.facilityType}</strong>
+                </div>
+
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() => handleOpenDetails(fac)}
+                    className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                    title="View Documents & Logs"
+                  >
+                    <Eye className="w-4.5 h-4.5" />
+                  </button>
+                  {fac.status === "approved" && (
+                    <button
+                      onClick={() => setConfirmModal({ type: "suspend", facility: fac })}
+                      className="p-1.5 text-amber-500 hover:bg-amber-50 rounded-lg transition-all"
+                      title="Suspend Facility"
+                    >
+                      <AlertTriangle className="w-4.5 h-4.5" />
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setConfirmModal({ type: "delete", facility: fac })}
+                    className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                    title="Delete Facility"
+                  >
+                    <Trash2 className="w-4.5 h-4.5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Pagination */}
+      {!loading && totalPages > 1 && (
+        <div className="flex items-center justify-between gap-4 mt-6">
+          <span className="text-sm text-gray-500">
+            Page <strong className="font-semibold text-gray-900">{currentPage}</strong> of <strong className="font-semibold text-gray-900">{totalPages}</strong> ({totalFacilities} total facilities)
+          </span>
+          <div className="flex gap-1.5">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="px-3.5 py-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-600 text-sm font-semibold disabled:opacity-50"
+            >
+              Previous
+            </button>
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="px-3.5 py-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-600 text-sm font-semibold disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmation Modal */}
+      {confirmModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm bg-black/40 animate-fadeIn">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-gray-100 animate-scaleIn">
+            <h3 className="text-lg font-bold text-gray-900">
+              {confirmModal.type === "delete" ? "Delete Facility Account?" : "Suspend Facility Account?"}
+            </h3>
+            <p className="text-gray-500 mt-2 text-sm leading-relaxed">
+              {confirmModal.type === "delete"
+                ? `Are you sure you want to delete facility "${confirmModal.facility.name}"? This deletes the profile and the login user permanently.`
+                : `Are you sure you want to suspend facility "${confirmModal.facility.name}"? They will lose access to stock logs and requests immediately.`}
+            </p>
+            <div className="flex items-center justify-end gap-3 mt-6">
+              <button
+                onClick={() => setConfirmModal(null)}
+                className="px-4 py-2 border border-gray-200 rounded-xl hover:bg-gray-50 text-gray-600 text-sm font-medium transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() =>
+                  confirmModal.type === "delete"
+                    ? handleDeleteFacility(confirmModal.facility)
+                    : handleSuspendFacility(confirmModal.facility)
+                }
+                disabled={actionLoading}
+                className={`px-5 py-2 rounded-xl text-white text-sm font-semibold transition-all shadow-sm flex items-center gap-2 ${confirmModal.type === "delete" ? "bg-red-600 hover:bg-red-700" : "bg-amber-600 hover:bg-amber-700"}`}
+              >
+                {actionLoading && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Details Modal */}
+      {detailModalOpen && selectedFacility && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm bg-black/40 animate-fadeIn">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-gray-100 flex flex-col justify-between overflow-y-auto max-h-[85vh] animate-scaleIn">
+            <div className="space-y-5">
+              <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                  <Building className="w-5.5 h-5.5 text-red-600" />
+                  Facility File Audit
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setDetailModalOpen(false)}
+                  className="p-1 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600"
+                >
+                  &times;
+                </button>
+              </div>
+
+              {/* Title & Badge */}
+              <div className="flex justify-between items-start">
+                <div>
+                  <h4 className="font-bold text-gray-900 text-lg leading-tight">{selectedFacility.name}</h4>
+                  <span className="text-xs text-gray-400 font-semibold uppercase mt-1 block">Reg: {selectedFacility.registrationNumber}</span>
+                </div>
+                {getStatusBadge(selectedFacility.status)}
+              </div>
+
+              {/* Basic Fields */}
+              <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 space-y-3.5 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-500 font-medium">Email Address</span>
+                  <strong className="text-gray-800 break-all ml-4">{selectedFacility.email}</strong>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500 font-medium">Contact Phone</span>
+                  <strong className="text-gray-800">{selectedFacility.phone || "N/A"}</strong>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500 font-medium">Category</span>
+                  <strong className="text-gray-800 capitalize">{selectedFacility.facilityCategory || "Not specified"}</strong>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500 font-medium">Facility Type</span>
+                  <strong className="text-gray-800 uppercase font-bold text-red-600">{selectedFacility.facilityType}</strong>
+                </div>
+                {selectedFacility.address && (
+                  <div className="border-t border-gray-100 pt-3 mt-1.5 text-xs text-gray-600">
+                    <span className="text-gray-500 font-medium block mb-1">Registered Address</span>
+                    {selectedFacility.address.street}, {selectedFacility.address.city}, {selectedFacility.address.state} - {selectedFacility.address.pincode}
+                  </div>
+                )}
+              </div>
+
+              {/* History / Timeline logs */}
+              <div>
+                <h5 className="font-semibold text-gray-900 text-xs uppercase tracking-wider text-gray-400 mb-2">History & Event logs</h5>
+                {selectedFacility.history?.length === 0 ? (
+                  <p className="text-xs text-gray-400 italic">No historical events recorded.</p>
+                ) : (
+                  <div className="border border-gray-100 rounded-xl divide-y divide-gray-50 text-xs max-h-32 overflow-y-auto">
+                    {selectedFacility.history?.map((h, idx) => (
+                      <div key={idx} className="p-2.5 flex items-center justify-between">
+                        <div>
+                          <strong className="text-gray-700 block">{h.eventType}</strong>
+                          <span className="text-gray-500 mt-0.5 block">{h.description}</span>
+                        </div>
+                        <span className="text-gray-400">{new Date(h.date).toLocaleDateString()}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-gray-100 mt-5">
+              <button
+                onClick={() => setDetailModalOpen(false)}
+                className="w-full py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-all text-sm"
+              >
+                Close Audit File
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

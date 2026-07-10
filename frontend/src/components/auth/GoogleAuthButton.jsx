@@ -19,20 +19,24 @@ export default function GoogleAuthButton({ onNeedsProfile }) {
     const clientId = getGoogleClientId();
     if (!clientId) return;
 
+    let cleanupResize;
     let attempts = 0;
     const interval = setInterval(() => {
       attempts++;
       if (window.google?.accounts?.id) {
         clearInterval(interval);
         setGoogleLoaded(true);
-        initializeGsi(clientId);
+        cleanupResize = initializeGsi(clientId);
       } else if (attempts > 50) {
         clearInterval(interval);
         console.error("Google Identity Services script failed to load.");
       }
     }, 100);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      if (cleanupResize) cleanupResize();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -44,19 +48,29 @@ export default function GoogleAuthButton({ onNeedsProfile }) {
         auto_select: false,
       });
 
-      if (buttonRef.current) {
-        window.google.accounts.id.renderButton(buttonRef.current, {
-          theme: "outline",
-          size: "large",
-          width: "100%",
-          text: "signin_with",
-          shape: "rectangular",
-        });
-      }
+      const render = () => {
+        if (buttonRef.current) {
+          const parentWidth = buttonRef.current.parentElement?.offsetWidth || 384;
+          const computedWidth = Math.max(200, Math.min(parentWidth, 400));
+
+          window.google.accounts.id.renderButton(buttonRef.current, {
+            theme: "outline",
+            size: "large",
+            width: computedWidth,
+            text: "signin_with",
+            shape: "rectangular",
+          });
+        }
+      };
+
+      render();
+      window.addEventListener("resize", render);
+      return () => window.removeEventListener("resize", render);
     } catch (err) {
       console.error("Error initializing GSI:", err);
     }
   };
+
 
   const handleCredentialResponse = async (response) => {
     setLoading(true);
@@ -119,7 +133,7 @@ export default function GoogleAuthButton({ onNeedsProfile }) {
           <Loader2 className="w-5 h-5 animate-spin text-red-600" />
         </div>
       )}
-      <div ref={buttonRef} id="google-signin-btn" className="w-full min-h-[44px]"></div>
+      <div ref={buttonRef} id="google-signin-btn" className="w-full min-h-[44px] flex justify-center"></div>
       {!googleLoaded && (
         <div className="w-full flex items-center justify-center py-3 border border-gray-300 rounded-xl bg-white text-sm text-gray-500">
           <Loader2 className="w-4 h-4 animate-spin mr-2" /> Loading Google Sign-In...
