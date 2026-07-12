@@ -45,7 +45,8 @@ function AdminBloodInventory() {
   // Fetch Inventory and Stats
   const fetchStats = async () => {
     try {
-      const { data } = await adminApi.getBloodInventoryStats();
+      const res = await adminApi.getBloodInventoryStats();
+      const data = res.data?.data || res.data;
       setStats(data);
     } catch (error) {
       console.error("Failed to load inventory stats");
@@ -66,7 +67,8 @@ function AdminBloodInventory() {
       if (componentFilter !== "all") params.componentType = componentFilter;
       if (debouncedSearch) params.search = debouncedSearch;
 
-      const { data } = await adminApi.getBloodInventory({ params });
+      const res = await adminApi.getBloodInventory({ params });
+      const data = res.data?.data || res.data;
       setBloodUnits(data.bloodUnits || []);
       setTotalPages(data.pagination?.pages || 1);
     } catch (error) {

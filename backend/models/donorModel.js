@@ -111,4 +111,8 @@ donorSchema.virtual("eligibilityStatus").get(function () {
   return daysSinceLastDonation >= 90;
 });
 
+import { socketWatcherPlugin } from "../utils/events.js";
+
+donorSchema.plugin(socketWatcherPlugin);
+
 export default mongoose.model("Donor", donorSchema);

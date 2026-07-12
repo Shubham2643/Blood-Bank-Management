@@ -63,4 +63,8 @@ const contactMessageSchema = new mongoose.Schema(
 contactMessageSchema.index({ createdAt: -1 });
 contactMessageSchema.index({ replied: 1 });
 
+import { socketWatcherPlugin } from "../utils/events.js";
+
+contactMessageSchema.plugin(socketWatcherPlugin);
+
 export default mongoose.model("ContactMessage", contactMessageSchema);

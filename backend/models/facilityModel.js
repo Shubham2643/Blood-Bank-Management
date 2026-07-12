@@ -129,5 +129,9 @@ facilitySchema.pre("save", function (next) {
   next();
 });
 
+import { socketWatcherPlugin } from "../utils/events.js";
+
+facilitySchema.plugin(socketWatcherPlugin);
+
 export default mongoose.model("facility", facilitySchema, "facilities");
 

@@ -58,4 +58,8 @@ bloodCampSchema.index({ date: 1, status: 1 });
 bloodCampSchema.index({ "location.city": 1 });
 bloodCampSchema.index({ hospital: 1 });
 
+import { socketWatcherPlugin } from "../utils/events.js";
+
+bloodCampSchema.plugin(socketWatcherPlugin);
+
 export default mongoose.model("BloodCamp", bloodCampSchema);

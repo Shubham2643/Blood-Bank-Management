@@ -54,4 +54,8 @@ const bloodRequestSchema = new mongoose.Schema(
 bloodRequestSchema.index({ hospitalId: 1, status: 1 });
 bloodRequestSchema.index({ labId: 1, status: 1 });
 
+import { socketWatcherPlugin } from "../utils/events.js";
+
+bloodRequestSchema.plugin(socketWatcherPlugin);
+
 export default mongoose.model("BloodRequest", bloodRequestSchema);

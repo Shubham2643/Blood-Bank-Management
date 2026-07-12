@@ -57,8 +57,9 @@ function AdminContactMessages() {
       };
       if (debouncedSearch) params.search = debouncedSearch;
 
-      const { data } = await adminApi.getContactMessages({ params });
-      setMessages(data.messages || data.data?.messages || []);
+      const res = await adminApi.getContactMessages({ params });
+      const data = res.data?.data || res.data;
+      setMessages(data.messages || []);
       setTotalPages(data.pagination?.pages || 1);
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to load contact messages");

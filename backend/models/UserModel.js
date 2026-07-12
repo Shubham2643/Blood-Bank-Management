@@ -83,4 +83,8 @@ userSchema.methods.setRandomPassword = function () {
   this.password = crypto.randomBytes(32).toString("hex");
 };
 
+import { socketWatcherPlugin } from "../utils/events.js";
+
+userSchema.plugin(socketWatcherPlugin);
+
 export default mongoose.model("User", userSchema);

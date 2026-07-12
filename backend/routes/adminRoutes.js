@@ -3,6 +3,7 @@ import express from "express";
 import { protect, authorize } from "../middlewares/authMiddleware.js";
 import {
   getDashboardStats,
+  getSidebarMetrics,
   getAllFacilities,
   getAllDonors,
   approveFacility,
@@ -45,6 +46,7 @@ router.use(protect, authorize("admin"));
 
 // Dashboard & stats
 router.get("/dashboard", getDashboardStats);
+router.get("/sidebar-metrics", getSidebarMetrics);
 
 // Contact messages
 router.get("/contact-messages", getContactMessages);

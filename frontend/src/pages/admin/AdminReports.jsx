@@ -69,14 +69,14 @@ function AdminReports() {
       };
 
       if (activeTab === "donations") {
-        const { data } = await adminApi.getDonationReport({ params });
-        setDonationReport(data);
+        const res = await adminApi.getDonationReport({ params });
+        setDonationReport(res.data?.data || res.data);
       } else if (activeTab === "usage") {
-        const { data } = await adminApi.getBloodUsageReport({ params });
-        setUsageReport(data);
+        const res = await adminApi.getBloodUsageReport({ params });
+        setUsageReport(res.data?.data || res.data);
       } else if (activeTab === "facilities") {
-        const { data } = await adminApi.getFacilityPerformanceReport({ params });
-        setFacilityReport(data);
+        const res = await adminApi.getFacilityPerformanceReport({ params });
+        setFacilityReport(res.data?.data || res.data);
       }
     } catch (error) {
       toast.error("Failed to load reports");

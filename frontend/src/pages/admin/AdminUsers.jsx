@@ -64,7 +64,8 @@ function AdminUsers() {
       };
       if (debouncedSearch) params.search = debouncedSearch;
 
-      const { data } = await adminApi.getUsers({ params });
+      const res = await adminApi.getUsers({ params });
+      const data = res.data?.data || res.data;
       setUsers(data.users || []);
       setTotalPages(data.pagination?.pages || 1);
       setTotalUsers(data.pagination?.total || 0);
@@ -83,7 +84,8 @@ function AdminUsers() {
   // Handle View Details
   const handleViewDetails = async (user) => {
     try {
-      const { data } = await adminApi.getUserById(user._id);
+      const res = await adminApi.getUserById(user._id);
+      const data = res.data?.data || res.data;
       setSelectedUser(data);
       setDetailModalOpen(true);
     } catch (error) {
@@ -95,8 +97,9 @@ function AdminUsers() {
   const handleToggleActive = async (user) => {
     try {
       setActionLoading(true);
-      const { data } = await adminApi.toggleUserActive(user._id);
-      toast.success(data.message || "User status updated");
+      const res = await adminApi.toggleUserActive(user._id);
+      const data = res.data?.data || res.data;
+      toast.success(data.message || res.data?.message || "User status updated");
       setConfirmModal(null);
       fetchUsers();
     } catch (error) {

@@ -31,15 +31,28 @@ import {
   CheckCircle,
   FileText,
 } from "lucide-react";
-import { getUser, logout } from "../../utils/auth";
-import { authApi } from "../../services/api";
+import { getUser, logout, getAuthToken } from "../../utils/auth";
+import { authApi, adminApi } from "../../services/api";
 import { useNotification } from "../../context/NotificationContext";
 import { toast } from "react-hot-toast";
+import { io } from "socket.io-client";
+import { SOCKET_URL } from "../../config/env.js";
 
 const DashboardLayout = ({ userRole = "donor" }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [userData, setUserData] = useState(null);
+  const [adminMetrics, setAdminMetrics] = useState({
+    verification: 0,
+    users: 0,
+    donors: 0,
+    facilities: 0,
+    bloodInventory: 0,
+    bloodRequests: 0,
+    camps: 0,
+    messages: 0,
+    reports: 0,
+  });
   const [isScrolled, setIsScrolled] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -438,6 +451,56 @@ const DashboardLayout = ({ userRole = "donor" }) => {
     };
   }, [fetchUserData]);
 
+  const fetchAdminMetrics = useCallback(async () => {
+    if (userRole !== "admin") return;
+    try {
+      const response = await adminApi.getSidebarMetrics();
+      if (response.data?.success) {
+        setAdminMetrics(response.data.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch admin sidebar metrics:", error);
+    }
+  }, [userRole]);
+
+  useEffect(() => {
+    if (userRole !== "admin" || !userData) return;
+
+    fetchAdminMetrics();
+
+    const token = getAuthToken();
+    if (!token) return;
+
+    const socket = io(`${SOCKET_URL}/admin`, {
+      auth: { token },
+      transports: ["websocket", "polling"],
+    });
+
+    socket.on("connect", () => {
+      console.log("DashboardLayout: Connected to admin socket updates");
+    });
+
+    socket.on("admin-sidebar-metrics", (metrics) => {
+      setAdminMetrics(metrics);
+    });
+
+    const events = [
+      "new-facility-registration",
+      "new-donor-registration",
+      "new-blood-request",
+      "admin-stats-update",
+    ];
+    events.forEach((event) => {
+      socket.on(event, () => {
+        fetchAdminMetrics();
+      });
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [userRole, userData, fetchAdminMetrics]);
+
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
@@ -476,12 +539,45 @@ const DashboardLayout = ({ userRole = "donor" }) => {
     return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
   };
 
-  const getBadgeColor = (badge) => {
-    if (badge === "New") return "bg-green-500 text-white";
-    if (badge === "Urgent") return "bg-red-500 text-white";
-    if (badge === "5") return "bg-purple-500 text-white";
-    if (badge === "Critical") return "bg-orange-500 text-white";
-    return "bg-blue-500 text-white";
+  const getBadgeValue = (label) => {
+    if (userRole !== "admin") return null;
+    switch (label) {
+      case "Verification":
+        return adminMetrics.verification > 0 ? adminMetrics.verification.toString() : null;
+      case "Users":
+        return adminMetrics.users > 0 ? adminMetrics.users.toLocaleString() : null;
+      case "Donors":
+        return adminMetrics.donors > 0 ? adminMetrics.donors.toLocaleString() : null;
+      case "Facilities":
+        return adminMetrics.facilities > 0 ? adminMetrics.facilities.toLocaleString() : null;
+      case "Blood Inventory":
+        return adminMetrics.bloodInventory > 0 ? `${adminMetrics.bloodInventory} units` : null;
+      case "Blood Requests":
+        return adminMetrics.bloodRequests > 0 ? adminMetrics.bloodRequests.toString() : null;
+      case "Camps":
+        return adminMetrics.camps > 0 ? adminMetrics.camps.toString() : null;
+      case "Messages":
+        return adminMetrics.messages > 0 ? adminMetrics.messages.toString() : null;
+      case "Reports":
+        return adminMetrics.reports > 0 ? adminMetrics.reports.toString() : null;
+      default:
+        return null;
+    }
+  };
+
+  const getBadgeColor = (badge, label) => {
+    if (userRole === "admin") {
+      if (label === "Verification") return "bg-amber-500 text-white font-bold";
+      if (label === "Blood Requests") return "bg-rose-500 text-white font-bold animate-pulse";
+      if (label === "Messages") return "bg-indigo-500 text-white font-bold";
+      if (label === "Blood Inventory") return "bg-emerald-500 text-white font-bold";
+      if (label === "Camps") return "bg-sky-500 text-white font-bold";
+      return "bg-slate-500 text-white font-bold";
+    }
+    if (badge === "New") return "bg-green-500 text-white font-bold";
+    if (badge === "Urgent") return "bg-red-500 text-white font-bold";
+    if (badge === "Critical") return "bg-orange-500 text-white font-bold";
+    return "bg-blue-500 text-white font-bold";
   };
 
   const getNotificationIcon = (type) => {
@@ -782,6 +878,7 @@ const DashboardLayout = ({ userRole = "donor" }) => {
               {config.items.map((item) => {
                 const Icon = item.icon;
                 const isActive = location.pathname === item.path;
+                const badge = userRole === "admin" ? getBadgeValue(item.label) : item.badge;
                 return (
                   <div key={item.path} className="relative group">
                     <button
@@ -815,18 +912,18 @@ const DashboardLayout = ({ userRole = "donor" }) => {
                           <span className="flex-1 text-left whitespace-nowrap text-sm">
                             {item.label}
                           </span>
-                          {item.badge && (
+                          {badge && (
                             <span
-                              className={`px-2 py-1 text-xs rounded-full ${getBadgeColor(item.badge)}`}
+                              className={`px-2 py-1 text-xs rounded-full ${getBadgeColor(badge, item.label)}`}
                             >
-                              {item.badge}
+                              {badge}
                             </span>
                           )}
                         </>
                       )}
-                      {sidebarCollapsed && item.badge && (
+                      {sidebarCollapsed && badge && (
                         <span
-                          className={`absolute top-1.5 right-1.5 w-2 h-2 rounded-full ${getBadgeColor(item.badge).replace("text-white", "")}`}
+                          className={`absolute top-1.5 right-1.5 w-2 h-2 rounded-full ${getBadgeColor(badge, item.label).replace("text-white", "")}`}
                         />
                       )}
                     </button>
@@ -838,11 +935,11 @@ const DashboardLayout = ({ userRole = "donor" }) => {
                         <div className="text-[10px] opacity-75 mt-0.5">
                           {item.description}
                         </div>
-                        {item.badge && (
+                        {badge && (
                           <div
-                            className={`mt-1.5 text-[10px] ${getBadgeColor(item.badge)} inline-block px-1.5 py-0.5 rounded font-bold`}
+                            className={`mt-1.5 text-[10px] ${getBadgeColor(badge, item.label)} inline-block px-1.5 py-0.5 rounded font-bold`}
                           >
-                            {item.badge}
+                            {badge}
                           </div>
                         )}
                       </div>
@@ -920,6 +1017,7 @@ const DashboardLayout = ({ userRole = "donor" }) => {
           {config.items.slice(0, 5).map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
+            const badge = userRole === "admin" ? getBadgeValue(item.label) : item.badge;
             return (
               <button
                 key={item.path}
@@ -928,7 +1026,12 @@ const DashboardLayout = ({ userRole = "donor" }) => {
                   isActive ? "bg-red-50 text-red-600" : "text-gray-600"
                 }`}
               >
-                <Icon size={20} />
+                <div className="relative">
+                  <Icon size={20} />
+                  {badge && (
+                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full border border-white" />
+                  )}
+                </div>
                 <span className="text-[10px] sm:text-xs mt-1 truncate max-w-full">
                   {item.label.split(" ")[0]}
                 </span>

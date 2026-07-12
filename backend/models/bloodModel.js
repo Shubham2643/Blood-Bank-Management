@@ -97,4 +97,8 @@ bloodSchema.index({ bloodLab: 1, bloodGroup: 1, status: 1 });
 bloodSchema.index({ expiryDate: 1 });
 bloodSchema.index({ testingStatus: 1 });
 
+import { socketWatcherPlugin } from "../utils/events.js";
+
+bloodSchema.plugin(socketWatcherPlugin);
+
 export default mongoose.model("Blood", bloodSchema);

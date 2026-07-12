@@ -56,7 +56,8 @@ function AdminCamps() {
       if (statusFilter !== "all") params.status = statusFilter;
       if (debouncedSearch) params.search = debouncedSearch;
 
-      const { data } = await adminApi.getCamps({ params });
+      const res = await adminApi.getCamps({ params });
+      const data = res.data?.data || res.data;
       setCamps(data.camps || []);
       setTotalPages(data.pagination?.pages || 1);
     } catch (error) {

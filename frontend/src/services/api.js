@@ -105,6 +105,7 @@ export const facilityApi = {
 
 export const adminApi = {
   getDashboard: (config) => api.get("/admin/dashboard", config),
+  getSidebarMetrics: () => api.get("/admin/sidebar-metrics"),
   getFacilities: (config) => api.get("/admin/facilities", config),
   getDonors: (config) => api.get("/admin/donors", config),
   approveFacility: (id) => api.put(`/admin/facility/approve/${id}`),

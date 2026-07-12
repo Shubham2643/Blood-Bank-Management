@@ -56,8 +56,9 @@ function AdminBloodRequests() {
         res = await adminApi.getPublicRequests({ params });
       }
 
-      setRequests(res.data.requests || []);
-      setTotalPages(res.data.pagination?.pages || 1);
+      const data = res.data?.data || res.data;
+      setRequests(data.requests || []);
+      setTotalPages(data.pagination?.pages || 1);
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to load blood requests");
     } finally {

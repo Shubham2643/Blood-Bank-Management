@@ -1,6 +1,15 @@
 // socket/index.js
 import { Server } from "socket.io";
 import jwt from "jsonwebtoken";
+import Facility from "../models/facilityModel.js";
+import User from "../models/UserModel.js";
+import Donor from "../models/donorModel.js";
+import Blood from "../models/bloodModel.js";
+import BloodRequest from "../models/bloodRequestModel.js";
+import BloodCamp from "../models/bloodCampModel.js";
+import ContactMessage from "../models/contactMessageModel.js";
+import AuditLog from "../models/auditLogModel.js";
+import { dbEventEmitter } from "../utils/events.js";
 
 let io;
 
@@ -347,6 +356,96 @@ export const SocketEvents = {
   NEW_BLOOD_REQUEST: "new-blood-request",
 };
 
+/**
+ * Query stats for every admin panel sidebar menu option
+ */
+export const getSidebarMetricsData = async () => {
+  try {
+    const [
+      pendingFacilities,
+      totalUsers,
+      totalDonors,
+      totalFacilities,
+      totalBloodUnits,
+      pendingRequests,
+      upcomingCamps,
+      unreadMessages,
+      totalAuditLogs,
+    ] = await Promise.all([
+      Facility.countDocuments({ status: "pending" }),
+      User.countDocuments(),
+      Donor.countDocuments(),
+      Facility.countDocuments(),
+      Blood.aggregate([
+        { $match: { status: "available" } },
+        { $group: { _id: null, total: { $sum: "$quantity" } } },
+      ]).then((result) => result[0]?.total || 0),
+      BloodRequest.countDocuments({ status: "pending" }),
+      BloodCamp.countDocuments({
+        status: "upcoming",
+        date: { $gt: new Date() },
+      }),
+      ContactMessage.countDocuments({ replied: false }),
+      AuditLog.countDocuments(),
+    ]);
+
+    return {
+      verification: pendingFacilities,
+      users: totalUsers,
+      donors: totalDonors,
+      facilities: totalFacilities,
+      bloodInventory: totalBloodUnits,
+      bloodRequests: pendingRequests,
+      camps: upcomingCamps,
+      messages: unreadMessages,
+      reports: totalAuditLogs,
+    };
+  } catch (err) {
+    console.error("Error fetching sidebar metrics data:", err);
+    return {
+      verification: 0,
+      users: 0,
+      donors: 0,
+      facilities: 0,
+      bloodInventory: 0,
+      bloodRequests: 0,
+      camps: 0,
+      messages: 0,
+      reports: 0,
+    };
+  }
+};
+
+/**
+ * Broadcast metrics to all admin socket clients (in room role:admin and namespace /admin)
+ */
+export const broadcastSidebarMetrics = async () => {
+  if (!io) return;
+  try {
+    const metrics = await getSidebarMetricsData();
+    emitToRole("admin", "admin-sidebar-metrics", metrics);
+    io.of("/admin").emit("admin-sidebar-metrics", metrics);
+  } catch (error) {
+    console.error("Failed to broadcast sidebar metrics:", error);
+  }
+};
+
+// Debounce helper to prevent database spam from rapid mutations
+const debounce = (func, delay) => {
+  let timeout;
+  return (...args) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), delay);
+  };
+};
+
+const debouncedBroadcast = debounce(broadcastSidebarMetrics, 500);
+
+// Subscribe to global database changes
+dbEventEmitter.on("change", () => {
+  debouncedBroadcast();
+});
+
 export default {
   initializeSocket,
   getIO,
@@ -358,4 +457,6 @@ export default {
   broadcastCampEvent,
   getOnlineStats,
   SocketEvents,
+  getSidebarMetricsData,
+  broadcastSidebarMetrics,
 };

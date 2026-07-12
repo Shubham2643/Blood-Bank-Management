@@ -10,7 +10,7 @@ import AuditLog from "../models/auditLogModel.js";
 import PublicBloodRequest from "../models/publicBloodRequestModel.js";
 import Notification from "../models/NotificationModel.js";
 import { AppError } from "../utils/errorHandler.js";
-import { getIO, getOnlineStats, emitToAdmin, SocketEvents } from "../socket/index.js";
+import { getIO, getOnlineStats, emitToAdmin, SocketEvents, getSidebarMetricsData } from "../socket/index.js";
 import { sendEmail } from "../utils/emailService.js";
 import { notifyUser, notifyRole } from "../utils/notification.js";
 
@@ -395,6 +395,21 @@ export const getDashboardStats = async (req, res, next) => {
         alerts: systemAlerts,
         onlineStats,
       },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get counts for admin sidebar menus
+// @route   GET /api/admin/sidebar-metrics
+// @access  Private/Admin
+export const getSidebarMetrics = async (req, res, next) => {
+  try {
+    const metrics = await getSidebarMetricsData();
+    res.status(200).json({
+      success: true,
+      data: metrics,
     });
   } catch (error) {
     next(error);

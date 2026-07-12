@@ -58,7 +58,8 @@ function GetAllFacilities() {
       };
       if (debouncedSearch) params.search = debouncedSearch;
 
-      const { data } = await adminApi.getFacilities({ params });
+      const res = await adminApi.getFacilities({ params });
+      const data = res.data?.data || res.data;
       setFacilities(data.facilities || []);
       setTotalPages(data.pagination?.pages || 1);
       setTotalFacilities(data.pagination?.total || 0);
@@ -77,7 +78,8 @@ function GetAllFacilities() {
   // View details
   const handleOpenDetails = async (fac) => {
     try {
-      const { data } = await adminApi.getFacilityById(fac._id);
+      const res = await adminApi.getFacilityById(fac._id);
+      const data = res.data?.data || res.data;
       setSelectedFacility(data);
       setDetailModalOpen(true);
     } catch (error) {

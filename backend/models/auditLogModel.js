@@ -37,6 +37,10 @@ auditLogSchema.index({ action: 1 });
 auditLogSchema.index({ targetType: 1 });
 auditLogSchema.index({ createdAt: -1 });
 
+import { socketWatcherPlugin } from "../utils/events.js";
+
+auditLogSchema.plugin(socketWatcherPlugin);
+
 const AuditLog = mongoose.model("AuditLog", auditLogSchema);
 
 export default AuditLog;

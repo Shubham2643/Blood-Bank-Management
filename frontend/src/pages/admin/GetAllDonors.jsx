@@ -62,7 +62,8 @@ function GetAllDonors() {
       if (debouncedSearch) params.search = debouncedSearch;
       // Note: city filtering is supported, but not mapped to selector for now
 
-      const { data } = await adminApi.getDonors({ params });
+      const res = await adminApi.getDonors({ params });
+      const data = res.data?.data || res.data;
       
       // Filter list client side if eligibility is chosen since DB counts match filter
       let donorList = data.donors || [];
@@ -90,7 +91,8 @@ function GetAllDonors() {
   // Open Details Modal
   const handleOpenDetails = async (donor) => {
     try {
-      const { data } = await adminApi.getDonorById(donor._id);
+      const res = await adminApi.getDonorById(donor._id);
+      const data = res.data?.data || res.data;
       setSelectedDonor(data);
       setDetailModalOpen(true);
     } catch (error) {
