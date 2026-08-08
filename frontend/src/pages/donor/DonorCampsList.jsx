@@ -89,7 +89,6 @@ const QUIZ_QUESTIONS = [
 ];
 
 const CampCard = ({ camp, onRegister, onSimulateDonation, registeringId, simulatingId, currentDonorId }) => {
-  console.log("CampCard render:", camp.title, "isRegistered:", camp.isRegistered, "registeredDonors:", camp.registeredDonors, "currentDonorId:", currentDonorId);
   const normalizedStatus = String(camp.status).toLowerCase();
   const isCompleted = normalizedStatus === "completed";
   const isCancelled = normalizedStatus === "cancelled";
@@ -105,191 +104,176 @@ const CampCard = ({ camp, onRegister, onSimulateDonation, registeringId, simulat
       (reg.donor && reg.donor.toString() === currentDonorId.toString()) ||
       (reg._id && reg._id.toString() === currentDonorId.toString())
   )) || false;
-  // const isOngoing = camp.status === 'Ongoing';
 
-  const statusColor = isCancelled
-    ? "bg-red-100 text-red-600 border-red-200"
+  const statusBadgeStyle = isCancelled
+    ? "bg-rose-50 text-rose-700 border-rose-200"
     : isCompleted
-    ? "bg-gray-100 text-gray-600 border-gray-200"
-    : "bg-green-100 text-green-600 border-green-200";
+    ? "bg-slate-100 text-slate-600 border-slate-200"
+    : isUpcoming
+    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+    : "bg-blue-50 text-blue-700 border-blue-200";
 
-  // --- Using schema fields: date and time {start, end} ---
   const campDate = new Date(camp.date);
   const dateStr = campDate.toLocaleDateString('en-US', {
-    year: 'numeric',
+    weekday: 'short',
     month: 'short',
-    day: 'numeric'
+    day: 'numeric',
+    year: 'numeric'
   });
   
   const timeStr = `${camp.time?.start || 'N/A'} - ${camp.time?.end || 'N/A'}`;
   
-  // --- Using schema fields: expectedDonors and actualDonors ---
   const expectedDonors = camp.expectedDonors || 0;
   const actualDonors = camp.actualDonors || 0; 
   
   const slotsAvailable = expectedDonors > 0 ? expectedDonors - actualDonors : 0;
   const isFull = slotsAvailable <= 0 && expectedDonors > 0 && !isCompleted && !isCancelled;
+  const capacityPct = expectedDonors > 0 ? Math.min(100, Math.round((actualDonors / expectedDonors) * 100)) : 0;
 
-  // 1. Full Address including Pincode
   const { venue, city, state, pincode } = camp.location || {};
   const locationStr = `${venue}, ${city}, ${state} - ${pincode}`;
-  
-  // Assuming the populated hospital object has a 'name' field from the Facility model
-  const hospitalName = camp.hospital?.name || 'Associated Facility Missing';
-
-  // Donor Capacity Logic
-  const renderDonorCapacity = () => {
-    if (isUpcoming) {
-      return (
-        <span className="font-medium text-gray-600">
-          {expectedDonors} Expected Donors (Capacity)
-        </span>
-      );
-    } 
-    
-    // For Ongoing, Completed, or Cancelled (where data might be relevant)
-    return (
-      <span className="font-medium text-gray-600">
-        {actualDonors} Achieved / {expectedDonors} Expected
-      </span>
-    );
-  };
+  const hospitalName = camp.hospital?.name || 'Associated Healthcare Facility';
 
   return (
-    <div className={`bg-white rounded-2xl shadow-lg transition-all duration-300 transform hover:scale-[1.02] hover:shadow-xl p-6 border-2 overflow-hidden ${
-      isCancelled ? 'border-red-200 opacity-70' : 'border-red-100'
+    <div className={`bg-white rounded-3xl shadow-[0_10px_35px_-10px_rgba(0,0,0,0.05)] border border-slate-200/80 p-6 sm:p-7 relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 flex flex-col justify-between ${
+      isCancelled ? 'opacity-70 bg-slate-50/50' : ''
     }`}>
-      {/* Header with status badge */}
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-4">
-        <h4 className={`text-xl font-bold leading-tight ${
-          isCancelled ? 'text-gray-500' : 'text-gray-800'
-        }`}>
-          {camp.title}
-        </h4>
-        <span className={`px-3 py-1.5 text-xs font-semibold rounded-full border ${statusColor} self-start sm:self-auto`}>
-          {camp.status}
-        </span>
-      </div>
-      
-      {/* Hospital/Facility Name */}
-      <div className="flex items-center gap-3 text-sm text-gray-700 mb-3 font-semibold">
-        <Building2 className="w-4 h-4 text-red-500 flex-shrink-0" />
-        <span className="truncate">{hospitalName}</span>
-      </div>
-
-      {/* Primary Camp details */}
-      <div className="space-y-3 text-sm text-gray-600 mb-4">
-        {/* Full Address Display */}
-        <div className="flex items-start gap-3">
-          <MapPin className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
-          <div className="flex-1">
-            <span className="leading-relaxed block">{locationStr}</span>
-            {directionsUrl && (
-              <a
-                href={directionsUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-xs text-red-600 hover:text-red-700 font-semibold mt-1 transition-colors"
-              >
-                Get Directions <ExternalLink className="w-3 h-3" />
-              </a>
-            )}
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <Calendar className="w-4 h-4 text-red-500 flex-shrink-0" />
-          <span>{dateStr}</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <Clock className="w-4 h-4 text-red-500 flex-shrink-0" />
-          <span>{timeStr}</span>
-        </div>
-        {camp.hospital?.phone && (
-          <div className="flex items-center gap-3">
-            <Phone className="w-4 h-4 text-red-500 flex-shrink-0" />
-            <span>Contact: {camp.hospital.phone}</span>
-          </div>
-        )}
-        {camp.hospital?.email && (
-          <div className="flex items-center gap-3">
-            <Mail className="w-4 h-4 text-red-500 flex-shrink-0" />
-            <span className="truncate block max-w-[200px]">Email: {camp.hospital.email}</span>
-          </div>
-        )}
-      </div>
-
-      {/* Donor Metrics Summary */}
-      <div className="pt-4 border-t border-gray-100 flex flex-col justify-between items-start gap-3">
-        {/* Donor Capacity Display (Updated logic) */}
-        <div className="flex items-center gap-2 text-sm">
-          <Users className="w-4 h-4 text-red-500" />
-          <span className="font-semibold text-gray-700">Capacity:</span>
-          {renderDonorCapacity()}
-        </div>
-        
-        {/* Remaining Need - Only visible if not Completed or Cancelled */}
-        {!isCompleted && !isCancelled && (
-            <div className="flex items-center gap-2 text-sm">
-                <ListPlus className="w-4 h-4 text-red-500" />
-                <span className="font-semibold text-gray-700">Remaining Need:</span>
-                <span className={`font-bold ${
-                    isFull ? 'text-red-600' : 'text-green-600'
-                }`}>
-                    {isFull ? 'Full (Capacity Reached)' : `${slotsAvailable} slots remaining`}
-                </span>
+      <div className="space-y-4">
+        {/* Header with Title & Status Badge */}
+        <div className="flex justify-between items-start gap-3">
+          <div className="space-y-1 min-w-0">
+            <h4 className="text-lg sm:text-xl font-black text-slate-850 tracking-tight leading-snug line-clamp-2">
+              {camp.title}
+            </h4>
+            <div className="flex items-center gap-2 text-xs font-extrabold text-red-600">
+              <Building2 className="w-4 h-4 flex-shrink-0" />
+              <span className="truncate">{hospitalName}</span>
             </div>
-        )}
-        
-        {/* Description Section (Always visible) */}
-        <div className="pt-4 border-t border-gray-100 w-full mt-3">
-          {/* Description */}
-          <div>
-            <h5 className="font-bold text-gray-800 mb-1 flex items-center gap-2"><Droplet className="w-4 h-4" /> Description</h5>
-            <p className="text-gray-600 text-sm italic whitespace-pre-wrap">{camp.description || 'No detailed description provided for this camp.'}</p>
+          </div>
+          <span className={`px-3 py-1 text-xs font-black uppercase tracking-wider rounded-full border shadow-2xs flex-shrink-0 ${statusBadgeStyle}`}>
+            {camp.status}
+          </span>
+        </div>
+
+        {/* Location & Directions */}
+        <div className="p-3.5 rounded-2xl bg-slate-50/70 border border-slate-200/60 space-y-2">
+          <div className="flex items-start gap-3">
+            <div className="w-8 h-8 rounded-xl bg-white text-red-600 flex items-center justify-center font-bold shadow-2xs flex-shrink-0 mt-0.5">
+              <MapPin className="w-4 h-4" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <span className="block text-[10px] font-black text-slate-400 uppercase tracking-wider">Venue Location</span>
+              <span className="block text-xs font-bold text-slate-800 leading-relaxed">{locationStr}</span>
+              {directionsUrl && (
+                <a
+                  href={directionsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-[11px] font-black text-red-600 hover:text-red-700 mt-1 transition-colors"
+                >
+                  Get Directions <ExternalLink className="w-3 h-3" />
+                </a>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Register Button - Only if status is Upcoming */}
-        {isUpcoming && (
-          <div className="mt-6 w-full space-y-2">
-            {isRegistered ? (
-              <>
-                <button
-                  disabled
-                  className="w-full bg-green-50 text-green-700 font-semibold py-2.5 px-4 rounded-xl border border-green-200 flex items-center justify-center gap-2 text-sm cursor-not-allowed"
-                >
-                  <Check className="w-4 h-4" /> Already Registered
-                </button>
-                <button
-                  onClick={() => onSimulateDonation(camp._id)}
-                  disabled={simulatingId === camp._id}
-                  className="w-full bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-bold py-2.5 px-4 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 text-sm cursor-pointer border border-red-500 animate-fade-in"
-                >
-                  {simulatingId === camp._id ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Droplet className="w-4 h-4 text-white animate-pulse" />
-                  )}
-                  Simulate Donation & Get Certificate
-                </button>
-              </>
-            ) : (
-              <button
-                onClick={() => onRegister(camp._id)}
-                disabled={registeringId === camp._id}
-                className="w-full bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white font-semibold py-3 px-4 rounded-xl shadow-md transition-colors flex items-center justify-center gap-2 text-sm cursor-pointer"
-              >
-                {registeringId === camp._id ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Heart className="w-4 h-4" />
-                )}
-                Register & Donate
-              </button>
-            )}
+        {/* Date & Time Grid */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="p-3.5 rounded-2xl bg-slate-50/70 border border-slate-200/60 flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl bg-white text-red-600 flex items-center justify-center font-bold shadow-2xs flex-shrink-0">
+              <Calendar className="w-4 h-4" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <span className="block text-[10px] font-black text-slate-400 uppercase tracking-wider">Date</span>
+              <span className="block text-xs font-extrabold text-slate-800 truncate">{dateStr}</span>
+            </div>
           </div>
+
+          <div className="p-3.5 rounded-2xl bg-slate-50/70 border border-slate-200/60 flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl bg-white text-red-600 flex items-center justify-center font-bold shadow-2xs flex-shrink-0">
+              <Clock className="w-4 h-4" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <span className="block text-[10px] font-black text-slate-400 uppercase tracking-wider">Time</span>
+              <span className="block text-xs font-extrabold text-slate-800 truncate">{timeStr}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Capacity Gauge */}
+        <div className="p-3.5 rounded-2xl bg-slate-50/70 border border-slate-200/60 space-y-2">
+          <div className="flex justify-between items-center text-xs font-black">
+            <span className="text-slate-500 uppercase tracking-wider text-[10px]">Donor Capacity</span>
+            <span className="text-slate-800">
+              {actualDonors} / {expectedDonors} Donors ({capacityPct}%)
+            </span>
+          </div>
+          <div className="w-full bg-slate-200/80 rounded-full h-2 overflow-hidden">
+            <div
+              className="bg-gradient-to-r from-red-600 to-rose-600 h-full rounded-full transition-all duration-500"
+              style={{ width: `${capacityPct}%` }}
+            />
+          </div>
+          {!isCompleted && !isCancelled && (
+            <p className="text-[11px] font-bold text-right">
+              {isFull ? (
+                <span className="text-rose-600">Capacity Full</span>
+              ) : (
+                <span className="text-emerald-600">{slotsAvailable} slots remaining</span>
+              )}
+            </p>
+          )}
+        </div>
+
+        {/* Description */}
+        {camp.description && (
+          <p className="text-xs font-medium text-slate-500 italic line-clamp-2">
+            "{camp.description}"
+          </p>
         )}
       </div>
+
+      {/* Action Buttons */}
+      {isUpcoming && (
+        <div className="mt-6 pt-4 border-t border-slate-100 space-y-2">
+          {isRegistered ? (
+            <>
+              <button
+                disabled
+                className="w-full bg-emerald-50 text-emerald-700 font-black py-3 px-4 rounded-2xl border border-emerald-200 flex items-center justify-center gap-2 text-xs uppercase tracking-wider cursor-not-allowed"
+              >
+                <Check className="w-4 h-4 stroke-[3]" /> Registered Lifesaver
+              </button>
+              <button
+                onClick={() => onSimulateDonation(camp._id)}
+                disabled={simulatingId === camp._id}
+                className="w-full bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-black py-3 px-4 rounded-2xl shadow-md shadow-red-600/20 transition-all flex items-center justify-center gap-2 text-xs uppercase tracking-wider cursor-pointer hover:scale-105"
+              >
+                {simulatingId === camp._id ? (
+                  <Loader2 className="w-4 h-4 animate-spin text-white" />
+                ) : (
+                  <Droplet className="w-4 h-4 text-white fill-white animate-pulse" />
+                )}
+                <span>Simulate Donation & Get Certificate</span>
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => onRegister(camp._id)}
+              disabled={registeringId === camp._id || isFull}
+              className="w-full bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 disabled:opacity-50 text-white font-black py-3.5 px-4 rounded-2xl shadow-md shadow-red-600/20 transition-all flex items-center justify-center gap-2 text-xs uppercase tracking-wider cursor-pointer hover:scale-105"
+            >
+              {registeringId === camp._id ? (
+                <Loader2 className="w-4 h-4 animate-spin text-white" />
+              ) : (
+                <Heart className="w-4 h-4 text-white fill-white" />
+              )}
+              <span>{isFull ? "Camp Capacity Reached" : "Register & Donate"}</span>
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 };
@@ -906,234 +890,198 @@ export const DonorCampsList = () => {
   const currentPage = useMemo(() => pagination.currentPage, [pagination.currentPage]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 pb-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 font-sans text-slate-800">
       <Toaster />
-      <div className="max-w-7xl mx-auto">
-        
-        {/* Header */}
-        <div className="bg-white rounded-2xl shadow-lg border border-red-100 p-6 mb-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-            <div className="p-3 bg-red-100 rounded-xl">
-              <Heart className="w-8 h-8 text-red-600" />
+      
+      {/* Hero Header Banner */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-red-700 via-rose-700 to-red-900 text-white rounded-3xl p-6 sm:p-8 lg:p-10 shadow-xl border border-red-600/40">
+        <div className="absolute inset-0 opacity-10 pointer-events-none">
+          <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <circle cx="90" cy="10" r="30" stroke="white" strokeWidth="2" fill="none" />
+            <circle cx="10" cy="90" r="25" stroke="white" strokeWidth="2" fill="none" />
+          </svg>
+        </div>
+
+        <div className="relative z-10 flex flex-col md:flex-row gap-6 justify-between items-center md:items-end">
+          <div className="flex flex-col sm:flex-row gap-5 items-center sm:items-end text-center sm:text-left">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-white text-red-600 font-black flex items-center justify-center shadow-2xl ring-4 ring-white/20 flex-shrink-0">
+              <Heart className="w-8 h-8 sm:w-10 sm:h-10 fill-red-600 text-red-600 animate-pulse" />
             </div>
-            <div className="flex-1">
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
+            <div>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold uppercase tracking-wide text-white">
                 Blood Donation Camps
               </h1>
-              <p className="text-gray-600 mt-1 text-sm sm:text-base">
-                Find local opportunities to donate blood and save lives.
+              <p className="text-xs sm:text-sm font-semibold text-red-100/90 mt-1">
+                Find nearby blood donation camps, locate live GPS driving routes, and register to save lives!
               </p>
             </div>
           </div>
-        </div>
 
-        {/* Interactive Maps Section */}
-        <div className="bg-white rounded-3xl shadow-lg border border-red-100 overflow-hidden mb-6">
-          <div className="p-6 border-b border-red-50 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-red-50/20 to-rose-50/20">
-            <div>
-              <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                <MapPin className="w-5 h-5 text-red-600 animate-pulse" />
-                Interactive Camp Finder Map
-              </h2>
-              <p className="text-xs text-gray-500 mt-1">
-                Enter your city/ZIP to auto-center the map, locate pins, and get real-time driving directions.
-              </p>
-            </div>
-            
-            {/* Map Search Bar */}
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="relative min-w-[200px] sm:min-w-[260px]">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <input
-                  type="text"
-                  placeholder="Enter city or ZIP code..."
-                  value={mapSearchTerm}
-                  onChange={(e) => setMapSearchTerm(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleMapSearch()}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all bg-white"
-                />
-              </div>
-              <button
-                onClick={handleMapSearch}
-                disabled={isSearchingMap || !mapSearchTerm.trim()}
-                className="bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white px-4 py-2 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer h-[38px]"
-              >
-                {isSearchingMap ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Search className="w-3.5 h-3.5" />}
-                Search
-              </button>
-              <button
-                onClick={handleGpsLocate}
-                disabled={isLocatingGps}
-                className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-4 py-2 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer h-[38px]"
-              >
-                {isLocatingGps ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <MapPin className="w-3.5 h-3.5" />}
-                Locate Me
-              </button>
-              {(nearestCamp || mapGeocodedLocation) && (
-                <button
-                  onClick={handleClearMapRoute}
-                  className="bg-gray-150 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer border border-gray-350 h-[38px]"
-                >
-                  <X className="w-3.5 h-3.5" />
-                  Clear
-                </button>
-              )}
-            </div>
-          </div>
-
-          <div className="flex flex-col lg:flex-row h-[480px]">
-            {/* Map Container */}
-            <div className="flex-1 relative bg-gray-50 h-[280px] lg:h-full">
-              <div id="camp-leaflet-map" className="w-full h-full relative" style={{ zIndex: 1 }} />
-            </div>
-
-            {/* Route/Directions Sidebar */}
-            <div className="w-full lg:w-96 p-6 border-t lg:border-t-0 lg:border-l border-gray-100 flex flex-col justify-between bg-slate-50/50 h-[200px] lg:h-full overflow-y-auto">
-              {nearestCamp && routeInfo ? (
-                <div className="flex flex-col h-full justify-between gap-4">
-                  <div className="space-y-4">
-                    <div className="p-4 bg-red-50 rounded-2xl border border-red-100">
-                      <span className="text-[10px] font-bold text-red-600 uppercase tracking-wide block mb-1">
-                        Nearest Camp Found
-                      </span>
-                      <h4 className="font-bold text-gray-800 text-sm leading-tight">
-                        {nearestCamp.title}
-                      </h4>
-                      <p className="text-[11px] text-gray-500 mt-1 flex items-center gap-1">
-                        <MapPin className="w-3 h-3 text-red-500 flex-shrink-0" />
-                        <span className="truncate">{nearestCamp.location?.venue}, {nearestCamp.location?.city}</span>
-                      </p>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="p-3 bg-white rounded-xl border border-gray-100 shadow-sm text-center">
-                        <span className="text-[10px] text-gray-500 block mb-0.5">Driving Distance</span>
-                        <span className="text-base font-extrabold text-slate-800">
-                          {routeInfo.distance} km
-                        </span>
-                      </div>
-                      <div className="p-3 bg-white rounded-xl border border-gray-100 shadow-sm text-center">
-                        <span className="text-[10px] text-gray-500 block mb-0.5">Estimated Time</span>
-                        <span className="text-base font-extrabold text-slate-800">
-                          {routeInfo.duration} mins
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2 pt-1">
-                      <a
-                        href={`https://www.google.com/maps/dir/?api=1&origin=${mapGeocodedLocation.lat},${mapGeocodedLocation.lng}&destination=${nearestCamp.coordinates?.lat},${nearestCamp.coordinates?.lng}&travelmode=driving`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 rounded-xl text-center text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm cursor-pointer"
-                      >
-                        <ExternalLink className="w-3.5 h-3.5" />
-                        Open in Google Maps
-                      </a>
-                      <button
-                        onClick={() => {
-                          if (nearestCamp.status.toLowerCase() === "upcoming") {
-                            handleRegisterForCamp(nearestCamp._id);
-                          } else {
-                            toast.error(`Camp status is "${nearestCamp.status}". Registration is only available for upcoming camps.`);
-                          }
-                        }}
-                        className="w-full bg-white hover:bg-gray-50 text-gray-800 border border-gray-250 font-semibold py-2 rounded-xl text-center text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
-                      >
-                        <Heart className="w-3.5 h-3.5 text-red-500" />
-                        Register for Camp
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="pt-3 border-t border-gray-100">
-                    <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-2.5 flex gap-2 text-[10px] text-blue-800">
-                      <MapPin className="w-3.5 h-3.5 text-blue-500 flex-shrink-0 mt-0.5 animate-bounce" />
-                      <div className="overflow-hidden">
-                        <span className="font-semibold block mb-0.5">Your Search Center:</span>
-                        <span className="text-gray-600 truncate block max-w-full">
-                          {mapGeocodedLocation.label}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center text-center h-full py-2 px-4">
-                  <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mb-3 text-red-500 border border-red-100 animate-pulse">
-                    <MapPin className="w-6 h-6" />
-                  </div>
-                  <h4 className="font-bold text-gray-800 text-sm mb-1">
-                    Route Finder & Directions
-                  </h4>
-                  <p className="text-[11px] text-gray-500 max-w-[240px] leading-relaxed">
-                    Type your city/ZIP code above or click "Locate Me" to compute the driving route to the nearest camp.
-                  </p>
-                  <div className="mt-4 p-2.5 bg-white rounded-xl border border-gray-100 text-[10px] text-gray-500 text-left space-y-1 w-full shadow-sm">
-                    <div className="flex items-center gap-1 font-semibold text-gray-700 mb-1">
-                      <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
-                      <span>Map Legend</span>
-                    </div>
-                    <p>🔴 Red pins: Camp Locations</p>
-                    <p>🔵 Blue pin: Your Search Area</p>
-                    <p>🛣️ Dashed red line: Driving Route path</p>
-                  </div>
-                </div>
-              )}
-            </div>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <span className="px-4 py-2 rounded-2xl bg-white/15 backdrop-blur-md text-white border border-white/20 text-xs font-black">
+              {camps.length} Active Camps Available
+            </span>
           </div>
         </div>
+      </div>
 
-        {/* Controls and Filtering */}
-        <div className="bg-white rounded-2xl shadow-md border border-red-100 p-4 sm:p-6 mb-6">
-          <div className="flex flex-col lg:flex-row gap-4 justify-between items-stretch lg:items-center">
-            {/* Search and Filter Section */}
-            <div className="flex flex-col sm:flex-row gap-4 flex-1">
-              {/* Search Input */}
-              <div className="relative flex-1 min-w-[200px]">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <input
-                  type="text"
-                  placeholder="Search camps, locations, hospital name..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl text-sm bg-white focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all"
-                />
-              </div>
-
-              {/* Filter Dropdown */}
-              <div className="flex items-center gap-2 min-w-[180px]">
-                <Filter className="w-4 h-4 text-gray-600 flex-shrink-0" />
-                <select
-                  value={filter}
-                  onChange={(e) => handleFilterChange(e.target.value)}
-                  className="flex-1 px-3 py-2.5 border border-gray-300 rounded-xl text-sm bg-white focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all"
-                  disabled={loading}
-                >
-                  {STATUS_OPTIONS.map(option => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
+      {/* Interactive Camps Leaflet Map Card */}
+      <div className="bg-white rounded-3xl shadow-[0_10px_35px_-10px_rgba(0,0,0,0.05)] border border-slate-200/80 overflow-hidden">
+        {/* Map Card Control Bar */}
+        <div className="p-5 sm:p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-50/80">
+          <div>
+            <h2 className="text-lg font-black text-slate-850 flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-red-600 animate-bounce" />
+              <span>Interactive Camp Finder Map</span>
+            </h2>
+            <p className="text-xs text-slate-400 font-medium mt-0.5">
+              Enter your city or ZIP code to auto-center the map, locate pins, and calculate live driving directions.
+            </p>
+          </div>
+          
+          {/* Map Search Controls */}
+          <div className="flex flex-wrap items-center gap-2.5">
+            <div className="relative min-w-[220px] sm:min-w-[260px]">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 pointer-events-none" />
+              <input
+                type="text"
+                placeholder="Enter city or ZIP code..."
+                value={mapSearchTerm}
+                onChange={(e) => setMapSearchTerm(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleMapSearch()}
+                className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200/90 rounded-2xl text-xs font-extrabold text-slate-850 outline-none focus:ring-4 focus:ring-red-500/10 focus:border-red-500 transition-all"
+              />
             </div>
-
-            {/* Refresh Button */}
             <button
-              onClick={() => fetchCamps()}
-              disabled={loading}
-              className="flex items-center justify-center gap-2 bg-red-50 hover:bg-red-100 text-red-700 px-4 py-2.5 rounded-xl transition-all duration-200 border border-red-200 font-medium min-w-[120px]"
+              onClick={handleMapSearch}
+              disabled={isSearchingMap || !mapSearchTerm.trim()}
+              className="bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 disabled:opacity-50 text-white px-4 py-2.5 rounded-2xl text-xs font-black uppercase tracking-wider transition-all shadow-md shadow-red-600/20 flex items-center gap-1.5 cursor-pointer hover:scale-105"
             >
-              {loading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <RefreshCw className="w-4 h-4" />
-              )}
-              {loading ? 'Refreshing...' : 'Refresh'}
+              {isSearchingMap ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Search className="w-3.5 h-3.5" />}
+              <span>Search</span>
             </button>
+            <button
+              onClick={handleGpsLocate}
+              disabled={isLocatingGps}
+              className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-4 py-2.5 rounded-2xl text-xs font-black uppercase tracking-wider transition-all shadow-md shadow-blue-600/20 flex items-center gap-1.5 cursor-pointer hover:scale-105"
+            >
+              {isLocatingGps ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <MapPin className="w-3.5 h-3.5" />}
+              <span>Locate Me</span>
+            </button>
+            {(nearestCamp || mapGeocodedLocation) && (
+              <button
+                onClick={handleClearMapRoute}
+                className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2.5 rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1 cursor-pointer border border-slate-200/80"
+              >
+                <X className="w-3.5 h-3.5" />
+                <span>Clear</span>
+              </button>
+            )}
           </div>
         </div>
+
+        <div className="flex flex-col lg:flex-row h-[480px]">
+          {/* Map Container */}
+          <div className="flex-1 relative bg-slate-100 h-[280px] lg:h-full">
+            <div id="camp-leaflet-map" className="w-full h-full relative" style={{ zIndex: 1 }} />
+          </div>
+
+          {/* Route/Directions Sidebar */}
+          <div className="w-full lg:w-96 p-6 border-t lg:border-t-0 lg:border-l border-slate-100 flex flex-col justify-between bg-slate-50/50 h-[200px] lg:h-full overflow-y-auto">
+            {nearestCamp && routeInfo ? (
+              <div className="flex flex-col h-full justify-between gap-4">
+                <div className="space-y-4">
+                  <div className="p-4 bg-red-50/80 rounded-2xl border border-red-100 space-y-1">
+                    <span className="text-[10px] font-black text-red-600 uppercase tracking-wider block">
+                      Nearest Camp Found
+                    </span>
+                    <h4 className="font-extrabold text-slate-850 text-sm leading-snug">
+                      {nearestCamp.title}
+                    </h4>
+                    <p className="text-[11px] font-semibold text-slate-500 flex items-center gap-1">
+                      <MapPin className="w-3 h-3 text-red-500 flex-shrink-0" />
+                      <span className="truncate">{nearestCamp.location?.venue}, {nearestCamp.location?.city}</span>
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-3 bg-white rounded-2xl border border-slate-200/70 shadow-2xs text-center">
+                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">Distance</span>
+                      <span className="text-base font-black text-slate-850">
+                        {routeInfo.distance} km
+                      </span>
+                    </div>
+                    <div className="p-3 bg-white rounded-2xl border border-slate-200/70 shadow-2xs text-center">
+                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">Duration</span>
+                      <span className="text-base font-black text-slate-850">
+                        {routeInfo.duration} mins
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 pt-1">
+                    <a
+                      href={`https://www.google.com/maps/dir/?api=1&origin=${mapGeocodedLocation.lat},${mapGeocodedLocation.lng}&destination=${nearestCamp.coordinates?.lat},${nearestCamp.coordinates?.lng}&travelmode=driving`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full bg-gradient-to-r from-red-600 to-rose-600 text-white font-black py-3 rounded-2xl text-center text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-md shadow-red-600/20 cursor-pointer hover:scale-105"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      <span>Open Google Maps</span>
+                    </a>
+                    <button
+                      onClick={() => {
+                        if (nearestCamp.status.toLowerCase() === "upcoming") {
+                          handleRegisterForCamp(nearestCamp._id);
+                        } else {
+                          toast.error(`Camp status is "${nearestCamp.status}". Registration is only available for upcoming camps.`);
+                        }
+                      }}
+                      className="w-full bg-white hover:bg-slate-50 text-slate-800 border border-slate-200/90 font-black py-3 rounded-2xl text-center text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-2xs"
+                    >
+                      <Heart className="w-3.5 h-3.5 text-red-500 fill-red-500" />
+                      <span>Register for Camp</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-slate-100">
+                  <div className="bg-blue-50/70 border border-blue-100 rounded-2xl p-3 flex gap-2 text-[11px] text-blue-800 font-medium">
+                    <MapPin className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5 animate-bounce" />
+                    <div className="overflow-hidden min-w-0">
+                      <span className="font-black block mb-0.5 uppercase tracking-wider text-[10px]">Your Search Center:</span>
+                      <span className="text-slate-600 font-semibold truncate block">
+                        {mapGeocodedLocation.label}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center text-center h-full py-4 px-4 space-y-3">
+                <div className="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center text-red-600 border border-red-100 shadow-2xs animate-pulse">
+                  <MapPin className="w-6 h-6" />
+                </div>
+                <div>
+                  <h4 className="font-black text-slate-850 text-sm">Route Finder & Directions</h4>
+                  <p className="text-xs text-slate-400 font-medium max-w-[240px] mt-1 leading-relaxed">
+                    Type your city/ZIP code above or click "Locate Me" to compute driving directions to the nearest camp.
+                  </p>
+                </div>
+                <div className="p-3 bg-white rounded-2xl border border-slate-200/70 text-[11px] text-slate-500 text-left space-y-1.5 w-full shadow-2xs">
+                  <div className="flex items-center gap-1.5 font-black text-slate-700 uppercase text-[10px] tracking-wider mb-1">
+                    <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                    <span>Map Legend</span>
+                  </div>
+                  <p>🔴 Red pins: Active Camp Locations</p>
+                  <p>🔵 Blue pin: Your Search Area</p>
+                  <p>🛣️ Dashed line: Driving Route Path</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
 
         {/* Results Summary */}
         {!loading && camps.length > 0 && (
@@ -1379,7 +1327,6 @@ export const DonorCampsList = () => {
           </div>
         )}
       </div>
-    </div>
   );
 };
 

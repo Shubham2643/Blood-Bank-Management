@@ -390,7 +390,7 @@ function AdminCamps() {
                   <p className="text-xs text-gray-400 italic">No donors registered for this camp yet.</p>
                 ) : (
                   <div className="max-h-36 overflow-y-auto border border-gray-100 rounded-xl divide-y divide-gray-50 text-xs">
-                    {selectedCamp.registeredDonors.map((reg, idx) => (
+                    {selectedCamp.registeredDonors?.map((reg, idx) => (
                       <div key={idx} className="p-2.5 flex items-center justify-between">
                         <span className="font-bold text-gray-800">{reg.donor?.fullName || "Registered Donor"}</span>
                         <span className="text-gray-400">Registered: {new Date(reg.registeredAt).toLocaleDateString()}</span>

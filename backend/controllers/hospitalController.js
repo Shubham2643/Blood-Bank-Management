@@ -161,12 +161,14 @@ export const requestBlood = async (req, res, next) => {
 
     // Validate
     if (!labId || !bloodType || !units) {
+      if (session) await session.abortTransaction();
       return next(
         new AppError("Please provide labId, bloodType, and units", 400),
       );
     }
 
     if (units < 1 || units > 100) {
+      if (session) await session.abortTransaction();
       return next(new AppError("Units must be between 1 and 100", 400));
     }
 
@@ -178,6 +180,7 @@ export const requestBlood = async (req, res, next) => {
     }).session(session);
 
     if (!lab) {
+      if (session) await session.abortTransaction();
       return next(new AppError("Blood lab not found", 404));
     }
 
@@ -190,6 +193,7 @@ export const requestBlood = async (req, res, next) => {
     }).session(session);
 
     if (existingRequest) {
+      if (session) await session.abortTransaction();
       return next(
         new AppError(
           "You already have a pending request for this blood type from this lab",
@@ -595,11 +599,13 @@ export const createDonor = async (req, res, next) => {
     } = req.body;
 
     if (!name || !email || !phone || !bloodGroup || !age || !gender || !address || !address.street || !address.city || !address.state || !address.pincode) {
+      if (session) await session.abortTransaction();
       return next(new AppError("Please fill out all required fields", 400));
     }
 
     const existingUser = await User.findOne({ email }).session(session);
     if (existingUser) {
+      if (session) await session.abortTransaction();
       return next(new AppError("User with this email already exists", 400));
     }
 
@@ -681,12 +687,14 @@ export const updateDonor = async (req, res, next) => {
 
     const donor = await Donor.findById(id).session(session);
     if (!donor) {
+      if (session) await session.abortTransaction();
       return next(new AppError("Donor not found", 404));
     }
 
     if (email && email.toLowerCase() !== donor.email.toLowerCase()) {
       const existingUser = await User.findOne({ email }).session(session);
       if (existingUser) {
+        if (session) await session.abortTransaction();
         return next(new AppError("User with this email already exists", 400));
       }
       donor.email = email;
@@ -758,6 +766,7 @@ export const deleteDonor = async (req, res, next) => {
 
     const donor = await Donor.findById(id).session(session);
     if (!donor) {
+      if (session) await session.abortTransaction();
       return next(new AppError("Donor not found", 404));
     }
 

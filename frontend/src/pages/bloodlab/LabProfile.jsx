@@ -339,36 +339,35 @@ const LabProfile = () => {
   return (
     <div className="space-y-6 pb-12 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
       <Toaster />
-      {/* Premium Profile Hero Banner */}
-      <div className="bg-gradient-to-r from-rose-950 via-red-600 to-rose-600 rounded-3xl shadow-xl shadow-red-950/20 border border-rose-700/30 overflow-hidden hover:shadow-2xl hover:shadow-red-950/30 transition-all duration-300 relative px-6 py-8 sm:px-8 sm:py-10 flex flex-col md:flex-row gap-6 justify-between items-center md:items-end mb-8">
-        {/* Decorative Circle Overlays */}
-        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1.5px,transparent_1.5px)] [background-size:20px_20px]" />
-        <div className="absolute right-10 top-2 w-44 h-44 bg-white/10 rounded-full blur-3xl" />
-        <div className="absolute left-1/3 -bottom-10 w-36 h-36 bg-rose-300/20 rounded-full blur-2xl" />
-        <div className="absolute right-1/4 top-4 w-28 h-28 bg-red-400/20 rounded-full blur-xl animate-pulse" />
+      {/* Signature Crimson-Rose Profile Hero Banner */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-red-700 via-rose-700 to-red-900 p-6 sm:p-8 text-white shadow-xl shadow-red-900/20 border border-red-500/30 flex flex-col md:flex-row gap-6 justify-between items-center md:items-end mb-8">
+        {/* Geometric Vector Rings Background Overlay */}
+        <div className="absolute inset-0 opacity-15 pointer-events-none">
+          <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <circle cx="90" cy="10" r="30" stroke="white" strokeWidth="2" fill="none" />
+            <circle cx="10" cy="90" r="25" stroke="white" strokeWidth="2" fill="none" />
+          </svg>
+        </div>
 
-        <div className="relative flex flex-col sm:flex-row gap-5 items-center sm:items-end text-center sm:text-left z-10">
-          {/* Avatar with Double Glowing Rings */}
-          <div className="relative group">
-            <div className="absolute -inset-1.5 bg-white/20 rounded-full blur opacity-45 group-hover:opacity-75 transition duration-300" />
-            <div className="relative w-32 h-32 rounded-full bg-white flex items-center justify-center text-red-600 font-bold text-6xl shadow-2xl border-4 border-white/80 ring-4 ring-white/10 transition-transform duration-500 group-hover:scale-105">
-              {isHospital ? <Building className="w-12 h-12" /> : <FlaskConical className="w-12 h-12" />}
-            </div>
+        <div className="relative z-10 flex flex-col sm:flex-row gap-5 items-center sm:items-end text-center sm:text-left">
+          {/* Avatar Badge with Glass Ring */}
+          <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-white text-red-600 font-black flex items-center justify-center shadow-2xl ring-4 ring-white/20 border-4 border-white flex-shrink-0">
+            {isHospital ? <Building className="w-10 h-10 text-red-600" /> : <FlaskConical className="w-10 h-10 text-red-600" />}
           </div>
 
-          {/* Title, Badges */}
-          <div className="space-y-3 mb-2">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-5.5 justify-center sm:justify-start">
-              <h1 className="text-3xl sm:text-4xl font-extrabold uppercase tracking-tight text-white drop-shadow-sm">
+          {/* Title & Registration Chips */}
+          <div className="space-y-2">
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold uppercase tracking-wide text-white">
                 {Facility.name || `${labelType} Profile`}
               </h1>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-bold uppercase tracking-wider bg-white text-rose-900 border border-white/30 shadow-sm backdrop-blur-md">
-                <span className="w-1.5 h-1.5 rounded-full bg-rose-600 animate-pulse" />
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-white/20 text-white border border-white/30 backdrop-blur-md">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                 {isHospital ? "Hospital" : "Laboratory"}
               </span>
             </div>
-            <div className="flex flex-wrap gap-2.5 items-center justify-center sm:justify-start">
-              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/15 backdrop-blur-md text-white border border-white/20 shadow-sm text-xs font-semibold">
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/20 backdrop-blur-md text-red-100 border border-white/15 text-xs font-mono font-bold">
                 REG: {Facility.registrationNumber || "—"}
               </span>
             </div>
@@ -376,34 +375,34 @@ const LabProfile = () => {
         </div>
 
         {/* Action Buttons */}
-        <div className="relative flex gap-3 mb-2 z-10">
+        <div className="relative z-10 flex gap-3 flex-shrink-0">
           {isEditing ? (
             <>
               <button
                 onClick={handleCancel}
-                className="flex items-center gap-2 bg-white/15 hover:bg-white/25 text-white px-5.5 py-3 rounded-xl transition-all duration-200 border border-white/25 shadow-sm font-semibold text-xs uppercase tracking-wider hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                className="px-5 py-3 bg-white/15 hover:bg-white/25 text-white rounded-2xl font-black text-xs uppercase tracking-wider border border-white/20 transition-all flex items-center gap-2 cursor-pointer hover:scale-105 shadow-md flex-shrink-0 active:scale-95"
               >
-                <X size={14} /> Cancel
+                <X size={16} /> Cancel
               </button>
               <button
                 onClick={handleSave}
                 disabled={saving || hasErrors}
-                className="flex items-center gap-2 bg-white hover:bg-slate-50 disabled:bg-white/50 disabled:text-red-300 disabled:cursor-not-allowed text-red-600 px-5.5 py-3 rounded-xl transition-all duration-200 shadow-md font-semibold text-xs uppercase tracking-wider hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                className="px-6 py-3.5 bg-white text-red-600 hover:bg-red-50 disabled:opacity-50 text-red-600 rounded-2xl font-black text-xs uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer hover:scale-105 shadow-xl flex-shrink-0 active:scale-95 border-2 border-white/40"
               >
                 {saving ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
-                  <Save size={14} />
+                  <Save size={16} />
                 )}
-                Save Changes
+                <span>Save Changes</span>
               </button>
             </>
           ) : (
             <button
               onClick={() => setIsEditing(true)}
-              className="flex items-center gap-2 bg-white hover:bg-slate-50 text-red-600 px-5.5 py-3 rounded-xl transition-all duration-255 shadow-lg shadow-black/10 hover:shadow-xl font-bold font-mono text-sm uppercase tracking-wider hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] cursor-pointer"
+              className="px-6 py-3.5 bg-white text-red-600 hover:bg-red-50 rounded-2xl font-black text-xs uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer hover:scale-105 shadow-xl flex-shrink-0 active:scale-95 border-2 border-white/40"
             >
-              <Edit3 size={14} /> Edit Profile
+              <Edit3 size={16} /> <span>Edit Profile</span>
             </button>
           )}
         </div>

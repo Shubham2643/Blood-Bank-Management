@@ -285,21 +285,57 @@ const AboutUs = () => {
     <div className="min-h-screen bg-gradient-to-br from-red-50 to-white">
       <Header />
 
-      {/* Hero Section with Video Modal */}
-      <section className="relative py-20 mt-20 bg-gradient-to-r from-red-600 to-red-700 text-white overflow-hidden">
-        <div className="absolute inset-0 bg-black/20"></div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-5xl md:text-6xl font-bold mb-6 animate-fade-in">
-            Saving Lives, One Drop at a Time
+      {/* Hero Section (Matching Home Page Theme) */}
+      <section className="relative overflow-hidden bg-gradient-to-r from-red-700 to-red-900 text-white mt-16 sm:mt-20 py-20 shadow-lg">
+        {/* Home Page Concentric Circles SVG Overlay */}
+        <div className="absolute inset-0 opacity-10 pointer-events-none">
+          <svg
+            className="w-full h-full"
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+          >
+            <circle
+              cx="50"
+              cy="50"
+              r="40"
+              stroke="white"
+              strokeWidth="2"
+              fill="none"
+            />
+            <circle
+              cx="50"
+              cy="50"
+              r="30"
+              stroke="white"
+              strokeWidth="2"
+              fill="none"
+            />
+            <circle
+              cx="50"
+              cy="50"
+              r="20"
+              stroke="white"
+              strokeWidth="2"
+              fill="none"
+            />
+          </svg>
+        </div>
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-6 leading-tight tracking-tight">
+            Saving Lives,{" "}
+            <span className="bg-gradient-to-r from-red-200 to-red-300 bg-clip-text text-transparent">
+              One Drop at a Time
+            </span>
           </h1>
-          <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto opacity-90 animate-fade-in-up">
+          <p className="text-lg sm:text-xl md:text-2xl mb-8 max-w-3xl mx-auto text-red-100 font-normal leading-relaxed">
             We are a dedicated platform connecting blood donors with those in
             need, making blood donation accessible, safe, and impactful.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               to="/register/donor"
-              className="bg-white text-red-600 px-8 py-3 rounded-lg font-semibold hover:bg-red-50 transition-all transform hover:scale-105 shadow-lg"
+              className="inline-flex items-center justify-center px-8 py-3.5 rounded-xl bg-white text-red-700 font-extrabold text-base hover:bg-red-50 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
             >
               Join Our Mission
             </Link>

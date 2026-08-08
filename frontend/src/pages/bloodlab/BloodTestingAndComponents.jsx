@@ -190,24 +190,40 @@ const BloodTestingAndComponents = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header section */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-black text-slate-800 flex items-center gap-2">
-            <FlaskConical className="w-7 h-7 text-emerald-600" />
-            Testing, Screening & Component Processing
-          </h1>
-          <p className="text-sm text-slate-500">
-            Mandatory infectious screening (HIV/HBV/HCV/Malaria/Syphilis) and Whole Blood splitting.
-          </p>
+      {/* Signature Crimson-Rose Hero Header Banner */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-red-700 via-rose-700 to-red-900 p-6 sm:p-8 text-white shadow-xl shadow-red-900/20 border border-red-500/30 mb-8">
+        {/* Geometric Vector Rings Overlay */}
+        <div className="absolute inset-0 opacity-15 pointer-events-none">
+          <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <circle cx="90" cy="10" r="30" stroke="white" strokeWidth="2" fill="none" />
+            <circle cx="10" cy="90" r="25" stroke="white" strokeWidth="2" fill="none" />
+          </svg>
         </div>
-        <button
-          onClick={loadData}
-          disabled={loading}
-          className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-sm font-semibold transition-all border border-slate-200/50"
-        >
-          <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} /> Sync Queue
-        </button>
+
+        <div className="relative z-10 flex flex-col md:flex-row gap-6 justify-between items-center md:items-end">
+          <div className="flex flex-col sm:flex-row gap-5 items-center sm:items-end text-center sm:text-left">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-white text-red-600 font-black flex items-center justify-center shadow-2xl ring-4 ring-white/20 flex-shrink-0">
+              <FlaskConical className="w-8 h-8 sm:w-10 sm:h-10 text-red-600 animate-pulse" />
+            </div>
+            <div>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold uppercase tracking-wide text-white">
+                Testing, Screening & Component Processing
+              </h1>
+              <p className="text-xs sm:text-sm font-semibold text-red-100/90 mt-1">
+                Mandatory infectious screening (HIV, HBV, HCV, Malaria, Syphilis) and Whole Blood component separation.
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={loadData}
+            disabled={loading}
+            className="px-5 py-3 bg-white/15 hover:bg-white/25 backdrop-blur-md text-white rounded-2xl font-black text-xs uppercase tracking-wider border border-white/20 transition-all flex items-center gap-2 cursor-pointer hover:scale-105 shadow-md flex-shrink-0 active:scale-95 disabled:opacity-50"
+          >
+            <RefreshCw className={`w-4 h-4 text-white ${loading ? "animate-spin" : ""}`} />
+            <span>Sync Queue</span>
+          </button>
+        </div>
       </div>
 
       {/* Tabs */}

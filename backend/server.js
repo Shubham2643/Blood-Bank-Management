@@ -35,12 +35,16 @@ import userRoutes from "./routes/userRoutes.js";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 
-connectDB().then(() => {
-  // Seed camp data on startup if DB is empty
-  seedCampsIfEmpty();
-  seedAdminIfEmpty();
-  seedDemoDataIfEmpty();
-});
+connectDB()
+  .then(() => {
+    // Seed camp data on startup if DB is empty
+    seedCampsIfEmpty();
+    seedAdminIfEmpty();
+    seedDemoDataIfEmpty();
+  })
+  .catch((err) => {
+    console.error("❌ Database initialization error:", err);
+  });
 
 const app = express();
 const server = http.createServer(app);
@@ -85,8 +89,7 @@ app.use(
     const allowed =
       !origin ||
       allowedOrigins.includes(origin) ||
-      origin === selfOrigin ||
-      (host && origin.includes(host));
+      origin === selfOrigin;
 
     if (allowed) {
       callback(null, { origin: true, credentials: true });

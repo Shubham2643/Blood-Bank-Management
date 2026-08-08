@@ -301,9 +301,9 @@ const InventoryManagement = () => {
   const filteredInventory = inventoryData.filter((bank) => {
     const matchesSearch =
       searchTerm === "" ||
-      bank.bloodBank.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      bank.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      bank.address.toLowerCase().includes(searchTerm.toLowerCase());
+      (bank.bloodBank?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+      (bank.city?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+      (bank.address?.toLowerCase() || "").includes(searchTerm.toLowerCase());
 
     const matchesCity = selectedCity === "all" || bank.city === selectedCity;
 

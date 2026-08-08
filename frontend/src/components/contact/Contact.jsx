@@ -312,9 +312,10 @@ const Contact = () => {
         <MapModal city={selectedCity} onClose={() => setShowMapModal(false)} />
       )}
 
-      {/* Hero Section */}
-      <section className="relative py-20 bg-gradient-to-r from-red-600 to-red-700 text-white overflow-hidden mt-16 sm:mt-20 pt-16">
-        <div className="absolute inset-0 opacity-10">
+      {/* Hero Section (Matching Home Page Theme) */}
+      <section className="relative overflow-hidden bg-gradient-to-r from-red-700 to-red-900 text-white mt-16 sm:mt-20 py-20 shadow-lg">
+        {/* Home Page Concentric Circles SVG Overlay */}
+        <div className="absolute inset-0 opacity-10 pointer-events-none">
           <svg
             className="w-full h-full"
             viewBox="0 0 100 100"
@@ -346,11 +347,14 @@ const Contact = () => {
             />
           </svg>
         </div>
-        <div className="relative text-center max-w-4xl mx-auto px-4">
-          <h1 className="text-5xl md:text-6xl font-bold mb-4">
-            Get in <span className="text-red-200">Touch</span>
+        <div className="relative text-center max-w-4xl mx-auto px-4 z-10">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-4 tracking-tight leading-tight">
+            Get in{" "}
+            <span className="bg-gradient-to-r from-red-200 to-red-300 bg-clip-text text-transparent">
+              Touch
+            </span>
           </h1>
-          <p className="text-xl opacity-90 max-w-2xl mx-auto">
+          <p className="text-lg sm:text-xl text-red-100 max-w-2xl mx-auto font-normal leading-relaxed">
             We're here to support you 24/7. Reach out for any help, queries, or
             blood-related emergencies.
           </p>
@@ -359,35 +363,38 @@ const Contact = () => {
 
 
 
-      {/* Form and Sidebar Container */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-6xl mx-auto grid lg:grid-cols-12 gap-8 px-6 items-start">
-          {/* Form */}
-          <div className="lg:col-span-7 bg-white rounded-2xl shadow-xl p-8 border border-red-100 self-start h-fit" style={{ alignSelf: "start" }}>
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-red-100 rounded-lg">
-                <Send className="w-5 h-5 text-red-600" />
+      {/* Form and Contact Info Grid Container */}
+      <section className="py-16 bg-slate-50/70">
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-12 gap-8 px-4 sm:px-6 lg:px-8 items-start">
+          
+          {/* Left Column: Send a Message Card */}
+          <div className="lg:col-span-7 bg-white rounded-3xl shadow-[0_15px_45px_-15px_rgba(0,0,0,0.06)] p-6 sm:p-8 border border-slate-200/90 self-start transition-all duration-300 hover:shadow-2xl">
+            <div className="flex items-center gap-3.5 mb-6 pb-4 border-b border-slate-100">
+              <div className="w-11 h-11 bg-gradient-to-br from-red-600 via-rose-600 to-red-700 text-white rounded-2xl flex items-center justify-center shadow-md shadow-red-600/30 flex-shrink-0">
+                <Send className="w-5 h-5" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-800">
-                Send a Message
-              </h2>
+              <div>
+                <h2 className="text-xl sm:text-2xl font-black text-slate-850 tracking-tight">
+                  Send a Message
+                </h2>
+                <p className="text-xs text-slate-400 font-medium mt-0.5">Fill out the form below and our team will get back to you within 24 hours</p>
+              </div>
             </div>
 
             {isSuccess && (
-              <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-start gap-3">
-                <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-medium text-green-800">
-                    You sent message successfully to LifeDrop
+              <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-start gap-3 animate-fade-in shadow-2xs">
+                <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="font-extrabold text-emerald-900 text-sm">
+                    Message sent successfully to LifeDrop!
                   </p>
-                  <p className="text-sm text-green-600">
-                    We've emailed a receipt to your inbox. An administrator will
-                    reply soon.
+                  <p className="text-xs text-emerald-700 mt-0.5">
+                    We've emailed a confirmation to your inbox. A medical representative will respond shortly.
                   </p>
                 </div>
                 <button
                   onClick={() => setIsSuccess(false)}
-                  className="ml-auto text-gray-400 hover:text-gray-655"
+                  className="p-1 text-emerald-400 hover:text-emerald-700 transition-colors cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -396,57 +403,57 @@ const Contact = () => {
 
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                {/* Name */}
+                {/* Full Name */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-xs font-black text-slate-700 uppercase tracking-wider mb-2">
                     Full Name <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 pointer-events-none" />
                     <input
                       type="text"
                       name="name"
                       value={formData.name}
                       onChange={handleChange}
-                      className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all text-sm text-gray-800 bg-white outline-none ${
+                      className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-4 focus:ring-red-500/10 focus:border-red-500 transition-all text-sm font-bold text-slate-850 bg-slate-50/60 hover:bg-white outline-none ${
                         errors.name
-                          ? "border-red-500"
-                          : "border-gray-300 hover:border-gray-400"
+                          ? "border-red-500 bg-red-50/20"
+                          : "border-slate-200/90 hover:border-slate-300"
                       }`}
-                      placeholder="Enter your name"
+                      placeholder="Enter your full name"
                     />
                   </div>
                   {errors.name && (
-                    <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
-                      <AlertCircle className="w-4 h-4" />
+                    <p className="text-red-500 text-xs font-bold mt-1 flex items-center gap-1">
+                      <AlertCircle className="w-3.5 h-3.5" />
                       {errors.name}
                     </p>
                   )}
                 </div>
 
-                {/* Email */}
+                {/* Email Address */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-xs font-black text-slate-700 uppercase tracking-wider mb-2">
                     Email Address <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 pointer-events-none" />
                     <input
                       type="email"
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
-                      className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all text-sm text-gray-800 bg-white outline-none ${
+                      className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-4 focus:ring-red-500/10 focus:border-red-500 transition-all text-sm font-bold text-slate-850 bg-slate-50/60 hover:bg-white outline-none ${
                         errors.email
-                          ? "border-red-500"
-                          : "border-gray-300 hover:border-gray-400"
+                          ? "border-red-500 bg-red-50/20"
+                          : "border-slate-200/90 hover:border-slate-300"
                       }`}
-                      placeholder="Enter your email"
+                      placeholder="name@example.com"
                     />
                   </div>
                   {errors.email && (
-                    <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
-                      <AlertCircle className="w-4 h-4" />
+                    <p className="text-red-500 text-xs font-bold mt-1 flex items-center gap-1">
+                      <AlertCircle className="w-3.5 h-3.5" />
                       {errors.email}
                     </p>
                   )}
@@ -454,30 +461,30 @@ const Contact = () => {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                {/* Phone */}
+                {/* Phone Number */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Phone Number (Optional)
+                  <label className="block text-xs font-black text-slate-700 uppercase tracking-wider mb-2">
+                    Phone Number <span className="text-slate-400 font-normal lowercase">(optional)</span>
                   </label>
                   <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 pointer-events-none" />
                     <input
                       type="tel"
                       name="phone"
                       value={formData.phone}
                       onChange={handleChange}
-                      className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all text-sm text-gray-800 bg-white outline-none ${
+                      className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-4 focus:ring-red-500/10 focus:border-red-500 transition-all text-sm font-bold text-slate-850 bg-slate-50/60 hover:bg-white outline-none ${
                         errors.phone
-                          ? "border-red-500"
-                          : "border-gray-300 hover:border-gray-400"
+                          ? "border-red-500 bg-red-50/20"
+                          : "border-slate-200/90 hover:border-slate-300"
                       }`}
                       placeholder="10-digit phone number"
                       maxLength="10"
                     />
                   </div>
                   {errors.phone && (
-                    <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
-                      <AlertCircle className="w-4 h-4" />
+                    <p className="text-red-500 text-xs font-bold mt-1 flex items-center gap-1">
+                      <AlertCircle className="w-3.5 h-3.5" />
                       {errors.phone}
                     </p>
                   )}
@@ -485,14 +492,14 @@ const Contact = () => {
 
                 {/* Inquiry Type */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Inquiry Type
+                  <label className="block text-xs font-black text-slate-700 uppercase tracking-wider mb-2">
+                    Inquiry Category
                   </label>
                   <select
                     name="inquiryType"
                     value={formData.inquiryType}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white text-sm text-gray-800 cursor-pointer"
+                    className="w-full px-4 py-3 border border-slate-200/90 rounded-xl focus:ring-4 focus:ring-red-500/10 focus:border-red-500 bg-slate-50/60 hover:bg-white text-sm font-bold text-slate-850 cursor-pointer outline-none transition-all"
                   >
                     <option value="general">General Inquiry</option>
                     <option value="emergency">Emergency Blood Request</option>
@@ -506,115 +513,113 @@ const Contact = () => {
 
               {/* Subject */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Subject
+                <label className="block text-xs font-black text-slate-700 uppercase tracking-wider mb-2">
+                  Subject Line
                 </label>
                 <input
                   type="text"
                   name="subject"
                   value={formData.subject}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm text-gray-800 bg-white outline-none"
-                  placeholder="Brief subject line"
+                  className="w-full px-4 py-3 border border-slate-200/90 rounded-xl focus:ring-4 focus:ring-red-500/10 focus:border-red-500 text-sm font-bold text-slate-850 bg-slate-50/60 hover:bg-white outline-none transition-all"
+                  placeholder="Brief summary of your inquiry"
                 />
               </div>
 
-              {/* Message */}
+              {/* Message Content */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Message <span className="text-red-500">*</span>
+                <label className="block text-xs font-black text-slate-700 uppercase tracking-wider mb-2">
+                  Message Content <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
-                  <MessageSquare className="absolute left-3 top-3 text-gray-400 w-5 h-5" />
+                  <MessageSquare className="absolute left-3.5 top-3.5 text-slate-400 w-4 h-4 pointer-events-none" />
                   <textarea
                     name="message"
-                    rows={3}
+                    rows={4}
                     value={formData.message}
                     onChange={handleChange}
-                    className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all text-sm text-gray-800 bg-white outline-none resize-none ${
+                    className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-4 focus:ring-red-500/10 focus:border-red-500 transition-all text-sm font-medium text-slate-850 bg-slate-50/60 hover:bg-white outline-none resize-none ${
                       errors.message
-                        ? "border-red-500"
-                        : "border-gray-300 hover:border-gray-400"
+                        ? "border-red-500 bg-red-50/20"
+                        : "border-slate-200/90 hover:border-slate-300"
                     }`}
-                    placeholder="Write your message here..."
+                    placeholder="Describe your message or emergency blood requirement in detail..."
                   />
                 </div>
                 {errors.message && (
-                  <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
-                    <AlertCircle className="w-4 h-4" />
+                  <p className="text-red-500 text-xs font-bold mt-1 flex items-center gap-1">
+                    <AlertCircle className="w-3.5 h-3.5" />
                     {errors.message}
                   </p>
                 )}
-                <p className="text-xs text-gray-500 mt-1">
-                  {formData.message.length}/500 characters (minimum 10)
-                </p>
+                <div className="flex justify-between items-center mt-1 text-[11px] text-slate-400 font-medium">
+                  <span>Include relevant details like location or blood type required</span>
+                  <span>{formData.message.length}/500 chars</span>
+                </div>
               </div>
 
-              {/* Submit */}
+              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md hover:shadow-lg"
+                className="w-full bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-700 hover:to-rose-800 disabled:opacity-50 text-white py-3.5 rounded-2xl font-black text-sm shadow-md shadow-red-600/30 hover:scale-[1.01] active:scale-[0.99] transition-all cursor-pointer flex items-center justify-center gap-2"
               >
                 {isSubmitting ? (
                   <>
                     <Loader2 className="w-5 h-5 animate-spin" />
-                    Sending...
+                    <span>Sending Message...</span>
                   </>
                 ) : (
                   <>
-                    <Send className="w-5 h-5" />
-                    Send Message
+                    <Send className="w-4 h-4" />
+                    <span>Send Message</span>
                   </>
                 )}
               </button>
 
-              <p className="text-xs text-center text-gray-500 mt-4">
-                By submitting this form, you agree to our
-                <a
-                  href="/privacy"
-                  className="text-red-600 hover:underline ml-1"
-                >
+              <p className="text-[11px] text-center text-slate-400 font-medium mt-3">
+                By sending a message, you agree to LifeDrop's
+                <a href="/privacy" className="text-red-600 hover:underline font-bold ml-1">
                   Privacy Policy
                 </a>
               </p>
             </form>
 
             {/* Divider */}
-            <div className="border-t border-gray-200 my-6"></div>
+            <div className="border-t border-slate-100 my-6"></div>
 
-            {/* Social handles */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
+            {/* Social Handles */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-1">
               <div className="text-center sm:text-left">
-                <h4 className="text-sm font-bold text-gray-800">Connect With Us</h4>
-                <p className="text-xs text-gray-500 mt-0.5">Stay updated on our campaigns & tips</p>
+                <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider">Connect With Us</h4>
+                <p className="text-[11px] text-slate-400 font-medium mt-0.5">Follow our latest blood drives & health updates</p>
               </div>
-              <div className="flex gap-3">
+              <div className="flex gap-2.5">
                 {[
                   {
                     icon: Instagram,
-                    hover: "hover:bg-gradient-to-tr hover:from-amber-500 hover:via-pink-500 hover:to-purple-600 hover:text-white hover:scale-110 hover:rotate-3 hover:shadow-lg hover:shadow-pink-500/20 hover:border-transparent",
+                    hover: "hover:bg-gradient-to-tr hover:from-amber-500 hover:via-pink-500 hover:to-purple-600 hover:text-white hover:scale-110 hover:shadow-md hover:shadow-pink-500/20 hover:border-transparent",
                     label: "Instagram",
                     href: "https://www.instagram.com/lifedroporg/",
                     colors: "bg-pink-50 border-pink-100 text-pink-600",
                   },
                   {
                     icon: Facebook,
-                    hover: "hover:bg-[#1877F2] hover:text-white hover:scale-110 hover:-rotate-3 hover:shadow-lg hover:shadow-[#1877F2]/20 hover:border-transparent",
+                    hover: "hover:bg-[#1877F2] hover:text-white hover:scale-110 hover:shadow-md hover:shadow-[#1877F2]/20 hover:border-transparent",
                     label: "Facebook",
                     href: "https://www.facebook.com/LifeDrop",
                     colors: "bg-blue-50 border-blue-100 text-blue-600",
                   },
                   {
                     icon: Linkedin,
-                    hover: "hover:bg-[#0077B5] hover:text-white hover:scale-110 hover:rotate-3 hover:shadow-lg hover:shadow-[#0077B5]/20 hover:border-transparent",
+                    hover: "hover:bg-[#0077B5] hover:text-white hover:scale-110 hover:shadow-md hover:shadow-[#0077B5]/20 hover:border-transparent",
                     label: "LinkedIn",
                     href: "https://www.linkedin.com/company/lifedrop-foundation",
                     colors: "bg-indigo-50 border-indigo-100 text-indigo-700",
                   },
                   {
                     icon: Globe,
-                    hover: "hover:bg-red-600 hover:text-white hover:scale-110 hover:-rotate-3 hover:shadow-lg hover:shadow-red-600/20 hover:border-transparent",
+                    hover: "hover:bg-red-600 hover:text-white hover:scale-110 hover:shadow-md hover:shadow-red-600/20 hover:border-transparent",
                     label: "Website",
                     href: "https://www.lifedrop.org",
                     colors: "bg-red-50 border-red-100 text-red-600",
@@ -627,10 +632,10 @@ const Contact = () => {
                       href={social.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`w-10 h-10 rounded-xl flex items-center justify-center border transition-all duration-300 ${social.colors} ${social.hover} cursor-pointer shadow-sm`}
+                      className={`w-9 h-9 rounded-xl flex items-center justify-center border transition-all duration-300 ${social.colors} ${social.hover} cursor-pointer shadow-2xs`}
                       aria-label={social.label}
                     >
-                      <Icon className="w-5 h-5" />
+                      <Icon className="w-4 h-4" />
                     </a>
                   );
                 })}
@@ -638,49 +643,70 @@ const Contact = () => {
             </div>
           </div>
 
-          {/* Right Column - Unified Contact Info Card */}
-          <div className="lg:col-span-5 bg-white rounded-2xl shadow-xl p-8 border border-red-100 self-start h-fit animate-fade-in" style={{ alignSelf: "start" }}>
-            <h3 className="text-xl font-bold text-gray-800 mb-6 pb-3 border-b border-gray-200 flex items-center gap-2">
-              <Clock className="w-5 h-5 text-red-600" />
-              Contact Information
-            </h3>
+          {/* Right Column: Contact Information Sidebar */}
+          <div className="lg:col-span-5 bg-white rounded-3xl shadow-[0_15px_45px_-15px_rgba(0,0,0,0.06)] p-6 sm:p-8 border border-slate-200/90 self-start transition-all duration-300 hover:shadow-2xl">
+            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+              <div className="w-10 h-10 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center font-bold flex-shrink-0 shadow-2xs">
+                <Clock className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-lg font-black text-slate-850 tracking-tight">
+                  Contact Information
+                </h3>
+                <p className="text-xs text-slate-400 font-medium">Reach our central emergency desk or regional centers</p>
+              </div>
+            </div>
 
-            {/* Helpline and Email Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-1 gap-3 mb-6">
+            {/* Quick Action Contact Cards */}
+            <div className="space-y-3 mb-6">
+              {/* 24/7 Emergency Helpline Callout Card */}
               <a
                 href="tel:18002566369"
-                className="flex items-center gap-3 p-3 bg-red-50 hover:bg-red-100 border border-red-100 rounded-xl transition-all duration-300 group"
+                className="group relative overflow-hidden bg-gradient-to-br from-red-600 via-rose-600 to-red-700 text-white rounded-2xl p-4 shadow-md shadow-red-600/25 flex items-center justify-between transition-all duration-300 hover:scale-[1.02] cursor-pointer"
               >
-                <div className="w-10 h-10 bg-red-100 group-hover:bg-red-200 text-red-600 rounded-lg flex items-center justify-center transition-colors">
-                  <Phone className="w-5 h-5" />
+                <div className="flex items-center gap-3.5 relative z-10">
+                  <div className="w-11 h-11 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center text-white shadow-inner group-hover:scale-105 transition-transform">
+                    <Phone className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white/20 text-[9px] font-black uppercase tracking-wider text-white mb-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                      24/7 Emergency Hotline
+                    </span>
+                    <p className="text-lg font-black text-white tracking-tight leading-none">1800-256-6369</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-[10px] text-gray-500 font-semibold uppercase tracking-wider">Helpline 24/7</p>
-                  <p className="text-sm font-bold text-red-700 mt-0.5">1800-256-6369</p>
-                </div>
+                <ArrowRight className="w-5 h-5 text-white/80 group-hover:translate-x-1 transition-transform relative z-10" />
               </a>
 
+              {/* Email Support Card */}
               <a
                 href="mailto:help@lifedrop.org"
-                className="flex items-center gap-3 p-3.5 bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-xl transition-all duration-300 group"
+                className="group flex items-center justify-between p-4 bg-slate-900 text-white rounded-2xl shadow-md transition-all duration-300 hover:scale-[1.02] cursor-pointer border border-slate-800"
               >
-                <div className="w-10 h-10 bg-blue-100 group-hover:bg-blue-200 text-blue-600 rounded-lg flex items-center justify-center transition-colors">
-                  <Mail className="w-5 h-5" />
+                <div className="flex items-center gap-3.5 min-w-0">
+                  <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center text-red-400 group-hover:scale-105 transition-transform">
+                    <Mail className="w-5 h-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider">Official Email</p>
+                    <p className="text-sm font-black text-white truncate" title="help@lifedrop.org">help@lifedrop.org</p>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <p className="text-[10px] text-gray-500 font-semibold uppercase tracking-wider">Email Us</p>
-                  <p className="text-sm font-bold text-blue-700 mt-0.5 truncate" title="help@lifedrop.org">help@lifedrop.org</p>
-                </div>
+                <ArrowRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 transition-transform" />
               </a>
             </div>
 
-            {/* Office Hours */}
-            <div className="mb-6 bg-gray-50 p-4 rounded-xl border border-gray-200">
-              <h4 className="text-sm font-bold text-gray-800 mb-3 flex items-center gap-2">
-                <Clock className="w-4 h-4 text-red-600" />
-                Office Hours
+            {/* Office Hours Table */}
+            <div className="mb-6 bg-slate-50/80 p-4 rounded-2xl border border-slate-200/70 space-y-3">
+              <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center justify-between">
+                <span className="flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5 text-red-600" />
+                  Support Desk Hours
+                </span>
+                <span className="text-[10px] font-bold text-slate-400 lowercase">IST (UTC+5:30)</span>
               </h4>
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 {Object.entries(officeHours).map(([day, hours]) => {
                   const currentDayName = new Date()
                     .toLocaleDateString("en-US", { weekday: "long" })
@@ -689,20 +715,20 @@ const Contact = () => {
                   return (
                     <div
                       key={day}
-                      className={`flex justify-between items-center text-xs p-1.5 rounded-lg ${
+                      className={`flex justify-between items-center text-xs px-2.5 py-1.5 rounded-xl transition-colors ${
                         isToday
-                          ? "bg-red-50 border border-red-100 font-bold text-red-700"
-                          : "text-gray-600"
+                          ? "bg-red-50 border border-red-200/80 font-black text-red-700 shadow-2xs"
+                          : "text-slate-600 font-medium hover:bg-white"
                       }`}
                     >
-                      <span className="capitalize">{day}</span>
+                      <span className="capitalize font-bold">{day}</span>
                       <span
-                        className={`font-semibold ${
+                        className={`font-extrabold ${
                           hours === "Closed"
-                            ? "text-red-600"
+                            ? "text-rose-600"
                             : isToday
-                              ? "text-red-700"
-                              : "text-gray-800"
+                            ? "text-red-700"
+                            : "text-slate-800"
                         }`}
                       >
                         {hours}
@@ -715,65 +741,24 @@ const Contact = () => {
 
             {/* Regional Centers */}
             <div>
-              <h3 className="text-sm font-bold text-gray-800 mb-3 flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-red-600" />
-                Regional Centers
-              </h3>
-              <p className="text-xs text-gray-500 mb-3">Select a city to view local support details and location maps:</p>
+              <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                <MapPin className="w-3.5 h-3.5 text-red-600" />
+                Regional LifeDrop Offices
+              </h4>
+              <p className="text-[11px] text-slate-400 font-medium mb-3">Click any city to open location map and local helpline:</p>
               <div className="flex flex-wrap gap-2">
                 {Object.keys(cityLocations).map((cityKey) => (
                   <button
                     key={cityKey}
                     onClick={() => handleCityClick(cityKey)}
-                    className="px-3 py-1.5 bg-white hover:bg-red-600 hover:text-white hover:border-transparent text-xs font-semibold text-gray-700 transition-colors border border-gray-200 rounded-lg cursor-pointer"
+                    className="px-3.5 py-2 bg-slate-50 hover:bg-red-600 hover:text-white border border-slate-200/80 hover:border-transparent text-slate-700 text-xs font-black rounded-xl transition-all shadow-2xs cursor-pointer flex items-center gap-1.5 hover:scale-105"
                   >
-                    {cityLocations[cityKey].name}
+                    <MapPin className="w-3 h-3 text-red-500 group-hover:text-white" />
+                    <span>{cityLocations[cityKey].name}</span>
                   </button>
                 ))}
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ Section */}
-      <section className="py-16 bg-white border-t border-gray-100">
-        <div className="max-w-4xl mx-auto px-6">
-          <div className="text-center mb-10">
-            <h2 className="text-3xl font-bold text-gray-800 flex items-center justify-center gap-2">
-              <MessageSquare className="w-6 h-6 text-red-600" />
-              Frequently Asked Questions
-            </h2>
-            <p className="text-gray-500 mt-2">Find quick answers to common support and campaign inquiries</p>
-          </div>
-          <div className="space-y-4">
-            {faqs.map((faq, index) => (
-              <div
-                key={index}
-                className="border border-gray-200 rounded-xl overflow-hidden bg-gray-50 transition-all duration-300"
-              >
-                <button
-                  onClick={() =>
-                    setActiveFaq(activeFaq === index ? null : index)
-                  }
-                  className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-100 transition-colors cursor-pointer"
-                >
-                  <span className="font-semibold text-gray-700 text-sm">
-                    {faq.question}
-                  </span>
-                  <span className="text-red-600 text-xl font-bold">
-                    {activeFaq === index ? "−" : "+"}
-                  </span>
-                </button>
-                {activeFaq === index && (
-                  <div className="p-4 bg-white border-t border-gray-200">
-                    <p className="text-gray-600 text-sm leading-relaxed">
-                      {faq.answer}
-                    </p>
-                  </div>
-                )}
-              </div>
-            ))}
           </div>
         </div>
       </section>

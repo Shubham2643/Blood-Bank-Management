@@ -573,7 +573,7 @@ export const simulateCampDonation = async (req, res, next) => {
           }
         },
       ],
-      { session }
+      { session: session || undefined }
     );
 
     // Increment camp actualDonors count
@@ -606,7 +606,7 @@ export const simulateCampDonation = async (req, res, next) => {
       message: "Donation simulated successfully! Your certificate of appreciation has been generated.",
       data: {
         donationId: newDonation._id,
-        certificateNumber: `BC-${newDonation._id.toString().slice(-8).toUpperCase()}`,
+        certificateNumber: `LD-${newDonation._id.toString().slice(-8).toUpperCase()}`,
       }
     });
   } catch (error) {
@@ -643,10 +643,10 @@ export const getDonationCertificate = async (req, res, next) => {
       donorName: donor.user?.name || "LifeDrop Donor",
       donorBloodGroup: donor.bloodGroup,
       donationDate: donation.donationDate,
-      facilityName: donation.facility?.name || "Blood Connect",
+      facilityName: donation.facility?.name || "Life Drop Blood Donation Center",
       facilityRegNo: donation.facility?.registrationNumber || "N/A",
       quantity: donation.quantity || 1,
-      certificateNumber: `BC-${donation._id.toString().slice(-8).toUpperCase()}`,
+      certificateNumber: `LD-${donation._id.toString().slice(-8).toUpperCase()}`,
       issuedAt: new Date(),
     };
 
@@ -669,14 +669,6 @@ export const searchDonor = async (req, res, next) => {
 
     const filter = {};
 
-    if (term) {
-      filter.$or = [
-        { fullName: { $regex: term, $options: "i" } },
-        { email: { $regex: term, $options: "i" } },
-        { phone: { $regex: term, $options: "i" } },
-      ];
-    }
-
     if (bloodGroup && bloodGroup !== "all") {
       filter.bloodGroup = bloodGroup;
     }
@@ -685,9 +677,23 @@ export const searchDonor = async (req, res, next) => {
       filter["address.city"] = { $regex: city, $options: "i" };
     }
 
-    const donors = await Donor.find(filter)
-      .select("fullName email phone bloodGroup lastDonationDate address.city")
-      .limit(20);
+    let donors = await Donor.find(filter)
+      .populate("user", "name email phone")
+      .limit(50);
+
+    if (term) {
+      const termLower = term.toLowerCase();
+      donors = donors.filter((d) => {
+        const userName = d.user?.name?.toLowerCase() || "";
+        const userEmail = d.user?.email?.toLowerCase() || "";
+        const userPhone = d.user?.phone?.toLowerCase() || "";
+        return (
+          userName.includes(termLower) ||
+          userEmail.includes(termLower) ||
+          userPhone.includes(termLower)
+        );
+      });
+    }
 
     res.json({
       success: true,

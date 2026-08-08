@@ -70,15 +70,29 @@ const LabManageRequests = () => {
   return (
     <div className="space-y-6">
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-red-100 rounded-xl">
-              <CheckCircle className="w-6 h-6 text-red-600" />
-            </div>
-            <h1 className="text-3xl font-bold text-gray-800">Blood Requests</h1>
+        {/* Signature Crimson-Rose Hero Header Banner */}
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-red-700 via-rose-700 to-red-900 p-6 sm:p-8 text-white shadow-xl shadow-red-900/20 border border-red-500/30 mb-8">
+          {/* Geometric Vector Rings Overlay */}
+          <div className="absolute inset-0 opacity-15 pointer-events-none">
+            <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <circle cx="90" cy="10" r="30" stroke="white" strokeWidth="2" fill="none" />
+              <circle cx="10" cy="90" r="25" stroke="white" strokeWidth="2" fill="none" />
+            </svg>
           </div>
-          <p className="text-gray-600">Manage blood requests from hospitals</p>
+
+          <div className="relative z-10 flex flex-col sm:flex-row gap-5 items-center sm:items-end text-center sm:text-left">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-white text-red-600 font-black flex items-center justify-center shadow-2xl ring-4 ring-white/20 flex-shrink-0">
+              <CheckCircle className="w-8 h-8 sm:w-10 sm:h-10 text-red-600 animate-pulse" />
+            </div>
+            <div>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold uppercase tracking-wide text-white">
+                Blood Component Requests
+              </h1>
+              <p className="text-xs sm:text-sm font-semibold text-red-100/90 mt-1">
+                Review, approve, or fulfill incoming blood component supply requests from partnered hospitals.
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Stats Cards */}

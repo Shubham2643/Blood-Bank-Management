@@ -97,21 +97,18 @@ const DashboardLayout = ({ userRole = "donor" }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const getGradientByRole = () => {
-    if (userRole === "donor") return "from-red-600 to-rose-600";
-    if (userRole === "hospital") return "from-blue-600 to-sky-600";
-    if (userRole === "blood-lab") return "from-emerald-600 to-teal-600";
-    if (userRole === "admin") return "from-purple-600 to-indigo-600";
-    return "from-slate-700 to-slate-900";
-  };
-
   const renderTitle = () => {
     const title = config.title;
     if (!title) return null;
     return (
-      <h1 className={`text-lg sm:text-xl font-extrabold bg-gradient-to-r ${getGradientByRole()} bg-clip-text text-transparent tracking-tight leading-tight flex items-center`}>
-        {title}
-      </h1>
+      <div className="flex items-center gap-2">
+        <h1 className="text-base sm:text-lg font-extrabold uppercase tracking-wide text-slate-850 flex items-center leading-tight">
+          {title}
+        </h1>
+        <span className="hidden md:inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-red-50 text-red-600 border border-red-150/80 shadow-2xs">
+          {config.shortTitle || userRole}
+        </span>
+      </div>
     );
   };
 
@@ -524,6 +521,22 @@ const DashboardLayout = ({ userRole = "donor" }) => {
     navigate("/login");
   };
 
+  const getAvatarUrl = (user) => {
+    const url = user?.avatar || user?.profileImage;
+    if (
+      typeof url === "string" &&
+      url.trim().length > 0 &&
+      !url.includes("ui-avatars.com") &&
+      (url.startsWith("http://") ||
+        url.startsWith("https://") ||
+        url.startsWith("data:image/") ||
+        url.startsWith("/uploads/"))
+    ) {
+      return url;
+    }
+    return null;
+  };
+
   const formatTimeAgo = (dateStr) => {
     if (!dateStr) return "";
     const date = new Date(dateStr);
@@ -630,18 +643,12 @@ const DashboardLayout = ({ userRole = "donor" }) => {
  
           {/* Logo and Title */}
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-gradient-to-br from-red-500 via-rose-500 to-rose-600 text-white shadow-md shadow-red-500/10">
-              <config.icon size={18} />
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-red-600 via-rose-600 to-red-700 text-white shadow-md shadow-red-600/20 flex items-center justify-center flex-shrink-0">
+              <config.icon size={20} />
             </div>
             <div className="hidden sm:block">
               {renderTitle()}
-              <p className={`text-[10px] font-semibold tracking-wide mt-0.5 ${
-                userRole === "donor" ? "text-rose-500/70" :
-                userRole === "hospital" ? "text-sky-500/70" :
-                userRole === "blood-lab" ? "text-teal-500/70" :
-                userRole === "admin" ? "text-indigo-500/70" :
-                "text-slate-400"
-              }`}>
+              <p className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mt-0.5">
                 {config.subtitle}
               </p>
             </div>
@@ -753,22 +760,37 @@ const DashboardLayout = ({ userRole = "donor" }) => {
             )}
           </div>
  
-          {/* User Profile */}
+          {/* User Profile Avatar */}
           <div 
             onClick={() => navigate(`/${userRole}/profile`)}
-            className="flex items-center gap-2.5 p-1 pr-3 rounded-xl border border-slate-100/80 bg-slate-50/30 hover:bg-red-50/30 hover:border-red-100/50 cursor-pointer transition-all duration-300 group"
+            className="flex items-center gap-3 p-1.5 pr-3.5 rounded-2xl border border-slate-200/80 bg-white/80 hover:bg-red-50/40 hover:border-red-200/80 cursor-pointer transition-all duration-300 shadow-2xs group"
           >
-            <div className="relative">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-red-500 via-rose-500 to-rose-600 flex items-center justify-center text-white font-black text-xs shadow-md shadow-red-500/15">
+            <div className="relative flex-shrink-0">
+              {getAvatarUrl(userData) ? (
+                <img
+                  src={getAvatarUrl(userData)}
+                  alt={userData?.name || "User"}
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    const fallback = e.currentTarget.nextElementSibling;
+                    if (fallback) fallback.style.display = 'flex';
+                  }}
+                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl object-cover shadow-md border-2 border-white ring-2 ring-red-100/80 group-hover:scale-105 transition-transform"
+                />
+              ) : null}
+              <div
+                style={{ display: getAvatarUrl(userData) ? 'none' : 'flex' }}
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-br from-red-600 via-rose-600 to-red-800 text-white font-black text-sm shadow-md shadow-red-600/30 items-center justify-center border-2 border-white ring-2 ring-red-100/80 group-hover:scale-105 transition-transform"
+              >
                 {(userData?.name || userData?.fullName || "U").charAt(0).toUpperCase()}
               </div>
-              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full" />
+              <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full ring-1 ring-emerald-400/30 z-10" />
             </div>
             <div className="hidden lg:block text-left">
-              <span className="font-bold block text-xs text-slate-700 group-hover:text-red-600 transition-colors leading-tight">
+              <span className="font-extrabold block text-xs text-slate-850 group-hover:text-red-600 transition-colors uppercase tracking-wide leading-tight">
                 {userData?.name || userData?.fullName || "User"}
               </span>
-              <span className="text-[9px] uppercase font-black text-slate-400 tracking-wider flex items-center gap-1 mt-0.5">
+              <span className="text-[9px] uppercase font-black text-red-600/80 tracking-wider flex items-center gap-1 mt-0.5">
                 {userRole.replace("-", " ")}
               </span>
             </div>
@@ -810,35 +832,28 @@ const DashboardLayout = ({ userRole = "donor" }) => {
             sidebarOpen ? "translate-x-0" : "-translate-x-full"
           } lg:translate-x-0 fixed lg:static inset-y-0 left-0 z-50 lg:z-auto pt-14 lg:pt-0 ${
             sidebarCollapsed ? "w-16" : "w-64"
-          } bg-white shadow-xl border-r border-red-100 transition-all duration-300 ease-in-out flex flex-col transform lg:transform-none`}
+          } bg-white shadow-xl border-r border-slate-200/80 transition-all duration-300 ease-in-out flex flex-col transform lg:transform-none`}
         >
           {/* Sidebar Header */}
-          <div className={`flex items-center ${sidebarCollapsed ? "justify-center p-2" : "justify-between p-4"} border-b border-red-100`}>
+          <div className={`flex items-center ${sidebarCollapsed ? "justify-center p-2.5" : "justify-between p-4.5"} border-b border-slate-100 bg-gradient-to-r from-red-50/60 via-rose-50/30 to-transparent`}>
             {!sidebarCollapsed && (
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-red-100">
-                  <config.icon size={20} className="text-red-600" />
+                <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-red-600 via-rose-600 to-red-800 text-white flex items-center justify-center shadow-md shadow-red-600/25 ring-2 ring-red-100/80">
+                  <config.icon size={18} />
                 </div>
                 <div>
-                  <h2
-                    className="font-bold text-sm"
-                    style={{ color: theme.primary[700] }}
-                  >
+                  <h2 className="font-extrabold text-xs uppercase tracking-wide text-slate-850">
                     {config.shortTitle}
                   </h2>
-                  <p
-                    className="text-xs"
-                    style={{ color: theme.secondary[500] }}
-                  >
-                    Portal
+                  <p className="text-[10px] font-extrabold uppercase tracking-wider text-red-600/80 mt-0.5">
+                    Portal Navigation
                   </p>
                 </div>
               </div>
             )}
             <button
               onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className="hidden lg:flex p-1.5 rounded-lg hover:bg-red-100 transition-colors"
-              style={{ color: theme.primary[600] }}
+              className="hidden lg:flex p-1.5 rounded-xl hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors border border-slate-100"
             >
               {sidebarCollapsed ? (
                 <ChevronRight size={16} />
@@ -850,30 +865,40 @@ const DashboardLayout = ({ userRole = "donor" }) => {
 
           {/* User Quick Info */}
           {!sidebarCollapsed && userData && (
-            <div className="p-4 border-b border-red-100 bg-red-50/50">
+            <div className="p-3.5 border-b border-slate-100 bg-gradient-to-r from-red-50/80 via-rose-50/30 to-white">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center text-white font-bold">
-                  {userData.name?.charAt(0) || "U"}
+                {getAvatarUrl(userData) ? (
+                  <img
+                    src={getAvatarUrl(userData)}
+                    alt={userData?.name || "User"}
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      const fallback = e.currentTarget.nextElementSibling;
+                      if (fallback) fallback.style.display = 'flex';
+                    }}
+                    className="w-10 h-10 rounded-2xl object-cover shadow-md border-2 border-white ring-2 ring-red-100/80 flex-shrink-0"
+                  />
+                ) : null}
+                <div
+                  style={{ display: getAvatarUrl(userData) ? 'none' : 'flex' }}
+                  className="w-10 h-10 rounded-2xl bg-gradient-to-br from-red-600 via-rose-600 to-red-800 text-white font-black text-sm shadow-md shadow-red-600/30 items-center justify-center border-2 border-white ring-2 ring-red-100/80 flex-shrink-0"
+                >
+                  {(userData?.name || userData?.fullName || "U").charAt(0).toUpperCase()}
                 </div>
-                <div>
-                  <p className="font-medium text-gray-800 text-sm">
-                     {userData.name}
+                <div className="min-w-0 flex-1">
+                  <p className="font-black text-slate-850 text-xs uppercase tracking-wide truncate leading-tight">
+                    {userData?.name || userData?.fullName || "User"}
                   </p>
-                  {config.stats && (
-                    <p className="text-xs text-gray-500">
-                      {config.stats.label}:{" "}
-                      <span className="font-semibold text-red-600">
-                        {config.stats.value}
-                      </span>
-                    </p>
-                  )}
+                  <span className="inline-block mt-0.5 text-[9px] font-extrabold uppercase tracking-wider text-red-600 bg-red-100/70 border border-red-200/60 px-2 py-0.5 rounded-md">
+                    {userRole.replace("-", " ")}
+                  </span>
                 </div>
               </div>
             </div>
           )}
 
           {/* Navigation Menu */}
-          <nav className={`flex-1 ${sidebarCollapsed ? "p-2" : "p-4"} overflow-y-auto`}>
+          <nav className={`flex-1 ${sidebarCollapsed ? "p-2" : "p-3.5"} overflow-y-auto space-y-1`}>
             <div className="flex flex-col gap-1">
               {config.items.map((item) => {
                 const Icon = item.icon;
@@ -887,34 +912,30 @@ const DashboardLayout = ({ userRole = "donor" }) => {
                         setSidebarOpen(false);
                       }}
                       className={`flex items-center ${
-                        sidebarCollapsed ? "justify-center p-2.5" : "gap-3 p-3"
-                      } w-full min-h-[44px] rounded-xl transition-all duration-200 ${
+                        sidebarCollapsed ? "justify-center p-2.5" : "gap-3 px-3.5 py-3"
+                      } w-full min-h-[44px] rounded-2xl transition-all duration-200 cursor-pointer ${
                         isActive
-                          ? "shadow-md transform scale-[1.02] text-white"
-                          : "hover:shadow-md hover:transform hover:scale-[1.02] hover:bg-red-50 text-gray-700 hover:text-red-700"
+                          ? "bg-gradient-to-r from-red-600 via-rose-600 to-red-700 text-white font-black shadow-lg shadow-red-600/25 scale-[1.01]"
+                          : "hover:bg-red-50/70 text-slate-600 hover:text-red-700 font-bold hover:scale-[1.01]"
                       }`}
-                      style={{
-                        background: isActive
-                          ? `linear-gradient(135deg, ${theme.primary[500]}, ${theme.primary[600]})`
-                          : "transparent",
-                      }}
                       title={sidebarCollapsed ? item.label : ""}
                     >
                       <Icon
-                        size={20}
-                        className="flex-shrink-0"
-                        style={{
-                          color: isActive ? "white" : theme.primary[600],
-                        }}
+                        size={19}
+                        className={`flex-shrink-0 transition-colors ${
+                          isActive ? "text-white" : "text-red-600 group-hover:text-red-700"
+                        }`}
                       />
                       {!sidebarCollapsed && (
                         <>
-                          <span className="flex-1 text-left whitespace-nowrap text-sm">
+                          <span className={`flex-1 text-left truncate text-xs uppercase tracking-wide font-extrabold ${
+                            isActive ? "text-white" : "text-slate-750"
+                          }`}>
                             {item.label}
                           </span>
                           {badge && (
                             <span
-                              className={`px-2 py-1 text-xs rounded-full ${getBadgeColor(badge, item.label)}`}
+                              className={`flex-shrink-0 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider rounded-full shadow-2xs ${getBadgeColor(badge, item.label)}`}
                             >
                               {badge}
                             </span>
@@ -923,7 +944,7 @@ const DashboardLayout = ({ userRole = "donor" }) => {
                       )}
                       {sidebarCollapsed && badge && (
                         <span
-                          className={`absolute top-1.5 right-1.5 w-2 h-2 rounded-full ${getBadgeColor(badge, item.label).replace("text-white", "")}`}
+                          className={`absolute top-1.5 right-1.5 w-2 h-2 rounded-full ring-2 ring-white ${getBadgeColor(badge, item.label).replace("text-white", "")}`}
                         />
                       )}
                     </button>

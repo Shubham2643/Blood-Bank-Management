@@ -133,15 +133,29 @@ const CampDonationsManager = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header section */}
-      <div>
-        <h1 className="text-2xl font-black text-slate-800 flex items-center gap-2">
-          <ClipboardList className="w-7 h-7 text-red-600" />
-          Camp Donations & Donor Vitals Check-in
-        </h1>
-        <p className="text-sm text-slate-500">
-          Check-in registered donors, record clinical vital signs, and log bags for mandatory screening.
-        </p>
+      {/* Signature Crimson-Rose Hero Header Banner */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-red-700 via-rose-700 to-red-900 p-6 sm:p-8 text-white shadow-xl shadow-red-900/20 border border-red-500/30 mb-8">
+        {/* Geometric Vector Rings Overlay */}
+        <div className="absolute inset-0 opacity-15 pointer-events-none">
+          <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <circle cx="90" cy="10" r="30" stroke="white" strokeWidth="2" fill="none" />
+            <circle cx="10" cy="90" r="25" stroke="white" strokeWidth="2" fill="none" />
+          </svg>
+        </div>
+
+        <div className="relative z-10 flex flex-col sm:flex-row gap-5 items-center sm:items-end text-center sm:text-left">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-white text-red-600 font-black flex items-center justify-center shadow-2xl ring-4 ring-white/20 flex-shrink-0">
+            <ClipboardList className="w-8 h-8 sm:w-10 sm:h-10 text-red-600 animate-pulse" />
+          </div>
+          <div>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold uppercase tracking-wide text-white">
+              Camp Donations & Vitals Check-In
+            </h1>
+            <p className="text-xs sm:text-sm font-semibold text-red-100/90 mt-1">
+              Check-in registered donors, record clinical vital signs, and log collected blood bags for mandatory screening.
+            </p>
+          </div>
+        </div>
       </div>
 
       {loading ? (

@@ -412,10 +412,10 @@ const SuccessStories = () => {
 
     const matchesSearch =
       searchQuery === "" ||
-      story.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      story.donor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      story.recipient.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      story.story.toLowerCase().includes(searchQuery.toLowerCase());
+      (story.title?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+      (story.donor?.name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+      (story.recipient?.name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+      (story.story?.toLowerCase() || "").includes(searchQuery.toLowerCase());
 
     return matchesCategory && matchesSearch;
   });

@@ -249,36 +249,49 @@ const HospitalBloodStock = () => {
     <div className="min-h-screen bg-slate-50/50 py-4 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto space-y-8">
         
-        {/* Header Section */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-          <div>
-            <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-2xl font-black text-slate-800 tracking-tight flex items-center gap-2.5">
-                <div className="p-2 bg-gradient-to-tr from-red-500 to-rose-600 rounded-xl text-white shadow-md shadow-rose-100">
-                  <Droplet className="w-5 h-5 animate-pulse" />
-                </div>
-                Blood Stock Inventory
-              </h1>
-              <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border transition-all ${
-                isSocketConnected 
-                  ? "bg-emerald-50 text-emerald-700 border-emerald-200" 
-                  : "bg-amber-50 text-amber-700 border-amber-100"
-              }`}>
-                <span className={`h-2 w-2 rounded-full ${isSocketConnected ? "bg-emerald-500 animate-pulse" : "bg-amber-500"}`} />
-                {isSocketConnected ? "Live Sync Active" : "Connecting..."}
-              </span>
-            </div>
-            <p className="text-sm text-slate-500 mt-1 font-semibold">
-              Manage and monitor your hospital's blood supply levels in real-time
-            </p>
+        {/* Signature Crimson-Rose Hero Header Banner */}
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-red-700 via-rose-700 to-red-900 p-6 sm:p-8 text-white shadow-xl shadow-red-900/20 border border-red-500/30">
+          {/* Geometric Vector Rings Overlay */}
+          <div className="absolute inset-0 opacity-15 pointer-events-none">
+            <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <circle cx="90" cy="10" r="30" stroke="white" strokeWidth="2" fill="none" />
+              <circle cx="10" cy="90" r="25" stroke="white" strokeWidth="2" fill="none" />
+            </svg>
           </div>
-          <button
-            onClick={loadStock}
-            className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl text-slate-600 px-4 py-2.5 hover:bg-slate-50 transition-all shadow-sm font-bold text-sm active:scale-95 shrink-0"
-          >
-            <RefreshCw size={15} className={loading ? "animate-spin" : ""} />
-            Refresh Inventory
-          </button>
+
+          <div className="relative z-10 flex flex-col md:flex-row gap-6 justify-between items-center md:items-end">
+            <div className="flex flex-col sm:flex-row gap-5 items-center sm:items-end text-center sm:text-left">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-white text-red-600 font-black flex items-center justify-center shadow-2xl ring-4 ring-white/20 flex-shrink-0">
+                <Droplet className="w-8 h-8 sm:w-10 sm:h-10 text-red-600 fill-red-600 animate-bounce" />
+              </div>
+              <div>
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
+                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold uppercase tracking-wide text-white">
+                    Blood Stock Inventory
+                  </h1>
+                  <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider backdrop-blur-md transition-all ${
+                    isSocketConnected 
+                      ? "bg-emerald-500/25 text-emerald-200 border border-emerald-400/40" 
+                      : "bg-amber-500/25 text-amber-200 border border-amber-400/40"
+                  }`}>
+                    <span className={`h-2 w-2 rounded-full ${isSocketConnected ? "bg-emerald-400 animate-pulse" : "bg-amber-400"}`} />
+                    {isSocketConnected ? "Live Sync Active" : "Connecting..."}
+                  </span>
+                </div>
+                <p className="text-xs sm:text-sm font-semibold text-red-100/90 mt-1">
+                  Manage and monitor your hospital's real-time blood supply reserves and component expirations.
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={loadStock}
+              className="px-5 py-3 bg-white/15 hover:bg-white/25 backdrop-blur-md text-white rounded-2xl font-black text-xs uppercase tracking-wider border border-white/20 transition-all flex items-center gap-2 cursor-pointer hover:scale-105 shadow-md flex-shrink-0 active:scale-95"
+            >
+              <RefreshCw className={`w-4 h-4 text-white ${loading ? "animate-spin" : ""}`} />
+              <span>Refresh Inventory</span>
+            </button>
+          </div>
         </div>
 
         {/* Stats Grid */}

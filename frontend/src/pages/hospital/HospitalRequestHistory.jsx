@@ -169,26 +169,40 @@ const HospitalRequestHistory = () => {
   return (
     <div className="space-y-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2.5 bg-gradient-to-tr from-red-500 to-rose-600 rounded-2xl shadow-md text-white">
-                <Calendar className="w-6 h-6" />
-              </div>
-              <h1 className="text-3xl font-extrabold text-gray-800">Request History</h1>
-            </div>
-            <p className="text-gray-500">Track and monitor raised blood requests in real-time</p>
+        {/* Signature Crimson-Rose Hero Header Banner */}
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-red-700 via-rose-700 to-red-900 p-6 sm:p-8 text-white shadow-xl shadow-red-900/20 border border-red-500/30 mb-8">
+          {/* Geometric Vector Rings Overlay */}
+          <div className="absolute inset-0 opacity-15 pointer-events-none">
+            <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <circle cx="90" cy="10" r="30" stroke="white" strokeWidth="2" fill="none" />
+              <circle cx="10" cy="90" r="25" stroke="white" strokeWidth="2" fill="none" />
+            </svg>
           </div>
 
-          <button
-            onClick={handleRefresh}
-            disabled={refreshing}
-            className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-700 hover:bg-slate-50 transition-all font-semibold shadow-sm disabled:opacity-50"
-          >
-            <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
-            {refreshing ? "Refreshing..." : "Reload Data"}
-          </button>
+          <div className="relative z-10 flex flex-col md:flex-row gap-6 justify-between items-center md:items-end">
+            <div className="flex flex-col sm:flex-row gap-5 items-center sm:items-end text-center sm:text-left">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-white text-red-600 font-black flex items-center justify-center shadow-2xl ring-4 ring-white/20 flex-shrink-0">
+                <Calendar className="w-8 h-8 sm:w-10 sm:h-10 text-red-600 animate-bounce" />
+              </div>
+              <div>
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold uppercase tracking-wide text-white">
+                  Request History
+                </h1>
+                <p className="text-xs sm:text-sm font-semibold text-red-100/90 mt-1">
+                  Track and monitor raised blood component requests and fulfillment status in real-time.
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className="px-5 py-3 bg-white/15 hover:bg-white/25 backdrop-blur-md text-white rounded-2xl font-black text-xs uppercase tracking-wider border border-white/20 transition-all flex items-center gap-2 cursor-pointer hover:scale-105 shadow-md flex-shrink-0 active:scale-95 disabled:opacity-50"
+            >
+              <RefreshCw className={`w-4 h-4 text-white ${refreshing ? "animate-spin" : ""}`} />
+              <span>{refreshing ? "Refreshing..." : "Reload Data"}</span>
+            </button>
+          </div>
         </div>
 
         {/* Stats Panel */}
@@ -321,7 +335,7 @@ const HospitalRequestHistory = () => {
                                 {request.urgency ? request.urgency.toUpperCase() : "NORMAL"}
                               </span>
                               {request.geofencedAlerts?.donorCount > 0 && (
-                                <span className="text-[9px] text-red-600 bg-red-50 border border-red-100 rounded px-1 py-0.5 font-black flex items-center gap-0.5" title={`Alerted: ${request.geofencedAlerts.notifiedDonors.map(d => `${d.name} (${d.distance}km)`).join(', ')}`}>
+                                <span className="text-[9px] text-red-600 bg-red-50 border border-red-100 rounded px-1 py-0.5 font-black flex items-center gap-0.5" title={`Alerted: ${request.geofencedAlerts?.notifiedDonors?.map(d => `${d.name} (${d.distance}km)`).join(', ') || ''}`}>
                                   🚨 Alerted {request.geofencedAlerts.donorCount} Donors
                                 </span>
                               )}

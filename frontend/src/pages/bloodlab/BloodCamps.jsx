@@ -462,28 +462,43 @@ const BloodCamps = () => {
       <div className="max-w-7xl mx-auto">
         {/* Header with Stats */}
         <div className="mb-8">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
-                <div className="p-2 bg-red-100 rounded-xl">
-                  <Droplet className="w-6 h-6 text-red-600" />
-                </div>
-                Blood Donation Camps
-              </h1>
-              <p className="text-gray-600 mt-1">Manage and organize blood donation camps</p>
+        {/* Signature Crimson-Rose Hero Header Banner */}
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-red-700 via-rose-700 to-red-900 p-6 sm:p-8 text-white shadow-xl shadow-red-900/20 border border-red-500/30 mb-8">
+          {/* Geometric Vector Rings Overlay */}
+          <div className="absolute inset-0 opacity-15 pointer-events-none">
+            <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <circle cx="90" cy="10" r="30" stroke="white" strokeWidth="2" fill="none" />
+              <circle cx="10" cy="90" r="25" stroke="white" strokeWidth="2" fill="none" />
+            </svg>
+          </div>
+
+          <div className="relative z-10 flex flex-col md:flex-row gap-6 justify-between items-center md:items-end">
+            <div className="flex flex-col sm:flex-row gap-5 items-center sm:items-end text-center sm:text-left">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-white text-red-600 font-black flex items-center justify-center shadow-2xl ring-4 ring-white/20 flex-shrink-0">
+                <Calendar className="w-8 h-8 sm:w-10 sm:h-10 text-red-600 animate-bounce" />
+              </div>
+              <div>
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold uppercase tracking-wide text-white">
+                  Blood Donation Camps
+                </h1>
+                <p className="text-xs sm:text-sm font-semibold text-red-100/90 mt-1">
+                  Organize, manage, schedule, and track blood donation drives and mobile camp venues.
+                </p>
+              </div>
             </div>
+
             <button
               onClick={() => {
-                console.log("➕ Add camp button clicked");
                 resetForm();
                 setShowForm(!showForm);
               }}
-              className="flex items-center bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors"
+              className="px-6 py-3.5 bg-white text-red-600 hover:bg-red-50 rounded-2xl font-black text-xs uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer hover:scale-105 shadow-xl flex-shrink-0 active:scale-95 border-2 border-white/40"
             >
-              <Plus size={18} className="mr-2" /> 
-              {showForm ? 'Cancel' : 'Add Camp'}
+              <Plus size={18} /> 
+              <span>{showForm ? 'Cancel' : 'Add Camp'}</span>
             </button>
           </div>
+        </div>
 
           {/* Stats Cards */}
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">

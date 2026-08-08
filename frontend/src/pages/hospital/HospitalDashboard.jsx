@@ -231,84 +231,94 @@ const HospitalDashboard = () => {
     <div className="min-h-screen bg-slate-50/50 py-4 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto space-y-8">
         
-        {/* Header Section */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-          <div>
-            <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-2xl font-black text-slate-800 tracking-tight flex items-center gap-2.5">
-                <div className="p-2.5 bg-gradient-to-tr from-red-500 to-rose-600 rounded-xl text-white shadow-md shadow-rose-100">
-                  <Building2 className="w-5 h-5" />
-                </div>
-                Hospital Control Center
-              </h1>
-              <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border transition-all ${
-                isSocketConnected 
-                  ? "bg-emerald-50 text-emerald-700 border-emerald-200" 
-                  : "bg-amber-50 text-amber-700 border-amber-100"
-              }`}>
-                <span className={`h-2 w-2 rounded-full ${isSocketConnected ? "bg-emerald-500 animate-pulse" : "bg-amber-500"}`} />
-                {isSocketConnected ? "Live Sync Active" : "Connecting..."}
-              </span>
-            </div>
-            <p className="text-sm text-slate-500 mt-1 font-semibold">
-              Real-time synchronization active • Last synced at {lastUpdated.toLocaleTimeString()}
-            </p>
+        {/* Signature Crimson-Rose Hero Header Banner */}
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-red-700 via-rose-700 to-red-900 p-6 sm:p-8 text-white shadow-xl shadow-red-900/20 border border-red-500/30">
+          {/* Geometric Vector Rings Background Overlay */}
+          <div className="absolute inset-0 opacity-15 pointer-events-none">
+            <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <circle cx="90" cy="10" r="30" stroke="white" strokeWidth="2" fill="none" />
+              <circle cx="10" cy="90" r="25" stroke="white" strokeWidth="2" fill="none" />
+            </svg>
           </div>
-          <button
-            onClick={handleRefresh}
-            disabled={refreshing}
-            className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl text-slate-600 px-4 py-2.5 hover:bg-slate-50 transition-all shadow-sm font-bold text-sm active:scale-95 shrink-0 disabled:opacity-50"
-          >
-            <RefreshCw size={15} className={refreshing ? "animate-spin" : ""} />
-            {refreshing ? "Refreshing..." : "Refresh Dashboard"}
-          </button>
+
+          <div className="relative z-10 flex flex-col md:flex-row gap-6 justify-between items-center md:items-end">
+            <div className="flex flex-col sm:flex-row gap-5 items-center sm:items-end text-center sm:text-left">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-white text-red-600 font-black flex items-center justify-center shadow-2xl ring-4 ring-white/20 flex-shrink-0">
+                <Building2 className="w-8 h-8 sm:w-10 sm:h-10 text-red-600 animate-pulse" />
+              </div>
+              <div>
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
+                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold uppercase tracking-wide text-white">
+                    Hospital Control Center
+                  </h1>
+                  <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider backdrop-blur-md transition-all ${
+                    isSocketConnected 
+                      ? "bg-emerald-500/25 text-emerald-200 border border-emerald-400/40" 
+                      : "bg-amber-500/25 text-amber-200 border border-amber-400/40"
+                  }`}>
+                    <span className={`h-2 w-2 rounded-full ${isSocketConnected ? "bg-emerald-400 animate-pulse" : "bg-amber-400"}`} />
+                    {isSocketConnected ? "Live Sync Active" : "Connecting..."}
+                  </span>
+                </div>
+                <p className="text-xs sm:text-sm font-semibold text-red-100/90 mt-1">
+                  Real-time blood stock synchronization & emergency response center • Last synced at {lastUpdated.toLocaleTimeString()}
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className="px-5 py-3 bg-white/15 hover:bg-white/25 backdrop-blur-md text-white rounded-2xl font-black text-xs uppercase tracking-wider border border-white/20 transition-all flex items-center gap-2 cursor-pointer hover:scale-105 shadow-md flex-shrink-0 active:scale-95 disabled:opacity-50"
+            >
+              <RefreshCw className={`w-4 h-4 text-white ${refreshing ? "animate-spin" : ""}`} />
+              <span>{refreshing ? "Refreshing..." : "Refresh Dashboard"}</span>
+            </button>
+          </div>
         </div>
 
         {/* Low Stock Warning Banner */}
         {stats.lowStock > 0 && (
-          <div className="bg-rose-50/60 border border-rose-100 rounded-3xl p-5 flex items-center gap-4 relative overflow-hidden">
-            <div className="absolute right-0 top-0 w-32 h-32 bg-rose-100 rounded-full blur-3xl opacity-60" />
-            <div className="p-2.5 bg-rose-500 text-white rounded-xl flex-shrink-0 animate-pulse relative z-10 shadow-md shadow-rose-150">
-              <AlertCircle className="w-5 h-5" />
+          <div className="bg-rose-50/90 border-2 border-rose-200 rounded-3xl p-5 flex items-center gap-4 relative overflow-hidden shadow-md">
+            <div className="absolute right-0 top-0 w-32 h-32 bg-rose-200 rounded-full blur-3xl opacity-60" />
+            <div className="p-3 bg-rose-600 text-white rounded-2xl flex-shrink-0 animate-pulse relative z-10 shadow-md shadow-rose-200">
+              <AlertCircle className="w-6 h-6" />
             </div>
             <div className="relative z-10">
-              <h4 className="font-extrabold text-red-900 text-sm">Critical Blood Shortage Detected</h4>
-              <p className="text-red-700 text-xs mt-0.5 font-semibold">
+              <h4 className="font-extrabold text-red-950 text-sm uppercase tracking-wide">Critical Blood Shortage Detected</h4>
+              <p className="text-red-800 text-xs mt-0.5 font-bold">
                 {stats.lowStock} blood type{stats.lowStock > 1 ? "s are" : " is"} critically low in inventory. Please request replenishments immediately to prevent shortages.
               </p>
             </div>
           </div>
         )}
 
-        {/* Hospital Hero Card */}
-        <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 sm:p-8 relative overflow-hidden transition-all hover:shadow-md">
-          <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-rose-100/20 to-transparent rounded-full blur-3xl -z-10" />
-          
+        {/* Executive Hospital Identity Card */}
+        <div className="bg-white rounded-3xl shadow-[0_10px_35px_-10px_rgba(0,0,0,0.05)] border border-slate-200/80 p-6 sm:p-8 relative overflow-hidden transition-all">
           <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start pb-6 border-b border-slate-100">
-            <div className="relative flex-shrink-0 group">
-              <div className="absolute -inset-1 bg-gradient-to-tr from-red-500 to-rose-500 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-300" />
-              <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center text-white font-black text-3xl shadow-md border-4 border-white">
+            <div className="relative flex-shrink-0">
+              <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-red-600 via-rose-600 to-red-800 text-white font-black text-3xl shadow-xl flex items-center justify-center border-4 border-white ring-4 ring-red-100">
                 {(hospital.name || "H").charAt(0).toUpperCase()}
               </div>
             </div>
 
             <div className="flex-1 text-center sm:text-left">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 justify-center sm:justify-start">
-                <h2 className="text-2xl font-black text-slate-800 tracking-tight">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 justify-center sm:justify-start">
+                <h2 className="text-2xl sm:text-3xl font-black text-slate-850 tracking-tight">
                   {hospital.name}
                 </h2>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-100/60 mx-auto sm:mx-0 w-fit">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                  {hospital.status?.toUpperCase() || "ACTIVE"}
+                <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-black bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-2xs mx-auto sm:mx-0 w-fit">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  {hospital.status?.toUpperCase() || "APPROVED"}
                 </span>
               </div>
               
-              <div className="flex flex-wrap gap-2 mt-3.5 justify-center sm:justify-start">
-                <span className="inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold bg-slate-50 text-slate-500 border border-slate-200/50">
+              <div className="flex flex-wrap gap-2 mt-3 justify-center sm:justify-start">
+                <span className="inline-flex items-center px-3 py-1 rounded-xl text-xs font-black bg-slate-100 text-slate-700 border border-slate-200/80 uppercase tracking-wider">
                   Type: {hospital.facilityType ? hospital.facilityType.replace('-', ' ').toUpperCase() : "HOSPITAL"}
                 </span>
                 {hospital.facilityCategory && (
-                  <span className="inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200/50">
+                  <span className="inline-flex items-center px-3 py-1 rounded-xl text-xs font-black bg-rose-50 text-rose-700 border border-rose-200/80 uppercase tracking-wider">
                     Category: {hospital.facilityCategory}
                   </span>
                 )}
@@ -317,49 +327,49 @@ const HospitalDashboard = () => {
           </div>
 
           <div className="pt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-slate-50/50 border border-slate-100 hover:border-red-100 hover:bg-red-50/5 transition-all group">
-              <div className="p-3 bg-white border border-slate-100 rounded-xl text-slate-600 flex-shrink-0 group-hover:text-red-500 transition-colors">
-                <Mail className="w-4 h-4" />
+            <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-slate-50/80 border border-slate-200/60 transition-all hover:bg-white hover:shadow-md">
+              <div className="p-3 bg-red-50 text-red-600 rounded-xl flex-shrink-0 font-bold border border-red-100">
+                <Mail className="w-4.5 h-4.5 text-red-600" />
               </div>
               <div className="min-w-0 flex-1">
-                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Email Support</span>
-                <span className="block text-xs font-bold text-slate-700 mt-0.5 break-all">
+                <span className="block text-[10px] font-black text-slate-400 uppercase tracking-wider">Email Support</span>
+                <span className="block text-xs font-extrabold text-slate-850 mt-0.5 break-all">
                   {hospital.email || "—"}
                 </span>
               </div>
             </div>
 
-            <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-slate-50/50 border border-slate-100 hover:border-red-100 hover:bg-red-50/5 transition-all group">
-              <div className="p-3 bg-white border border-slate-100 rounded-xl text-slate-600 flex-shrink-0 group-hover:text-red-500 transition-colors">
-                <Phone className="w-4 h-4" />
+            <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-slate-50/80 border border-slate-200/60 transition-all hover:bg-white hover:shadow-md">
+              <div className="p-3 bg-rose-50 text-rose-600 rounded-xl flex-shrink-0 font-bold border border-rose-100">
+                <Phone className="w-4.5 h-4.5 text-rose-600" />
               </div>
               <div className="min-w-0 flex-1">
-                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Contact Number</span>
-                <span className="block text-xs font-bold text-slate-700 mt-0.5">
+                <span className="block text-[10px] font-black text-slate-400 uppercase tracking-wider">Contact Number</span>
+                <span className="block text-xs font-extrabold text-slate-850 mt-0.5">
                   {hospital.phone || "—"}
                 </span>
               </div>
             </div>
 
-            <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-slate-50/50 border border-slate-100 hover:border-red-100 hover:bg-red-50/5 transition-all group">
-              <div className="p-3 bg-white border border-slate-100 rounded-xl text-slate-600 flex-shrink-0 group-hover:text-red-500 transition-colors">
-                <Clock className="w-4 h-4" />
+            <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-slate-50/80 border border-slate-200/60 transition-all hover:bg-white hover:shadow-md">
+              <div className="p-3 bg-amber-50 text-amber-600 rounded-xl flex-shrink-0 font-bold border border-amber-100">
+                <Clock className="w-4.5 h-4.5 text-amber-600" />
               </div>
               <div className="min-w-0 flex-1">
-                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Operating Hours</span>
-                <span className="block text-xs font-bold text-slate-700 mt-0.5">
+                <span className="block text-[10px] font-black text-slate-400 uppercase tracking-wider">Operating Hours</span>
+                <span className="block text-xs font-extrabold text-slate-850 mt-0.5">
                   {hospital.operatingHours ? `${hospital.operatingHours.open || "09:00"} - ${hospital.operatingHours.close || "18:00"}` : "—"}
                 </span>
               </div>
             </div>
 
-            <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-slate-50/50 border border-slate-100 hover:border-red-100 hover:bg-red-50/5 transition-all group">
-              <div className="p-3 bg-white border border-slate-100 rounded-xl text-slate-600 flex-shrink-0 group-hover:text-red-500 transition-colors">
-                <MapPin className="w-4 h-4" />
+            <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-slate-50/80 border border-slate-200/60 transition-all hover:bg-white hover:shadow-md">
+              <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl flex-shrink-0 font-bold border border-emerald-100">
+                <MapPin className="w-4.5 h-4.5 text-emerald-600" />
               </div>
               <div className="min-w-0 flex-1">
-                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Facility Address</span>
-                <span className="block text-xs font-bold text-slate-700 mt-0.5 truncate" title={hospital.address}>
+                <span className="block text-[10px] font-black text-slate-400 uppercase tracking-wider">Facility Address</span>
+                <span className="block text-xs font-extrabold text-slate-850 mt-0.5 truncate" title={hospital.address}>
                   {hospital.address ? `${hospital.address.street || ""}, ${hospital.address.city || ""}` : "—"}
                 </span>
               </div>
@@ -367,69 +377,78 @@ const HospitalDashboard = () => {
           </div>
         </div>
 
-        {/* Stats Cards Grid */}
+        {/* High-Impact 3D Stats Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
-          <div className="relative overflow-hidden bg-white/70 backdrop-blur-md border border-slate-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 group">
-            <div className="absolute -right-6 -bottom-6 w-24 h-24 rounded-full bg-red-50 group-hover:scale-125 transition-transform duration-500 opacity-60" />
+          {/* Card 1: Total Units */}
+          <div className="relative overflow-hidden bg-white rounded-3xl border border-slate-200/80 p-5 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)] hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-600 to-rose-600" />
             <div className="flex items-center justify-between relative z-10">
               <div>
-                <div className="text-3xl font-black text-slate-800 tracking-tight">{stats.totalUnits}</div>
-                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Total Blood Units</div>
+                <div className="text-3xl sm:text-4xl font-black text-slate-850 tracking-tight">{stats.totalUnits}</div>
+                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1.5">Total Blood Units</div>
               </div>
-              <div className="p-3 bg-gradient-to-tr from-red-500 to-rose-600 rounded-xl text-white shadow-md shadow-rose-100">
-                <Droplet className="w-5 h-5" />
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-red-600 to-rose-600 text-white shadow-lg shadow-red-600/30 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                <Droplet className="w-6 h-6 fill-white" />
               </div>
             </div>
           </div>
 
-          <div className="relative overflow-hidden bg-white/70 backdrop-blur-md border border-slate-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 group">
-            <div className="absolute -right-6 -bottom-6 w-24 h-24 rounded-full bg-blue-50 group-hover:scale-125 transition-transform duration-500 opacity-60" />
+          {/* Card 2: Types In Stock */}
+          <div className="relative overflow-hidden bg-white rounded-3xl border border-slate-200/80 p-5 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)] hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 to-indigo-600" />
             <div className="flex items-center justify-between relative z-10">
               <div>
-                <div className="text-3xl font-black text-blue-600 tracking-tight">{stats.bloodTypesInStock}</div>
-                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Types In Stock</div>
+                <div className="text-3xl sm:text-4xl font-black text-blue-600 tracking-tight">{stats.bloodTypesInStock}</div>
+                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1.5">Types In Stock</div>
               </div>
-              <div className="p-3 bg-gradient-to-tr from-blue-50 to-indigo-600 rounded-xl text-white shadow-md shadow-blue-100">
-                <Activity className="w-5 h-5" />
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-600/30 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                <Activity className="w-6 h-6" />
               </div>
             </div>
           </div>
 
-          <div className={`relative overflow-hidden bg-white/70 backdrop-blur-md border border-slate-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 group ${stats.lowStock > 0 ? "border-l-4 border-l-orange-500" : ""}`}>
-            <div className="absolute -right-6 -bottom-6 w-24 h-24 rounded-full bg-orange-50 group-hover:scale-125 transition-transform duration-500 opacity-60" />
+          {/* Card 3: Low Stock Warning */}
+          <div className={`relative overflow-hidden bg-white rounded-3xl border border-slate-200/80 p-5 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)] hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group ${
+            stats.lowStock > 0 ? "ring-2 ring-orange-500/50 bg-orange-50/20" : ""
+          }`}>
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 to-amber-500" />
             <div className="flex items-center justify-between relative z-10">
               <div>
-                <div className={`text-3xl font-black tracking-tight ${stats.lowStock > 0 ? "text-orange-500" : "text-slate-800"}`}>{stats.lowStock}</div>
-                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Low Stock Warning</div>
+                <div className={`text-3xl sm:text-4xl font-black tracking-tight ${stats.lowStock > 0 ? "text-orange-600" : "text-slate-850"}`}>{stats.lowStock}</div>
+                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1.5">Low Stock Warning</div>
               </div>
-              <div className={`p-3 rounded-xl text-white shadow-md ${stats.lowStock > 0 ? "bg-gradient-to-tr from-orange-500 to-red-500 shadow-orange-100 animate-bounce" : "bg-gradient-to-tr from-amber-500 to-orange-600 shadow-amber-100"}`}>
-                <AlertTriangle className="w-5 h-5" />
+              <div className={`w-12 h-12 rounded-2xl text-white shadow-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform ${
+                stats.lowStock > 0 ? "bg-gradient-to-tr from-orange-500 to-red-600 shadow-orange-600/40 animate-pulse" : "bg-gradient-to-tr from-amber-500 to-orange-600 shadow-amber-600/30"
+              }`}>
+                <AlertTriangle className="w-6 h-6" />
               </div>
             </div>
           </div>
 
-          <div className="relative overflow-hidden bg-white/70 backdrop-blur-md border border-slate-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 group">
-            <div className="absolute -right-6 -bottom-6 w-24 h-24 rounded-full bg-purple-50 group-hover:scale-125 transition-transform duration-500 opacity-60" />
+          {/* Card 4: Expiring Soon */}
+          <div className="relative overflow-hidden bg-white rounded-3xl border border-slate-200/80 p-5 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)] hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-600 to-indigo-600" />
             <div className="flex items-center justify-between relative z-10">
               <div>
-                <div className="text-3xl font-black text-purple-600 tracking-tight">{stats.expiringSoon}</div>
-                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Expiring Soon</div>
+                <div className="text-3xl sm:text-4xl font-black text-purple-600 tracking-tight">{stats.expiringSoon}</div>
+                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1.5">Expiring Soon</div>
               </div>
-              <div className="p-3 bg-gradient-to-tr from-purple-500 to-indigo-650 rounded-xl text-white shadow-md shadow-purple-100">
-                <Clock className="w-5 h-5" />
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-600/30 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                <Clock className="w-6 h-6" />
               </div>
             </div>
           </div>
 
-          <div className="relative overflow-hidden bg-white/70 backdrop-blur-md border border-slate-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 group">
-            <div className="absolute -right-6 -bottom-6 w-24 h-24 rounded-full bg-emerald-50 group-hover:scale-125 transition-transform duration-500 opacity-60" />
+          {/* Card 5: Fulfillment Rate */}
+          <div className="relative overflow-hidden bg-white rounded-3xl border border-slate-200/80 p-5 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)] hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-600 to-teal-600" />
             <div className="flex items-center justify-between relative z-10">
               <div>
-                <div className="text-3xl font-black text-emerald-600 tracking-tight">{stats.fulfillmentRate}%</div>
-                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Fulfillment Rate</div>
+                <div className="text-3xl sm:text-4xl font-black text-emerald-600 tracking-tight">{stats.fulfillmentRate}%</div>
+                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1.5">Fulfillment Rate</div>
               </div>
-              <div className="p-3 bg-gradient-to-tr from-emerald-50 to-teal-600 rounded-xl text-white shadow-md shadow-emerald-100">
-                <Award className="w-5 h-5" />
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-600/30 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                <Award className="w-6 h-6" />
               </div>
             </div>
           </div>

@@ -374,26 +374,40 @@ const DonorDirectory = () => {
   return (
     <div className="space-y-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-            <div>
-              <h1 className="text-3xl font-extrabold text-gray-800 flex items-center gap-3">
-                <div className="p-2.5 bg-gradient-to-tr from-red-500 to-rose-600 rounded-2xl shadow-md text-white">
-                  <Heart className="w-6 h-6" />
-                </div>
-                Donor Directory
-              </h1>
-              <p className="text-gray-505 mt-1 text-slate-500">Find and contact registered blood donors for emergency supply needs</p>
+        {/* Signature Crimson-Rose Hero Header Banner */}
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-red-700 via-rose-700 to-red-900 p-6 sm:p-8 text-white shadow-xl shadow-red-900/20 border border-red-500/30 mb-8">
+          {/* Geometric Vector Rings Overlay */}
+          <div className="absolute inset-0 opacity-15 pointer-events-none">
+            <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <circle cx="90" cy="10" r="30" stroke="white" strokeWidth="2" fill="none" />
+              <circle cx="10" cy="90" r="25" stroke="white" strokeWidth="2" fill="none" />
+            </svg>
+          </div>
+
+          <div className="relative z-10 flex flex-col md:flex-row gap-6 justify-between items-center md:items-end">
+            <div className="flex flex-col sm:flex-row gap-5 items-center sm:items-end text-center sm:text-left">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-white text-red-600 font-black flex items-center justify-center shadow-2xl ring-4 ring-white/20 flex-shrink-0">
+                <Heart className="w-8 h-8 sm:w-10 sm:h-10 text-red-600 fill-red-600 animate-pulse" />
+              </div>
+              <div>
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold uppercase tracking-wide text-white">
+                  Donor Directory
+                </h1>
+                <p className="text-xs sm:text-sm font-semibold text-red-100/90 mt-1">
+                  Find, manage, and contact registered blood donors for emergency supply needs.
+                </p>
+              </div>
             </div>
+
             <button
               onClick={openRegisterModal}
-              className="bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-bold py-3 px-5 rounded-2xl shadow-lg hover:shadow-red-200 hover:scale-[1.02] transition-all flex items-center gap-2 cursor-pointer"
+              className="px-6 py-3.5 bg-white text-red-600 hover:bg-red-50 rounded-2xl font-black text-xs uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer hover:scale-105 shadow-xl flex-shrink-0 active:scale-95 border-2 border-white/40"
             >
               <Plus size={18} />
-              Register Donor
+              <span>Register Donor</span>
             </button>
           </div>
+        </div>
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
@@ -410,7 +424,6 @@ const DonorDirectory = () => {
               <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mt-1">Rare Blood Groups</div>
             </div>
           </div>
-        </div>
 
         {/* Search and Filters */}
         <div className="bg-white rounded-2xl shadow-md border border-slate-100 p-5 mb-6">

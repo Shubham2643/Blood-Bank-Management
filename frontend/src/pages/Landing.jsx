@@ -777,7 +777,7 @@ const FindCampsModal = ({ isOpen, onClose }) => {
     const campId = camp?._id;
     const token = localStorage.getItem("token");
     if (token) {
-      navigate(`/camp/${campId}/register`);
+      navigate("/donor");
       onClose();
     } else {
       toast.error("Please login to register for camp");
@@ -1684,10 +1684,9 @@ const UpcomingCamps = () => {
       return;
     }
 
-    const campId = camp?._id;
     const token = localStorage.getItem("token");
     if (token) {
-      navigate(`/camp/${campId}/register`);
+      navigate("/donor");
     } else {
       toast.error("Please login to register for camp");
       navigate("/login");
@@ -2404,13 +2403,13 @@ const LandingPage = () => {
           if (role && dashboardPaths[role]) {
             navigate(dashboardPaths[role]);
           } else {
-            navigate("/dashboard");
+            navigate("/donor");
           }
         } catch {
-          navigate("/dashboard");
+          navigate("/donor");
         }
       } else {
-        navigate("/dashboard");
+        navigate("/donor");
       }
     } else {
       // Show registration options in quick menu
@@ -2798,13 +2797,13 @@ const LandingPage = () => {
                       if (index === 0) {
                         handleBecomeDonor();
                       } else if (index === 1) {
-                        navigate("/find-match");
+                        navigate("/footer/central-stock");
                       } else if (index === 2) {
                         const token = localStorage.getItem("token");
                         if (token) {
-                          navigate("/notifications");
+                          navigate("/donor");
                         } else {
-                          toast.error("Please login to manage notifications");
+                          toast.error("Please login to access donor dashboard");
                           navigate("/login");
                         }
                       } else {

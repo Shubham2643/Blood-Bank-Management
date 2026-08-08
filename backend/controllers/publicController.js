@@ -128,12 +128,13 @@ export const seedCampsIfEmpty = async () => {
     }
 
     const count = await BloodCamp.countDocuments();
+    const upcomingCount = await BloodCamp.countDocuments({ date: { $gte: new Date() } });
     const hasOldCamps = await BloodCamp.countDocuments({
       title: /Mega Blood Donation Drive|Lifesaver Donation Drive|Red Connect Camp/
     });
 
-    if (count > 0 && hasOldCamps === 0) {
-      // Database already has the new, realistic camps and no old mock ones.
+    if (count > 0 && hasOldCamps === 0 && upcomingCount > 0) {
+      // Database already has valid upcoming camps and no old mock ones.
       return;
     }
 
@@ -164,7 +165,7 @@ export const seedCampsIfEmpty = async () => {
         };
       } else if (title.includes("Gandhinagar")) {
         updateData = {
-          title: "Gandhinagar Youth Blood Connect Camp",
+          title: "Gandhinagar Youth LifeDrop Blood Camp",
           description: "Gandhinagar Community blood drive organized by Civil Hospital Gandhinagar. Help save lives by participating. Free checkup and refreshments for all donors.",
           location: {
             venue: "Sector 11 Community Centre, Near Town Hall",
@@ -389,6 +390,9 @@ export const seedCampsIfEmpty = async () => {
       "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=500&q=80"
     ];
 
+    const existingFacility = await Facility.findOne({ facilityType: { $in: ["hospital", "blood-lab"] } });
+    const defaultHospitalId = existingFacility?._id;
+
     const campsToCreate = [];
 
     newCamps.forEach((nc, idx) => {
@@ -399,7 +403,7 @@ export const seedCampsIfEmpty = async () => {
       campDate.setHours(9, 0, 0, 0);
 
       campsToCreate.push({
-        hospital: nc.hospital,
+        hospital: defaultHospitalId || nc.hospital,
         title: nc.title,
         description: nc.description,
         date: campDate,

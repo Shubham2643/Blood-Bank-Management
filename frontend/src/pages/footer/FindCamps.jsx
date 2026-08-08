@@ -1,6 +1,6 @@
 // src/pages/footer/FindCamps.jsx
 import React, { useState, useEffect, useCallback } from "react";
-import { Helmet } from "react-helmet";
+import SEO from "../../components/SEO";
 import { useNavigate } from "react-router-dom";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
@@ -269,9 +269,9 @@ const FindCamps = () => {
     if (searchTerm) {
       filtered = filtered.filter(
         (camp) =>
-          camp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          camp.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          camp.address.toLowerCase().includes(searchTerm.toLowerCase()),
+          (camp.name?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+          (camp.city?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+          (camp.address?.toLowerCase() || "").includes(searchTerm.toLowerCase()),
       );
     }
 
@@ -476,61 +476,95 @@ const FindCamps = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <Helmet>
-        <title>Find Blood Donation Camps Near You | LifeDrop</title>
-        <meta
-          name="description"
-          content="Find blood donation camps near you in Ahmedabad, Mumbai, Surat, Rajkot and other cities. Search by city, date, and camp type. Register online and save lives in your community."
-        />
-        <meta
-          name="keywords"
-          content="blood donation camps, blood drive near me, donate blood, find blood camp, Ahmedabad blood bank, Mumbai blood donation, Surat blood camp, Rajkot blood bank"
-        />
-      </Helmet>
+      <SEO
+        title="Find Blood Donation Camps Near You | LifeDrop"
+        description="Search, discover, and register for blood donation camps near your location. Filter by date, city, and camp type to save lives in your community."
+      />
       <Header />
       <main className="flex-grow mt-16 sm:mt-20">
-        {/* Hero Section */}
-        <div className="relative pt-16 pb-20 bg-gradient-to-br from-red-700 via-red-600 to-red-800 text-white overflow-hidden">
-          {/* Decorative Background Elements */}
-          <div className="absolute inset-0 z-0">
-            <div className="absolute -top-40 -left-40 w-96 h-96 bg-red-500 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
-            <div className="absolute -bottom-40 -right-40 w-128 h-128 bg-red-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse" style={{ animationDelay: '2s' }}></div>
-            {/* Grid pattern overlay */}
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+        {/* Hero Section (Matching Home Page Theme) */}
+        <div className="relative pt-16 pb-20 bg-gradient-to-r from-red-700 to-red-900 text-white overflow-hidden shadow-lg">
+          {/* Home Page Concentric Circles SVG Overlay */}
+          <div className="absolute inset-0 opacity-10 pointer-events-none">
+            <svg
+              className="w-full h-full"
+              viewBox="0 0 100 100"
+              preserveAspectRatio="none"
+            >
+              <circle
+                cx="50"
+                cy="50"
+                r="40"
+                stroke="white"
+                strokeWidth="2"
+                fill="none"
+              />
+              <circle
+                cx="50"
+                cy="50"
+                r="30"
+                stroke="white"
+                strokeWidth="2"
+                fill="none"
+              />
+              <circle
+                cx="50"
+                cy="50"
+                r="20"
+                stroke="white"
+                strokeWidth="2"
+                fill="none"
+              />
+            </svg>
           </div>
 
           <div className="container mx-auto px-4 relative z-10">
             <div className="max-w-4xl mx-auto text-center">
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6 leading-tight drop-shadow-sm">
-                Find Blood Donation Camps
+                Find{" "}
+                <span className="bg-gradient-to-r from-red-200 to-red-300 bg-clip-text text-transparent">
+                  Blood Donation Camps
+                </span>
               </h1>
-              <p className="text-lg md:text-xl text-red-100 mb-10 max-w-2xl mx-auto font-medium leading-relaxed">
+              <p className="text-lg md:text-xl text-red-100 mb-10 max-w-2xl mx-auto font-normal leading-relaxed">
                 Locate life-saving blood donation camps near you. Find locations in Ahmedabad, Mumbai, Surat, Rajkot, and more. Register online, reserve your slot, and make a difference.
               </p>
 
-              {/* Search Bar & Filters Trigger */}
+              {/* Simple & Clean Search Bar */}
               <div className="max-w-2xl mx-auto">
-                <div className="flex flex-col sm:flex-row items-stretch bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 p-2 gap-2 border border-red-100/20 focus-within:ring-2 focus-within:ring-white/50">
-                  <div className="flex-1 flex items-center px-4 py-2">
-                    <Search className="w-5 h-5 text-red-500 flex-shrink-0" />
+                <div className="bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 p-2 flex flex-col sm:flex-row items-center gap-2 border border-slate-100 focus-within:ring-4 focus-within:ring-white/40">
+                  <div className="flex-1 flex items-center w-full px-3 py-1.5 gap-3">
+                    <Search className="w-5 h-5 text-red-600 flex-shrink-0" />
                     <input
                       type="text"
                       placeholder="Search by city, camp name, or location..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full px-3 py-1 outline-none text-gray-800 bg-transparent placeholder-gray-400 font-medium"
+                      className="w-full text-slate-800 placeholder-slate-400 font-medium text-base outline-none bg-transparent"
                     />
+                    {searchTerm && (
+                      <button
+                        onClick={() => setSearchTerm("")}
+                        className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+                        title="Clear search"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
                   <button
                     onClick={() => setShowFilters(!showFilters)}
-                    className={`px-6 py-3.5 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-2 active:scale-95 ${
-                      showFilters 
-                        ? "bg-gray-800 text-white shadow-md" 
-                        : "bg-red-600 hover:bg-red-700 text-white hover:shadow-lg hover:shadow-red-600/20"
+                    className={`w-full sm:w-auto px-6 py-3 rounded-xl font-bold text-sm transition-all duration-300 flex items-center justify-center gap-2 flex-shrink-0 ${
+                      showFilters
+                        ? "bg-slate-800 text-white shadow-md"
+                        : "bg-red-600 hover:bg-red-700 text-white shadow-md shadow-red-600/20 hover:scale-[1.02] active:scale-95"
                     }`}
                   >
                     <SlidersHorizontal className="w-4 h-4" />
-                    Filters
+                    <span>Filters</span>
+                    {(selectedCity !== "all" || selectedDate !== "all" || selectedType !== "all") && (
+                      <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                    )}
                   </button>
                 </div>
               </div>
@@ -729,112 +763,110 @@ const FindCamps = () => {
             <>
               {/* Grid View */}
               {viewMode === "grid" && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                   {currentCamps.map((camp) => (
                     <div
                       key={camp.id}
-                      className="bg-white rounded-3xl border border-gray-100/80 shadow-md hover:shadow-2xl transition-all duration-300 hover:-translate-y-1.5 flex flex-col h-full overflow-hidden group"
+                      className="bg-white rounded-3xl border border-slate-200/80 shadow-[0_10px_30px_-15px_rgba(0,0,0,0.06)] hover:shadow-[0_20px_45px_-15px_rgba(225,29,72,0.14)] hover:border-red-300 transition-all duration-300 overflow-hidden flex flex-col justify-between group"
                     >
-                      {/* Camp Image */}
-                      <div className="relative h-52 overflow-hidden bg-gray-100">
+                      {/* Image Header with Floating Overlays */}
+                      <div className="relative h-52 overflow-hidden bg-slate-900 flex-shrink-0">
                         <img
                           src={camp.image}
                           alt={camp.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-500 opacity-90"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent"></div>
                         
-                        <div className="absolute top-4 right-4 flex gap-2 z-10">
+                        {/* Top Floating Action Buttons */}
+                        <div className="absolute top-3.5 right-3.5 flex gap-2 z-10">
                           <button
                             onClick={() => toggleSaveCamp(camp.id)}
-                            className="p-2.5 bg-white/90 backdrop-blur-md text-gray-700 hover:text-red-600 hover:bg-white rounded-full shadow-lg transition-all duration-300 hover:scale-110"
-                            title={savedCamps.includes(camp.id) ? "Saved" : "Save Camp"}
+                            className="p-2.5 bg-slate-900/60 hover:bg-slate-900 text-white rounded-full backdrop-blur-md shadow-md transition-all duration-200 hover:scale-110 cursor-pointer"
+                            title="Save Camp"
                           >
                             {savedCamps.includes(camp.id) ? (
-                              <BookmarkCheck className="w-4 h-4 text-red-600 fill-red-600" />
+                              <BookmarkCheck className="w-4 h-4 text-red-400 fill-red-400" />
                             ) : (
-                              <Bookmark className="w-4 h-4" />
+                              <Bookmark className="w-4 h-4 text-white" />
                             )}
                           </button>
                           <button
                             onClick={() => shareCamp(camp)}
-                            className="p-2.5 bg-white/90 backdrop-blur-md text-gray-700 hover:text-red-600 hover:bg-white rounded-full shadow-lg transition-all duration-300 hover:scale-110"
+                            className="p-2.5 bg-slate-900/60 hover:bg-slate-900 text-white hover:text-red-400 rounded-full backdrop-blur-md shadow-md transition-all duration-200 hover:scale-110 cursor-pointer"
                             title="Share Camp"
                           >
                             <Share2 className="w-4 h-4" />
                           </button>
                         </div>
                         
-                        <div className="absolute bottom-4 left-4 z-10">
+                        {/* Bottom Badge Overlay */}
+                        <div className="absolute bottom-3.5 left-4 z-10 flex items-center gap-2">
                           <span
-                            className={`px-3.5 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm ${getCampTypeColor(camp.type)}`}
+                            className={`px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider shadow-md backdrop-blur-md ${getCampTypeColor(camp.type)}`}
                           >
                             {camp.type}
                           </span>
+                          {showNearest && camp.distance && (
+                            <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-emerald-500/90 text-white backdrop-blur-md shadow-md flex items-center gap-1">
+                              <Navigation className="w-3 h-3" />
+                              {camp.distance.toFixed(1)} km
+                            </span>
+                          )}
                         </div>
                       </div>
 
-                      {/* Camp Details */}
-                      <div className="p-6 flex flex-col flex-grow">
-                        <h3 className="text-xl font-bold text-gray-900 group-hover:text-red-600 transition-colors duration-300 mb-2 line-clamp-1">
-                          {camp.name}
-                        </h3>
-                        <p className="text-sm text-gray-500 font-medium mb-5 flex items-center gap-1.5">
-                          <Building className="w-4 h-4 text-gray-400" />
-                          {camp.organizer}
-                        </p>
+                      {/* Camp Card Details */}
+                      <div className="p-5 sm:p-6 flex flex-col flex-grow justify-between space-y-4">
+                        <div>
+                          <h3 className="text-lg font-black text-slate-900 group-hover:text-red-600 transition-colors duration-200 line-clamp-1 mb-1" title={camp.name}>
+                            {camp.name}
+                          </h3>
+                          <p className="text-xs text-slate-500 font-bold mb-4 flex items-center gap-1.5">
+                            <Building className="w-3.5 h-3.5 text-red-500 flex-shrink-0" />
+                            <span className="truncate">{camp.organizer}</span>
+                          </p>
 
-                        <div className="space-y-4 mb-6 flex-grow">
-                          {/* Date details */}
-                          <div className="flex gap-3">
-                            <div className="p-2 bg-red-50 text-red-600 rounded-xl h-fit">
-                              <Calendar className="w-4 h-4" />
-                            </div>
-                            <div className="flex flex-col justify-center">
-                              <p className="text-sm font-semibold text-gray-800">
-                                {formatDate(camp.date)}
-                              </p>
-                              <p className="text-xs text-gray-500 font-medium flex items-center gap-1 mt-0.5">
-                                <Clock className="w-3.5 h-3.5" />
-                                {camp.startTime} - {camp.endTime}
-                              </p>
-                            </div>
-                          </div>
-
-                          {/* Address details */}
-                          <div className="flex gap-3">
-                            <div className="p-2 bg-red-50 text-red-600 rounded-xl h-fit">
-                              <MapPin className="w-4 h-4" />
-                            </div>
-                            <div className="flex flex-col justify-center">
-                              <p className="text-sm font-medium text-gray-600 line-clamp-2 leading-relaxed">
-                                {camp.address}
-                              </p>
-                              {camp.landmark && (
-                                <p className="text-xs text-gray-400 mt-1 font-medium">
-                                  Landmark: {camp.landmark}
+                          {/* Info Rows */}
+                          <div className="space-y-3 bg-slate-50/80 border border-slate-100 rounded-2xl p-3.5 text-xs text-slate-600">
+                            {/* Date & Time */}
+                            <div className="flex items-start gap-2.5">
+                              <div className="p-1.5 bg-red-100/80 text-red-600 rounded-lg flex-shrink-0 mt-0.5">
+                                <Calendar className="w-3.5 h-3.5" />
+                              </div>
+                              <div className="min-w-0">
+                                <p className="font-extrabold text-slate-800 text-xs">
+                                  {formatDate(camp.date)}
                                 </p>
-                              )}
+                                <p className="text-[11px] text-slate-500 font-semibold flex items-center gap-1 mt-0.5">
+                                  <Clock className="w-3 h-3 text-slate-400" />
+                                  {camp.startTime} – {camp.endTime}
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Location */}
+                            <div className="flex items-start gap-2.5">
+                              <div className="p-1.5 bg-red-100/80 text-red-600 rounded-lg flex-shrink-0 mt-0.5">
+                                <MapPin className="w-3.5 h-3.5" />
+                              </div>
+                              <div className="min-w-0">
+                                <p className="font-semibold text-slate-700 text-xs line-clamp-2 leading-relaxed">
+                                  {camp.address}
+                                </p>
+                              </div>
                             </div>
                           </div>
 
-                          {/* Distance Indicator */}
-                          {showNearest && camp.distance && (
-                            <div className="flex items-center gap-2 text-xs font-semibold text-green-600 bg-green-50 px-3 py-1.5 rounded-lg w-fit">
-                              <Navigation className="w-3.5 h-3.5" />
-                              <span>{camp.distance.toFixed(1)} km away</span>
-                            </div>
-                          )}
-
-                          {/* Slots Progress bar */}
-                          <div className="pt-2 border-t border-gray-50">
-                            <div className="flex justify-between items-center text-xs font-semibold mb-2">
-                              <span className="text-gray-500">Available Slots</span>
-                              <span className={`${camp.availableSlots > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                {camp.availableSlots} / {camp.totalSlots}
+                          {/* Slots Progress Bar */}
+                          <div className="pt-3">
+                            <div className="flex justify-between items-center text-xs font-bold mb-1.5">
+                              <span className="text-slate-500">Slot Availability</span>
+                              <span className={camp.availableSlots > 0 ? "text-emerald-600 font-extrabold" : "text-red-600 font-extrabold"}>
+                                {camp.availableSlots} / {camp.totalSlots} slots
                               </span>
                             </div>
-                            <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                            <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
                               <div
                                 className="bg-gradient-to-r from-emerald-500 to-green-500 h-2 rounded-full transition-all duration-500"
                                 style={{
@@ -843,37 +875,37 @@ const FindCamps = () => {
                               ></div>
                             </div>
                           </div>
-                        </div>
 
-                        {/* Blood Types Needed */}
-                        <div className="mb-6">
-                          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2.5">
-                            Blood Types Needed:
-                          </p>
-                          <div className="flex flex-wrap gap-1.5">
-                            {camp.bloodTypes.map((type, idx) => (
-                              <span
-                                key={idx}
-                                className="px-2.5 py-1 bg-red-50 border border-red-100 text-red-600 text-xs font-bold rounded-lg"
-                              >
-                                {type}
-                              </span>
-                            ))}
+                          {/* Blood Types Needed */}
+                          <div className="pt-3">
+                            <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-2">
+                              Blood Types Needed:
+                            </p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {camp.bloodTypes.map((type, idx) => (
+                                <span
+                                  key={idx}
+                                  className="px-2.5 py-0.5 bg-red-50 border border-red-100 text-red-600 text-[11px] font-extrabold rounded-lg"
+                                >
+                                  {type}
+                                </span>
+                              ))}
+                            </div>
                           </div>
                         </div>
 
                         {/* Action Buttons */}
-                        <div className="flex gap-2 pt-4 border-t border-gray-100">
+                        <div className="flex gap-2 pt-4 border-t border-slate-100">
                           <button
                             onClick={() => registerForCamp(camp)}
-                            className="flex-1 px-4 py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-xl transition-all duration-300 text-sm font-bold flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-red-600/20 active:scale-[0.98]"
+                            className="flex-1 px-4 py-3 bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-700 hover:to-rose-700 text-white rounded-2xl transition-all duration-200 text-xs font-extrabold flex items-center justify-center gap-1.5 shadow-md shadow-red-600/20 hover:scale-[1.01] active:scale-95 cursor-pointer"
                           >
-                            <Heart className="w-4 h-4" />
-                            Register
+                            <Heart className="w-3.5 h-3.5" />
+                            <span>Register</span>
                           </button>
                           <button
                             onClick={() => setSelectedCamp(camp)}
-                            className="px-4 py-3 border border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 text-sm active:scale-[0.98]"
+                            className="px-4 py-3 border border-slate-200 text-slate-700 hover:text-slate-900 font-extrabold rounded-2xl hover:bg-slate-50 transition-all duration-200 text-xs active:scale-95 cursor-pointer"
                           >
                             Details
                           </button>
@@ -886,31 +918,40 @@ const FindCamps = () => {
 
               {/* List View */}
               {viewMode === "list" && (
-                <div className="space-y-6">
+                <div className="space-y-5">
                   {currentCamps.map((camp) => (
                     <div
                       key={camp.id}
-                      className="bg-white rounded-3xl border border-gray-100 shadow-md hover:shadow-xl transition-all duration-300 p-6"
+                      className="bg-white rounded-3xl border border-slate-200/80 shadow-[0_10px_30px_-15px_rgba(0,0,0,0.06)] hover:shadow-[0_20px_45px_-15px_rgba(225,29,72,0.14)] hover:border-red-300 transition-all duration-300 p-5 sm:p-6"
                     >
                       <div className="flex flex-col lg:flex-row gap-6">
                         {/* Camp Image */}
-                        <div className="lg:w-64 h-40 rounded-2xl overflow-hidden bg-gray-100 flex-shrink-0 relative">
+                        <div className="lg:w-64 h-44 rounded-2xl overflow-hidden bg-slate-900 flex-shrink-0 relative">
                           <img
                             src={camp.image}
                             alt={camp.name}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover opacity-90"
                           />
+                          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent"></div>
                           <div className="absolute top-3 right-3 flex gap-1.5 z-10">
                             <button
                               onClick={() => toggleSaveCamp(camp.id)}
-                              className="p-2 bg-white/90 backdrop-blur-sm text-gray-700 hover:text-red-600 rounded-full shadow transition-all duration-200"
+                              className="p-2 bg-slate-900/60 backdrop-blur-md text-white hover:text-red-400 rounded-full shadow transition-all duration-200 cursor-pointer"
+                              title="Save Camp"
                             >
                               {savedCamps.includes(camp.id) ? (
-                                <BookmarkCheck className="w-3.5 h-3.5 text-red-600 fill-red-600" />
+                                <BookmarkCheck className="w-4 h-4 text-red-400 fill-red-400" />
                               ) : (
-                                <Bookmark className="w-3.5 h-3.5" />
+                                <Bookmark className="w-4 h-4 text-white" />
                               )}
                             </button>
+                          </div>
+                          <div className="absolute bottom-3 left-3 z-10">
+                            <span
+                              className={`px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider shadow-sm backdrop-blur-md ${getCampTypeColor(camp.type)}`}
+                            >
+                              {camp.type}
+                            </span>
                           </div>
                         </div>
 
@@ -1053,224 +1094,218 @@ const FindCamps = () => {
 
         {/* Camp Details Modal */}
         {selectedCamp && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in">
-            <div className="bg-white rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-100/50 animate-in zoom-in-95 duration-200">
+          <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md flex items-center justify-center z-50 p-4 sm:p-6 animate-in fade-in">
+            <div className="bg-white rounded-3xl max-w-3xl w-full max-h-[90vh] shadow-2xl border border-slate-100 flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
               {/* Modal Header with Image */}
-              <div className="relative h-64 bg-gray-100">
+              <div className="relative h-56 sm:h-64 bg-slate-900 flex-shrink-0">
                 <img
                   src={selectedCamp.image}
                   alt={selectedCamp.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover opacity-90"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-slate-950/20 to-transparent"></div>
                 <button
                   onClick={() => setSelectedCamp(null)}
-                  className="absolute top-4 right-4 p-2 bg-white/90 backdrop-blur-md text-gray-800 hover:text-red-600 rounded-full shadow-lg hover:bg-white transition-all duration-200 hover:scale-105"
+                  className="absolute top-4 right-4 p-2.5 bg-slate-900/60 hover:bg-slate-900 text-white hover:text-red-400 rounded-full shadow-lg backdrop-blur-md transition-all duration-200 hover:scale-105 z-20 cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
                 <div className="absolute bottom-4 left-6 z-10">
                   <span
-                    className={`px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider shadow-md ${getCampTypeColor(selectedCamp.type)}`}
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider shadow-md backdrop-blur-md ${getCampTypeColor(selectedCamp.type)}`}
                   >
                     {selectedCamp.type}
                   </span>
                 </div>
               </div>
 
-              {/* Modal Content */}
-              <div className="p-6 md:p-8">
-                <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 mb-2">
-                  {selectedCamp.name}
-                </h2>
-                <p className="text-sm text-gray-500 font-semibold mb-6 flex items-center gap-1.5">
-                  <Building className="w-4 h-4 text-gray-400" />
-                  Organized by {selectedCamp.organizer}
-                </p>
+              {/* Modal Scrollable Content Container */}
+              <div className="p-6 md:p-8 overflow-y-auto flex-grow space-y-6 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-slate-100 [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full">
+                {/* Title & Organizer Header */}
+                <div>
+                  <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mb-2">
+                    {selectedCamp.name}
+                  </h2>
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-slate-100 border border-slate-200/80 text-slate-700 text-xs font-bold">
+                    <Building className="w-3.5 h-3.5 text-slate-400" />
+                    <span>Organized by {selectedCamp.organizer}</span>
+                  </div>
+                </div>
 
-                {/* Details Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                  <div className="space-y-5">
-                    <div className="flex items-start gap-3.5">
-                      <div className="p-2 bg-red-50 text-red-600 rounded-xl">
-                        <Calendar className="w-5 h-5" />
+                {/* 2x2 Structured Cards Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  
+                  {/* Card 1: Date & Time */}
+                  <div className="bg-rose-50/70 border border-rose-100 p-4.5 rounded-2xl space-y-2">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-xl bg-red-600 text-white flex items-center justify-center font-bold shadow-xs">
+                        <Calendar className="w-4 h-4" />
                       </div>
-                      <div>
-                        <p className="font-bold text-gray-800 text-sm">Date & Time</p>
-                        <p className="text-sm text-gray-600 mt-1">
-                          {formatDate(selectedCamp.date)}
-                        </p>
-                        <p className="text-xs text-gray-500 font-semibold mt-0.5">
-                          {selectedCamp.startTime} - {selectedCamp.endTime}
-                        </p>
-                      </div>
+                      <span className="text-xs font-extrabold uppercase tracking-wider text-rose-800">Date & Schedule</span>
                     </div>
-                    
-                    <div className="flex items-start gap-3.5">
-                      <div className="p-2 bg-red-50 text-red-600 rounded-xl">
-                        <MapPin className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <p className="font-bold text-gray-800 text-sm">Location</p>
-                        <p className="text-sm text-gray-600 mt-1 leading-relaxed">
-                          {selectedCamp.address}
-                        </p>
-                        {selectedCamp.landmark && (
-                          <p className="text-xs text-gray-400 mt-1 font-semibold">
-                            Landmark: {selectedCamp.landmark}
-                          </p>
-                        )}
+                    <p className="font-extrabold text-slate-900 text-sm sm:text-base pt-1">
+                      {formatDate(selectedCamp.date)}
+                    </p>
+                    <span className="inline-block bg-white/90 text-rose-700 text-xs font-bold px-2.5 py-1 rounded-lg border border-rose-200/60 shadow-2xs">
+                      ⏰ {selectedCamp.startTime} – {selectedCamp.endTime}
+                    </span>
+                  </div>
 
-                        {/* Distance in Modal */}
-                        {showNearest && selectedCamp.distance && (
-                          <p className="text-xs font-bold text-green-600 mt-2 flex items-center gap-1">
-                            <Navigation className="w-3.5 h-3.5" />
-                            {selectedCamp.distance.toFixed(1)} km from your location
-                          </p>
-                        )}
+                  {/* Card 2: Location */}
+                  <div className="bg-blue-50/70 border border-blue-100 p-4.5 rounded-2xl space-y-2">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold shadow-xs">
+                        <MapPin className="w-4 h-4" />
                       </div>
+                      <span className="text-xs font-extrabold uppercase tracking-wider text-blue-800">Venue Location</span>
                     </div>
+                    <p className="font-bold text-slate-900 text-xs sm:text-sm leading-snug pt-1">
+                      {selectedCamp.address}
+                    </p>
+                    {selectedCamp.landmark && (
+                      <p className="text-[11px] font-semibold text-blue-600/90">
+                        📍 Landmark: {selectedCamp.landmark}
+                      </p>
+                    )}
+                    {showNearest && selectedCamp.distance && (
+                      <p className="text-xs font-bold text-emerald-600 flex items-center gap-1 pt-1">
+                        <Navigation className="w-3.5 h-3.5" />
+                        {selectedCamp.distance.toFixed(1)} km away from you
+                      </p>
+                    )}
+                  </div>
 
-                    <div className="flex items-start gap-3.5">
-                      <div className="p-2 bg-red-50 text-red-600 rounded-xl">
-                        <Users className="w-5 h-5" />
+                  {/* Card 3: Slot Availability */}
+                  <div className="bg-emerald-50/70 border border-emerald-100 p-4.5 rounded-2xl space-y-2">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold shadow-xs">
+                        <Users className="w-4 h-4" />
                       </div>
-                      <div className="flex-grow">
-                        <p className="font-bold text-gray-800 text-sm">Slot Availability</p>
-                        <p className="text-sm text-gray-600 mt-1">
-                          {selectedCamp.availableSlots} slots available out of {selectedCamp.totalSlots}
-                        </p>
-                        <div className="w-full bg-gray-100 rounded-full h-2 mt-3 overflow-hidden">
-                          <div
-                            className="bg-gradient-to-r from-emerald-500 to-green-500 h-2 rounded-full"
-                            style={{
-                              width: `${(selectedCamp.availableSlots / selectedCamp.totalSlots) * 100}%`,
-                            }}
-                          ></div>
-                        </div>
-                      </div>
+                      <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-800">Slot Availability</span>
+                    </div>
+                    <p className="font-extrabold text-emerald-950 text-sm pt-1">
+                      {selectedCamp.availableSlots} slots available <span className="text-emerald-700 font-normal">out of {selectedCamp.totalSlots}</span>
+                    </p>
+                    <div className="w-full bg-emerald-200/60 rounded-full h-2 mt-2 overflow-hidden">
+                      <div
+                        className="bg-gradient-to-r from-emerald-500 to-green-500 h-2 rounded-full shadow-xs"
+                        style={{
+                          width: `${(selectedCamp.availableSlots / selectedCamp.totalSlots) * 100}%`,
+                        }}
+                      ></div>
                     </div>
                   </div>
 
-                  <div className="space-y-5">
-                    <div className="flex items-start gap-3.5">
-                      <div className="p-2 bg-red-50 text-red-600 rounded-xl">
-                        <Phone className="w-5 h-5" />
+                  {/* Card 4: Contact Details */}
+                  <div className="bg-indigo-50/70 border border-indigo-100 p-4.5 rounded-2xl space-y-2">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold shadow-xs">
+                        <Phone className="w-4 h-4" />
                       </div>
-                      <div>
-                        <p className="font-bold text-gray-800 text-sm">Contact Details</p>
-                        {selectedCamp.contactPerson && (
-                          <p className="text-sm text-gray-700 mt-1 font-medium">
-                            {selectedCamp.contactPerson}
-                          </p>
-                        )}
-                        {selectedCamp.phone && (
-                          <p className="text-sm text-gray-600 flex items-center gap-1.5 mt-1 font-medium">
-                            <Phone className="w-3.5 h-3.5 text-gray-400" />
-                            {selectedCamp.phone}
-                          </p>
-                        )}
-                        {selectedCamp.email && (
-                          <p className="text-sm text-gray-600 flex items-center gap-1.5 mt-1 font-medium break-all">
-                            <Mail className="w-3.5 h-3.5 text-gray-400" />
-                            {selectedCamp.email}
-                          </p>
-                        )}
-                        {!selectedCamp.contactPerson && !selectedCamp.phone && !selectedCamp.email && (
-                          <p className="text-sm text-gray-400 mt-1 italic">
-                            No contact information provided.
-                          </p>
-                        )}
-                      </div>
+                      <span className="text-xs font-extrabold uppercase tracking-wider text-indigo-800">Contact Details</span>
                     </div>
-                    
-                    <div className="flex items-start gap-3.5">
-                      <div className="p-2 bg-red-50 text-red-600 rounded-xl">
-                        <Droplet className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <p className="font-bold text-gray-800 text-sm">Blood Types Needed</p>
-                        <div className="flex flex-wrap gap-1.5 mt-2.5">
-                          {selectedCamp.bloodTypes.length > 0 ? (
-                            selectedCamp.bloodTypes.map((type, idx) => (
-                              <span
-                                key={idx}
-                                className="px-2.5 py-1 bg-red-50 border border-red-100 text-red-600 text-xs font-bold rounded-lg"
-                              >
-                                {type}
-                              </span>
-                            ))
-                          ) : (
-                            <span className="text-sm text-gray-400 italic">All groups welcome</span>
-                          )}
-                        </div>
-                      </div>
+                    <div className="space-y-1 text-xs pt-1">
+                      {selectedCamp.contactPerson && (
+                        <p className="font-extrabold text-slate-900">{selectedCamp.contactPerson}</p>
+                      )}
+                      {selectedCamp.phone && (
+                        <p className="font-bold text-indigo-700 flex items-center gap-1">
+                          <Phone className="w-3 h-3" /> {selectedCamp.phone}
+                        </p>
+                      )}
+                      {selectedCamp.email && (
+                        <p className="font-semibold text-slate-600 truncate flex items-center gap-1">
+                          <Mail className="w-3 h-3 text-slate-400" /> {selectedCamp.email}
+                        </p>
+                      )}
                     </div>
-                    
-                    <div className="flex items-start gap-3.5">
-                      <div className="p-2 bg-red-50 text-red-600 rounded-xl">
-                        <Award className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <p className="font-bold text-gray-800 text-sm">Facilities Provided</p>
-                        <div className="flex flex-wrap gap-1.5 mt-2.5">
-                          {selectedCamp.facilities.length > 0 ? (
-                            selectedCamp.facilities.map((facility, idx) => (
-                              <span
-                                key={idx}
-                                className="px-2.5 py-1 bg-gray-50 border border-gray-200 text-gray-600 text-xs font-semibold rounded-lg"
-                              >
-                                {facility}
-                              </span>
-                            ))
-                          ) : (
-                            <span className="text-sm text-gray-400 italic">Standard blood drive setup</span>
-                          )}
-                        </div>
-                      </div>
+                  </div>
+
+                </div>
+
+                {/* Blood Types Needed & Facilities Provided */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Blood Types Card */}
+                  <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 space-y-2.5">
+                    <div className="flex items-center gap-2">
+                      <Droplet className="w-4 h-4 text-red-600" />
+                      <span className="text-xs font-extrabold uppercase tracking-wider text-slate-700">Blood Types Needed</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      {selectedCamp.bloodTypes.length > 0 ? (
+                        selectedCamp.bloodTypes.map((type, idx) => (
+                          <span
+                            key={idx}
+                            className="px-3 py-1 bg-gradient-to-r from-red-600 to-rose-600 text-white text-xs font-black rounded-xl shadow-xs shadow-red-500/20"
+                          >
+                            {type}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-xs text-slate-400 font-semibold italic">All blood groups welcome</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Facilities Provided Card */}
+                  <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 space-y-2.5">
+                    <div className="flex items-center gap-2">
+                      <Award className="w-4 h-4 text-emerald-600" />
+                      <span className="text-xs font-extrabold uppercase tracking-wider text-slate-700">Facilities Provided</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      {selectedCamp.facilities.length > 0 ? (
+                        selectedCamp.facilities.map((facility, idx) => (
+                          <span
+                            key={idx}
+                            className="px-3 py-1 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-xl shadow-2xs flex items-center gap-1"
+                          >
+                            <CheckCircle className="w-3 h-3 text-emerald-500" />
+                            {facility}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-xs text-slate-400 font-semibold italic">Standard blood drive setup</span>
+                      )}
                     </div>
                   </div>
                 </div>
 
-                {/* Map Preview */}
-                <div className="mb-8">
-                  <button
-                    onClick={() =>
-                      window.open(
-                        `https://maps.google.com/?q=${selectedCamp.address}`,
-                      )
-                    }
-                    className="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl flex items-center justify-center gap-2.5 text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-all font-bold"
-                  >
-                    <Map className="w-5 h-5 text-red-500" />
-                    Open Location in Google Maps
-                  </button>
-                </div>
+                {/* Map Link Button */}
+                <button
+                  onClick={() =>
+                    window.open(
+                      `https://maps.google.com/?q=${encodeURIComponent(selectedCamp.address)}`,
+                    )
+                  }
+                  className="w-full py-3.5 px-4 bg-slate-100 hover:bg-slate-200/80 border border-slate-200 text-slate-800 rounded-2xl flex items-center justify-center gap-2 transition-all font-extrabold text-xs cursor-pointer"
+                >
+                  <MapPin className="w-4 h-4 text-red-600" />
+                  <span>Open Location in Google Maps</span>
+                </button>
 
-                {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-gray-100">
+                {/* Modal Action Buttons Footer */}
+                <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-slate-100">
                   <button
                     onClick={() => {
                       registerForCamp(selectedCamp);
                       setSelectedCamp(null);
                     }}
-                    className="flex-1 px-6 py-4 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-xl transition-all duration-300 font-bold flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-red-600/20 active:scale-95"
+                    className="flex-1 px-6 py-4 bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-700 hover:to-rose-700 text-white rounded-2xl transition-all duration-300 font-extrabold text-sm flex items-center justify-center gap-2 shadow-xl shadow-red-600/25 hover:scale-[1.01] active:scale-95 cursor-pointer"
                   >
-                    <Heart className="w-5 h-5" />
-                    Register for this Camp
+                    <Heart className="w-4 h-4" />
+                    <span>Register for this Camp</span>
                   </button>
                   <button
                     onClick={() => toggleSaveCamp(selectedCamp.id)}
-                    className={`px-6 py-4 border rounded-xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-all ${
+                    className={`px-6 py-4 border rounded-2xl font-bold text-xs flex items-center justify-center gap-2 active:scale-95 transition-all cursor-pointer ${
                       savedCamps.includes(selectedCamp.id)
-                        ? "border-red-600 text-red-600 hover:bg-red-50"
-                        : "border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400"
+                        ? "border-red-600 text-red-600 bg-red-50/50"
+                        : "border-slate-300 text-slate-700 hover:bg-slate-50"
                     }`}
                   >
-                    <Bookmark className="w-5 h-5" />
-                    {savedCamps.includes(selectedCamp.id)
-                      ? "Saved in Wishlist"
-                      : "Save to Wishlist"}
+                    <Bookmark className="w-4 h-4" />
+                    <span>{savedCamps.includes(selectedCamp.id) ? "Saved in Wishlist" : "Save to Wishlist"}</span>
                   </button>
                 </div>
               </div>

@@ -304,7 +304,7 @@ function AdminContactMessages() {
                 <div className="space-y-2 border-t border-gray-100 pt-3">
                   <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block">Reply History</span>
                   <div className="space-y-2 max-h-28 overflow-y-auto pr-1">
-                    {selectedMessage.replies.map((rep, idx) => (
+                    {selectedMessage.replies?.map((rep, idx) => (
                       <div key={idx} className="bg-emerald-50/20 border border-emerald-50/50 p-2.5 rounded-lg text-xs leading-relaxed">
                         <div className="flex justify-between text-[9px] text-emerald-700 font-semibold mb-1">
                           <span className="flex items-center gap-1"><CornerDownRight className="w-3 h-3" /> Replied by Admin</span>

@@ -96,18 +96,28 @@ const HospitalRequestBlood = () => {
     <div className="min-h-screen bg-slate-50/50 py-4 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto space-y-6">
         
-        {/* Header Section */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-          <div>
-            <h1 className="text-2xl font-black text-slate-800 tracking-tight flex items-center gap-2.5">
-              <div className="p-2.5 bg-gradient-to-tr from-red-500 to-rose-600 rounded-xl text-white shadow-md shadow-rose-100 animate-pulse">
-                <Droplet className="w-5 h-5" />
-              </div>
-              Request Blood Components
-            </h1>
-            <p className="text-sm text-slate-500 mt-1 font-semibold">
-              Submit blood supply requests directly to verified partnered laboratories
-            </p>
+        {/* Signature Crimson-Rose Hero Header Banner */}
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-red-700 via-rose-700 to-red-900 p-6 sm:p-8 text-white shadow-xl shadow-red-900/20 border border-red-500/30">
+          {/* Geometric Vector Rings Overlay */}
+          <div className="absolute inset-0 opacity-15 pointer-events-none">
+            <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <circle cx="90" cy="10" r="30" stroke="white" strokeWidth="2" fill="none" />
+              <circle cx="10" cy="90" r="25" stroke="white" strokeWidth="2" fill="none" />
+            </svg>
+          </div>
+
+          <div className="relative z-10 flex flex-col sm:flex-row gap-5 items-center sm:items-end text-center sm:text-left">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-white text-red-600 font-black flex items-center justify-center shadow-2xl ring-4 ring-white/20 flex-shrink-0">
+              <Droplet className="w-8 h-8 sm:w-10 sm:h-10 text-red-600 fill-red-600 animate-bounce" />
+            </div>
+            <div>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold uppercase tracking-wide text-white">
+                Request Blood Components
+              </h1>
+              <p className="text-xs sm:text-sm font-semibold text-red-100/90 mt-1">
+                Submit emergency or routine blood supply requests directly to verified partnered laboratories.
+              </p>
+            </div>
           </div>
         </div>
 

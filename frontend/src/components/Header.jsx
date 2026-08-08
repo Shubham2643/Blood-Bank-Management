@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Heart,
@@ -26,6 +26,9 @@ export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+
+  const notifRef = useRef(null);
+  const userMenuRef = useRef(null);
 
   const {
     notifications,
@@ -55,11 +58,29 @@ export default function Header() {
     setShowNotifications(false);
   }, [location.pathname]);
 
+  // Close dropdowns when clicking anywhere outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (notifRef.current && !notifRef.current.contains(event.target)) {
+        setShowNotifications(false);
+      }
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setUserMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   const navLinks = [
     { name: "Home", path: "/" },
     { name: "Find Camps", path: "/camps" },
     { name: "Stock Search", path: "/stock-search" },
     { name: "About", path: "/about" },
+    { name: "FAQs", path: "/faqs" },
     { name: "Contact", path: "/contact" },
   ];
 
@@ -85,20 +106,20 @@ export default function Header() {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
-          ? "bg-white/85 backdrop-blur-md border-b border-rose-100/60 shadow-[0_4px_30px_rgba(244,63,94,0.03)] py-1.5"
-          : "bg-white/70 backdrop-blur-sm border-b border-slate-100/50 py-3"
+          ? "bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-sm"
+          : "bg-white/90 backdrop-blur-md border-b border-slate-100/80"
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16 sm:h-20">
+        <div className="flex items-center justify-between h-16 sm:h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-gradient-to-br from-red-500 via-rose-500 to-rose-600 shadow-md shadow-red-200/50 group-hover:shadow-lg group-hover:shadow-rose-500/25 transition-all duration-300 group-hover:scale-105 group-hover:rotate-3">
+            <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-gradient-to-br from-red-500 via-rose-500 to-rose-600 shadow-md shadow-red-200/50 group-hover:shadow-lg group-hover:shadow-rose-500/25 transition-all duration-300 group-hover:scale-105">
               <Heart className="w-5 h-5 text-white group-hover:animate-pulse" />
             </div>
-            <div className="flex flex-col">
+            <div className="flex flex-col justify-center">
               <h1 className="text-xl font-black text-slate-800 tracking-tight leading-none flex items-center">
                 {WEBSITE_NAME === "LifeDrop" ? (
                   <>
@@ -116,15 +137,15 @@ export default function Header() {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-1.5">
+          <nav className="hidden md:flex items-center gap-1 sm:gap-1.5">
             {navLinks.map((link) => (
               <Link
                 key={link.name}
                 to={link.path}
-                className={`relative px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-300 ${
+                className={`px-3.5 py-2 text-xs sm:text-sm font-extrabold rounded-full transition-all duration-200 flex items-center justify-center ${
                   location.pathname === link.path
-                    ? "text-red-600 bg-red-50/60 shadow-sm border border-red-100/40"
-                    : "text-slate-600 hover:text-red-600 hover:bg-slate-50/50"
+                    ? "text-red-600 bg-red-50 border border-red-100/80 shadow-2xs"
+                    : "text-slate-600 hover:text-red-600 hover:bg-slate-50"
                 }`}
               >
                 {link.name}
@@ -134,7 +155,7 @@ export default function Header() {
             {authenticated ? (
               <>
                 {/* Notifications */}
-                <div className="relative ml-2">
+                <div className="relative ml-2" ref={notifRef}>
                   <button
                     onClick={() => setShowNotifications(!showNotifications)}
                     className="relative p-2 text-slate-500 hover:text-red-600 hover:bg-red-50/60 rounded-xl transition-all duration-300 hover:scale-105"
@@ -193,7 +214,7 @@ export default function Header() {
                 </div>
 
                 {/* User Menu */}
-                <div className="relative ml-2">
+                <div className="relative ml-2" ref={userMenuRef}>
                   <button
                     onClick={() => setUserMenuOpen(!userMenuOpen)}
                     className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl border border-slate-100/80 bg-slate-50/30 hover:bg-slate-50 hover:border-slate-200/80 transition-all duration-300 group"

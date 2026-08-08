@@ -93,28 +93,40 @@ const BloodStock = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
-            <div className="p-2 bg-red-100 rounded-xl">
-              <Droplets className="w-6 h-6 text-red-600" />
-            </div>
-            Blood Stock Management
-          </h1>
-          <p className="text-gray-600 mt-2">
-            Manage your blood inventory and track stock levels
-          </p>
+      {/* Signature Crimson-Rose Hero Header Banner */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-red-700 via-rose-700 to-red-900 p-6 sm:p-8 text-white shadow-xl shadow-red-900/20 border border-red-500/30 mb-8">
+        {/* Geometric Vector Rings Overlay */}
+        <div className="absolute inset-0 opacity-15 pointer-events-none">
+          <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <circle cx="90" cy="10" r="30" stroke="white" strokeWidth="2" fill="none" />
+            <circle cx="10" cy="90" r="25" stroke="white" strokeWidth="2" fill="none" />
+          </svg>
         </div>
-        
-        <button
-          onClick={fetchStock}
-          disabled={loading}
-          className="mt-4 lg:mt-0 flex items-center gap-2 px-4 py-2 bg-white border border-red-200 rounded-lg text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
-        >
-          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-          {loading ? 'Refreshing...' : 'Refresh Stock'}
-        </button>
+
+        <div className="relative z-10 flex flex-col md:flex-row gap-6 justify-between items-center md:items-end">
+          <div className="flex flex-col sm:flex-row gap-5 items-center sm:items-end text-center sm:text-left">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-white text-red-600 font-black flex items-center justify-center shadow-2xl ring-4 ring-white/20 flex-shrink-0">
+              <Droplets className="w-8 h-8 sm:w-10 sm:h-10 text-red-600 fill-red-600 animate-bounce" />
+            </div>
+            <div>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold uppercase tracking-wide text-white">
+                Blood Stock Management
+              </h1>
+              <p className="text-xs sm:text-sm font-semibold text-red-100/90 mt-1">
+                Manage your laboratory's blood inventory, add new supply units, and track real-time stock levels.
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={fetchStock}
+            disabled={loading}
+            className="px-5 py-3 bg-white/15 hover:bg-white/25 backdrop-blur-md text-white rounded-2xl font-black text-xs uppercase tracking-wider border border-white/20 transition-all flex items-center gap-2 cursor-pointer hover:scale-105 shadow-md flex-shrink-0 active:scale-95 disabled:opacity-50"
+          >
+            <RefreshCw className={`w-4 h-4 text-white ${loading ? "animate-spin" : ""}`} />
+            <span>{loading ? "Refreshing..." : "Refresh Stock"}</span>
+          </button>
+        </div>
       </div>
 
       {/* Low Stock Alert */}

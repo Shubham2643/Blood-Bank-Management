@@ -126,8 +126,9 @@ const DonorDonationHistory = () => {
       ]);
 
       let data =
-        historyRes.data.history ||
-        historyRes.data.donations ||
+        historyRes.data?.data ||
+        historyRes.data?.history ||
+        historyRes.data?.donations ||
         (Array.isArray(historyRes.data) ? historyRes.data : []);
 
       console.log("Fetched donation history:", data);
@@ -1255,275 +1256,253 @@ const DonorDonationHistory = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header with Donor Info */}
-        <div className="mb-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="p-4 bg-red-600 rounded-2xl shadow-lg">
-                <Droplet className="w-8 h-8 text-white" />
-              </div>
-              <div>
-                <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
-                  Donation History
-                </h1>
-                {donorInfo && (
-                  <p className="text-gray-600 mt-1">
-                    Welcome back,{" "}
-                    <span className="font-semibold text-red-600">
-                      {donorInfo.name}
-                    </span>
-                  </p>
-                )}
+    <div className="space-y-8 pb-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 font-sans text-slate-800">
+      
+      {/* Hero Header Banner */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-red-700 via-rose-700 to-red-900 text-white rounded-3xl p-6 sm:p-8 lg:p-10 shadow-xl border border-red-600/40">
+        <div className="absolute inset-0 opacity-10 pointer-events-none">
+          <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <circle cx="90" cy="10" r="30" stroke="white" strokeWidth="2" fill="none" />
+            <circle cx="10" cy="90" r="25" stroke="white" strokeWidth="2" fill="none" />
+          </svg>
+        </div>
+
+        <div className="relative z-10 flex flex-col md:flex-row gap-6 justify-between items-center md:items-end">
+          <div className="flex flex-col sm:flex-row gap-5 items-center sm:items-end text-center sm:text-left">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-white text-red-600 font-black flex items-center justify-center shadow-2xl ring-4 ring-white/20 flex-shrink-0">
+              <Droplet className="w-8 h-8 sm:w-10 sm:h-10 fill-red-600 text-red-600 animate-pulse" />
+            </div>
+            <div>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold uppercase tracking-wide text-white">
+                Donation History
+              </h1>
+              {donorInfo && (
+                <p className="text-xs sm:text-sm font-semibold text-red-100/90 mt-1">
+                  Welcome back, <span className="font-black text-white">{donorInfo.name || donorInfo.fullName}</span>! Here is your complete lifesaver record.
+                </p>
+              )}
+            </div>
+          </div>
+
+          <button
+            onClick={shareStats}
+            className="px-5 py-3 bg-white/15 hover:bg-white/25 backdrop-blur-md text-white rounded-2xl font-black text-xs uppercase tracking-wider border border-white/20 transition-all flex items-center gap-2 cursor-pointer hover:scale-105 shadow-md"
+          >
+            <Share2 className="w-4 h-4 text-white" />
+            <span>Share Impact</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Main 4 Statistics Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Card 1: Total Donations */}
+        <div className="bg-white rounded-3xl shadow-[0_10px_35px_-10px_rgba(0,0,0,0.05)] border border-slate-200/80 p-6 relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+          <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-red-600 to-rose-600" />
+          <div className="flex justify-between items-start">
+            <div>
+              <span className="block text-xs font-black text-slate-400 uppercase tracking-wider">Total Donations</span>
+              <h3 className="text-3xl sm:text-4xl font-black text-slate-850 mt-1">{stats.totalDonations}</h3>
+              {stats.yearlyBreakdown[new Date().getFullYear()] > 0 ? (
+                <span className="inline-flex items-center gap-1 mt-2 text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-100">
+                  +{stats.yearlyBreakdown[new Date().getFullYear()]} this year
+                </span>
+              ) : (
+                <span className="inline-block mt-2 text-xs font-semibold text-slate-400">All-time count</span>
+              )}
+            </div>
+            <div className="w-12 h-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center shadow-xs">
+              <Droplet className="w-6 h-6 fill-red-600" />
+            </div>
+          </div>
+        </div>
+
+        {/* Card 2: Units Donated */}
+        <div className="bg-white rounded-3xl shadow-[0_10px_35px_-10px_rgba(0,0,0,0.05)] border border-slate-200/80 p-6 relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+          <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-emerald-500 to-teal-600" />
+          <div className="flex justify-between items-start">
+            <div>
+              <span className="block text-xs font-black text-slate-400 uppercase tracking-wider">Units Donated</span>
+              <h3 className="text-3xl sm:text-4xl font-black text-slate-850 mt-1">{stats.totalUnits}</h3>
+              <span className="inline-block mt-2 text-xs font-semibold text-slate-400">Avg {stats.averageUnits} per session</span>
+            </div>
+            <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-xs">
+              <Activity className="w-6 h-6" />
+            </div>
+          </div>
+        </div>
+
+        {/* Card 3: Lives Impacted */}
+        <div className="bg-white rounded-3xl shadow-[0_10px_35px_-10px_rgba(0,0,0,0.05)] border border-slate-200/80 p-6 relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+          <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-blue-500 to-indigo-600" />
+          <div className="flex justify-between items-start">
+            <div>
+              <span className="block text-xs font-black text-slate-400 uppercase tracking-wider">Lives Impacted</span>
+              <h3 className="text-3xl sm:text-4xl font-black text-slate-850 mt-1">{stats.lifeImpact}+</h3>
+              <span className="inline-block mt-2 text-xs font-semibold text-slate-400">Each unit saves ~3 lives</span>
+            </div>
+            <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-xs">
+              <Heart className="w-6 h-6 fill-blue-600" />
+            </div>
+          </div>
+        </div>
+
+        {/* Card 4: Donor Rank Level */}
+        <div className="bg-white rounded-3xl shadow-[0_10px_35px_-10px_rgba(0,0,0,0.05)] border border-slate-200/80 p-6 relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+          <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-purple-500 to-pink-600" />
+          <div className="flex justify-between items-start">
+            <div>
+              <span className="block text-xs font-black text-slate-400 uppercase tracking-wider">Rank Level</span>
+              <h3 className="text-2xl sm:text-3xl font-black text-slate-850 mt-1">{donorLevel.level}</h3>
+              {donorLevel.nextMilestone && (
+                <span className="inline-block mt-2 text-xs font-semibold text-slate-400">
+                  {stats.totalDonations}/{donorLevel.nextMilestone} to next tier
+                </span>
+              )}
+            </div>
+            <div className={`w-12 h-12 rounded-2xl bg-gradient-to-r ${donorLevel.color} text-white flex items-center justify-center shadow-md`}>
+              {donorLevel.icon}
+            </div>
+          </div>
+          {donorLevel.nextMilestone && (
+            <div className="mt-3.5">
+              <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden border border-slate-200/60 p-0.5">
+                <div
+                  className={`h-full bg-gradient-to-r ${donorLevel.color} rounded-full transition-all duration-500`}
+                  style={{ width: `${donorLevel.progress}%` }}
+                />
               </div>
             </div>
+          )}
+        </div>
+      </div>
 
-            {/* Share Button */}
+      {/* Sub-Statistics Row */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-white rounded-3xl shadow-[0_10px_35px_-10px_rgba(0,0,0,0.05)] border border-slate-200/80 p-5 flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0">
+            <Clock className="w-6 h-6" />
+          </div>
+          <div>
+            <span className="block text-[11px] font-black text-slate-400 uppercase tracking-wider">Donation Streak</span>
+            <span className="block text-xl font-black text-slate-850">
+              {stats.donationStreak} {stats.donationStreak === 1 ? "month" : "months"}
+            </span>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-3xl shadow-[0_10px_35px_-10px_rgba(0,0,0,0.05)] border border-slate-200/80 p-5 flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center flex-shrink-0">
+            <MapPin className="w-6 h-6" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <span className="block text-[11px] font-black text-slate-400 uppercase tracking-wider">Favorite Location</span>
+            <span className="block text-xl font-black text-slate-850 truncate" title={stats.favoriteLocation}>
+              {stats.favoriteLocation || "Blood Donation Center"}
+            </span>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-3xl shadow-[0_10px_35px_-10px_rgba(0,0,0,0.05)] border border-slate-200/80 p-5 flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center flex-shrink-0">
+            <Calendar className="w-6 h-6" />
+          </div>
+          <div>
+            <span className="block text-[11px] font-black text-slate-400 uppercase tracking-wider">Last Donation</span>
+            <span className="block text-xl font-black text-slate-850">
+              {stats.lastDonation
+                ? new Date(stats.lastDonation).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
+                : "None"}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Filter and Search Controls Bar */}
+      <div className="bg-white rounded-3xl shadow-[0_10px_35px_-10px_rgba(0,0,0,0.05)] border border-slate-200/80 p-5 space-y-4">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          {/* Search Box */}
+          <div className="relative flex-1">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Search by date, facility location, blood group..."
+              className="w-full pl-11 pr-4 py-3.5 rounded-2xl border border-slate-200/90 bg-slate-50/60 hover:bg-white text-slate-850 text-sm font-extrabold outline-none focus:ring-4 focus:ring-red-500/10 focus:border-red-500 transition-all"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+
+          <div className="flex flex-wrap gap-3 items-center">
             <button
-              onClick={shareStats}
-              className="flex items-center gap-2 px-4 py-2 bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
+              onClick={() => setShowFilters(!showFilters)}
+              className={`flex items-center gap-2 px-5 py-3.5 rounded-2xl text-xs font-black uppercase tracking-wider border transition-all cursor-pointer ${
+                showFilters
+                  ? "bg-slate-900 text-white border-slate-900"
+                  : "bg-slate-50 hover:bg-white text-slate-700 border-slate-200/90"
+              }`}
             >
-              <Share2 className="w-5 h-5 text-red-600" />
-              <span>Share Impact</span>
+              <Filter className="w-4 h-4" />
+              <span>Filters</span>
+              {showFilters ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </button>
+
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="px-4 py-3.5 rounded-2xl border border-slate-200/90 bg-slate-50 hover:bg-white text-slate-850 text-xs font-black uppercase tracking-wider outline-none cursor-pointer focus:ring-4 focus:ring-red-500/10"
+            >
+              <option value="date-desc">Newest First</option>
+              <option value="date-asc">Oldest First</option>
+              <option value="units-desc">Most Units ↓</option>
+              <option value="units-asc">Least Units ↑</option>
+            </select>
+
+            <button
+              onClick={exportToCSV}
+              className="px-5 py-3.5 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white rounded-2xl text-xs font-black uppercase tracking-wider shadow-md shadow-red-600/20 transition-all cursor-pointer flex items-center gap-2 hover:scale-105"
+            >
+              <Download className="w-4 h-4" />
+              <span>Export CSV</span>
             </button>
           </div>
         </div>
 
-        {/* Statistics Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
-          <div className="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-l-red-400 transform hover:scale-105 transition-transform duration-300">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">
-                  Total Donations
-                </p>
-                <p className="text-3xl font-bold text-gray-900">
-                  {stats.totalDonations}
-                </p>
-                {stats.yearlyBreakdown[new Date().getFullYear()] > 0 && (
-                  <p className="text-xs text-green-600 mt-1">
-                    +{stats.yearlyBreakdown[new Date().getFullYear()]} this year
-                  </p>
-                )}
-              </div>
-              <div className="p-3 bg-red-100 rounded-xl">
-                <Droplet className="w-6 h-6 text-red-600" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-l-green-400 transform hover:scale-105 transition-transform duration-300">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">
-                  Units Donated
-                </p>
-                <p className="text-3xl font-bold text-gray-900">
-                  {stats.totalUnits}
-                </p>
-                <p className="text-xs text-gray-500 mt-1">
-                  Avg {stats.averageUnits} per donation
-                </p>
-              </div>
-              <div className="p-3 bg-green-100 rounded-xl">
-                <Activity className="w-6 h-6 text-green-600" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-l-blue-400 transform hover:scale-105 transition-transform duration-300">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">
-                  Lives Impacted
-                </p>
-                <p className="text-3xl font-bold text-gray-900">
-                  {stats.lifeImpact}+
-                </p>
-                <p className="text-xs text-gray-500 mt-1">
-                  Each unit saves 3 lives
-                </p>
-              </div>
-              <div className="p-3 bg-blue-100 rounded-xl">
-                <Heart className="w-6 h-6 text-blue-600" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-l-purple-400 transform hover:scale-105 transition-transform duration-300">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Your Level</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {donorLevel.level}
-                </p>
-                {donorLevel.nextMilestone && (
-                  <p className="text-xs text-gray-500 mt-1">
-                    {stats.totalDonations}/{donorLevel.nextMilestone} to next
-                  </p>
-                )}
-              </div>
-              <div
-                className={`p-3 bg-gradient-to-r ${donorLevel.color} rounded-xl text-white`}
+        {/* Collapsible Advanced Filters Drawer */}
+        {showFilters && (
+          <div className="pt-4 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-black text-slate-700 uppercase tracking-wider mb-2">Time Range</label>
+              <select
+                value={filterType}
+                onChange={(e) => setFilterType(e.target.value)}
+                className="w-full px-4 py-3.5 rounded-2xl border border-slate-200/90 bg-slate-50 text-slate-850 text-xs font-extrabold outline-none cursor-pointer"
               >
-                {donorLevel.icon}
-              </div>
+                <option value="all">All Time</option>
+                <option value="last3">Last 3 Months</option>
+                <option value="last6">Last 6 Months</option>
+                <option value="last12">Last 12 Months</option>
+                <option value="last24">Last 24 Months</option>
+              </select>
             </div>
-            {/* Progress bar for next level */}
-            {donorLevel.nextMilestone && (
-              <div className="mt-4">
-                <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full bg-gradient-to-r ${donorLevel.color}`}
-                    style={{ width: `${donorLevel.progress}%` }}
-                  ></div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
 
-        {/* Additional Stats Row */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <div className="bg-white rounded-xl shadow-md p-4 flex items-center gap-3">
-            <div className="p-2 bg-yellow-100 rounded-lg">
-              <Clock className="w-5 h-5 text-yellow-600" />
-            </div>
             <div>
-              <p className="text-sm text-gray-600">Donation Streak</p>
-              <p className="text-xl font-bold text-gray-900">
-                {stats.donationStreak}{" "}
-                {stats.donationStreak === 1 ? "month" : "months"}
-              </p>
+              <label className="block text-xs font-black text-slate-700 uppercase tracking-wider mb-2">Blood Group</label>
+              <select
+                value={bloodGroupFilter}
+                onChange={(e) => setBloodGroupFilter(e.target.value)}
+                className="w-full px-4 py-3.5 rounded-2xl border border-slate-200/90 bg-slate-50 text-slate-850 text-xs font-extrabold outline-none cursor-pointer"
+              >
+                {bloodGroups.map((bg) => (
+                  <option key={bg} value={bg}>
+                    {bg === "all" ? "All Blood Groups" : bg}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
-
-          <div className="bg-white rounded-xl shadow-md p-4 flex items-center gap-3">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <MapPin className="w-5 h-5 text-purple-600" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Favorite Location</p>
-              <p className="text-xl font-bold text-gray-900 truncate max-w-[150px]">
-                {stats.favoriteLocation}
-              </p>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-md p-4 flex items-center gap-3">
-            <div className="p-2 bg-indigo-100 rounded-lg">
-              <Calendar className="w-5 h-5 text-indigo-600" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Last Donation</p>
-              <p className="text-xl font-bold text-gray-900">
-                {stats.lastDonation
-                  ? new Date(stats.lastDonation).toLocaleDateString("en-IN", {
-                      day: "numeric",
-                      month: "short",
-                    })
-                  : "None"}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Controls Section */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 md:p-5 mb-6">
-          <div className="flex flex-col gap-4">
-            {/* Main Controls */}
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-              <div className="flex-1">
-                <div className="relative max-w-md">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                  <input
-                    type="text"
-                    placeholder="Search by date, location, blood group..."
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-gray-50"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <div className="flex flex-wrap gap-3">
-                <button
-                  onClick={() => setShowFilters(!showFilters)}
-                  className="flex items-center gap-2 px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
-                >
-                  <Filter className="w-5 h-5" />
-                  Filters
-                  {showFilters ? (
-                    <ChevronUp className="w-4 h-4" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4" />
-                  )}
-                </button>
-
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="border border-gray-300 bg-white px-4 py-3 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                >
-                  <option value="date-desc">Newest First</option>
-                  <option value="date-asc">Oldest First</option>
-                  <option value="units-desc">Most Units ↓</option>
-                  <option value="units-asc">Least Units ↑</option>
-                </select>
-
-                <button
-                  onClick={exportToCSV}
-                  className="flex items-center gap-2 px-4 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors shadow-md hover:shadow-lg"
-                >
-                  <Download className="w-5 h-5" />
-                  Export CSV
-                </button>
-              </div>
-            </div>
-
-            {/* Advanced Filters */}
-            {showFilters && (
-              <div className="border-t pt-4 mt-2">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Time Period
-                    </label>
-                    <select
-                      value={filterType}
-                      onChange={(e) => setFilterType(e.target.value)}
-                      className="w-full border border-gray-300 bg-white px-4 py-2 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                    >
-                      <option value="all">All Time</option>
-                      <option value="last3">Last 3 Months</option>
-                      <option value="last6">Last 6 Months</option>
-                      <option value="last12">Last 12 Months</option>
-                      <option value="last24">Last 24 Months</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Blood Group
-                    </label>
-                    <select
-                      value={bloodGroupFilter}
-                      onChange={(e) => setBloodGroupFilter(e.target.value)}
-                      className="w-full border border-gray-300 bg-white px-4 py-2 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                    >
-                      {bloodGroups.map((bg) => (
-                        <option key={bg} value={bg}>
-                          {bg === "all" ? "All Blood Groups" : bg}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
+        )}
+      </div>
 
         {/* Empty State */}
         {!loading && filtered.length === 0 && (
@@ -2038,7 +2017,6 @@ const DonorDonationHistory = () => {
           </div>
         )}
       </div>
-    </div>
   );
 };
 

@@ -14,7 +14,7 @@ export class SocketManager {
 
     this.socket = io(SOCKET_URL, {
       auth: { token: this.token },
-      transports: ["websocket", "polling"],
+      transports: ["polling", "websocket"],
       reconnection: true,
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
