@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { bloodLabApi } from "../../services/api.js";
 import { toast } from "react-hot-toast";
 import { 
@@ -12,7 +12,10 @@ import {
   XCircle,
   History,
   Filter,
-  Plus
+  Plus,
+  Clock,
+  Zap,
+  Heart
 } from "lucide-react";
 
 const BloodLabDonor = () => {
@@ -34,7 +37,7 @@ const BloodLabDonor = () => {
   });
 
   // Search donors
-  const searchDonors = async (searchTerm = term, isInitial = false) => {
+  const searchDonors = useCallback(async (searchTerm = term, isInitial = false) => {
     const actualTerm = typeof searchTerm === "string" ? searchTerm : term;
 
     if (!isInitial && !actualTerm.trim()) {
@@ -58,10 +61,10 @@ const BloodLabDonor = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [term]);
 
   // Load recent donations and stats
-  const loadRecentDonations = async () => {
+  const loadRecentDonations = useCallback(async () => {
     try {
       const res = await bloodLabApi.getRecentDonations();
       setRecentDonations(res.data.donations || []);
@@ -69,12 +72,12 @@ const BloodLabDonor = () => {
     } catch (err) {
       console.error("Failed to load recent donations:", err);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadRecentDonations();
     searchDonors("", true);
-  }, []);
+  }, [loadRecentDonations, searchDonors]);
 
   // Open donation form
   const openDonationForm = (donor) => {
@@ -172,47 +175,73 @@ const BloodLabDonor = () => {
         </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div className="bg-white p-6 rounded-2xl shadow-lg border-l-4 border-l-red-400">
-              <div className="text-2xl font-bold text-red-600">
-                {stats.today}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+            <div className="bg-white rounded-3xl p-6 shadow-lg shadow-slate-100 border border-slate-100 border-l-4 border-l-red-500 relative overflow-hidden transition-all duration-300 hover:-translate-y-0.5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider mb-1">Donations Today</p>
+                  <p className="text-3xl font-black text-slate-850">{stats.today}</p>
+                </div>
+                <div className="p-3.5 bg-red-50 text-red-600 rounded-2xl shadow-sm">
+                  <Droplet className="w-6 h-6 fill-red-600 animate-pulse" />
+                </div>
               </div>
-              <div className="text-sm text-gray-600">Donations Today</div>
             </div>
-            <div className="bg-white p-6 rounded-2xl shadow-lg border-l-4 border-l-red-400">
-              <div className="text-2xl font-bold text-red-600">
-                {stats.thisWeek}
+
+            <div className="bg-white rounded-3xl p-6 shadow-lg shadow-slate-100 border border-slate-100 border-l-4 border-l-rose-500 relative overflow-hidden transition-all duration-300 hover:-translate-y-0.5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider mb-1">This Week</p>
+                  <p className="text-3xl font-black text-slate-850">{stats.thisWeek}</p>
+                </div>
+                <div className="p-3.5 bg-rose-50 text-rose-600 rounded-2xl shadow-sm">
+                  <Calendar className="w-6 h-6" />
+                </div>
               </div>
-              <div className="text-sm text-gray-600">This Week</div>
             </div>
-            <div className="bg-white p-6 rounded-2xl shadow-lg border-l-4 border-l-red-400">
-              <div className="text-2xl font-bold text-red-600">
-                {stats.total}
+
+            <div className="bg-white rounded-3xl p-6 shadow-lg shadow-slate-100 border border-slate-100 border-l-4 border-l-emerald-500 relative overflow-hidden transition-all duration-300 hover:-translate-y-0.5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider mb-1">Total Lifetime Donations</p>
+                  <p className="text-3xl font-black text-slate-850">{stats.total}</p>
+                </div>
+                <div className="p-3.5 bg-emerald-50 text-emerald-600 rounded-2xl shadow-sm">
+                  <History className="w-6 h-6" />
+                </div>
               </div>
-              <div className="text-sm text-gray-600">Total Donations</div>
             </div>
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-6">
+        <div className="grid lg:grid-cols-3 gap-8">
           {/* Search Section */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-2xl shadow-lg border border-red-100 p-6 mb-6">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                <Search className="w-5 h-5 text-red-600" />
-                Search Donors
-              </h2>
+            <div className="bg-white rounded-3xl shadow-xl border border-slate-100/90 p-6 sm:p-8 mb-6">
+              <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
+                <div>
+                  <h2 className="text-lg font-extrabold text-slate-850 uppercase tracking-wide flex items-center gap-2.5">
+                    <div className="p-2 rounded-xl bg-red-50 text-red-600 border border-red-100">
+                      <Search className="w-5 h-5" />
+                    </div>
+                    Donor Verification & Search Directory
+                  </h2>
+                  <p className="text-xs font-semibold text-slate-400 mt-1">
+                    Lookup donors by name, contact, or blood group to record new supply units.
+                  </p>
+                </div>
+              </div>
 
               <div className="flex flex-col sm:flex-row gap-3 mb-4">
                 <div className="flex-1 relative">
                   <Search
-                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                    size={20}
+                    className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400"
+                    size={18}
                   />
                   <input
                     type="text"
-                    placeholder="Search by name, email, phone number..."
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    placeholder="Search donor by name, email, phone number..."
+                    className="w-full pl-11 pr-4 py-3.5 bg-slate-50/70 border border-slate-200/80 rounded-2xl text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-red-500 focus:bg-white transition-all"
                     value={term}
                     onChange={(e) => setTerm(e.target.value)}
                     onKeyPress={(e) => e.key === "Enter" && searchDonors()}
@@ -221,111 +250,143 @@ const BloodLabDonor = () => {
                 <button
                   onClick={searchDonors}
                   disabled={loading}
-                  className="bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white px-6 py-3 rounded-lg transition-colors flex items-center gap-2"
+                  className="bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-700 hover:to-rose-800 disabled:opacity-50 text-white font-extrabold text-xs uppercase tracking-wider px-7 py-3.5 rounded-2xl transition-all shadow-lg shadow-red-600/20 flex items-center justify-center gap-2 cursor-pointer active:scale-95 flex-shrink-0"
                 >
                   {loading ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
                   ) : (
-                    <Search size={18} />
+                    <Search size={16} />
                   )}
-                  Search
+                  <span>Search</span>
                 </button>
               </div>
 
-              {/* Results */}
-              <div className="space-y-3 max-h-96 overflow-y-auto">
-                {results.map((donor) => (
-                  <div
-                    key={donor._id}
-                    className="bg-gray-50 rounded-lg p-4 border border-gray-200"
+              {/* Quick Filter Pills */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-4 no-scrollbar">
+                <span className="text-[10px] font-black uppercase text-slate-400 mr-1 flex-shrink-0">Filter Group:</span>
+                {["all", "O+", "O-", "A+", "A-", "B+", "B-", "AB+", "AB-"].map((group) => (
+                  <button
+                    key={group}
+                    onClick={() => {
+                      if (group === "all") {
+                        searchDonors("", true);
+                      } else {
+                        searchDonors(group, false);
+                      }
+                    }}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex-shrink-0 cursor-pointer ${
+                      term === group || (group === "all" && !term)
+                        ? "bg-red-600 text-white shadow-md shadow-red-600/20"
+                        : "bg-slate-100 hover:bg-slate-200/80 text-slate-600"
+                    }`}
                   >
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                      <div className="flex-1 w-full">
-                        <div className="flex flex-wrap items-center gap-3 mb-2">
-                          <h3 className="font-semibold text-gray-800 text-lg">
-                            {donor.fullName}
-                          </h3>
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              donor.bloodGroup === "O-"
-                                ? "bg-red-100 text-red-800"
-                                : donor.bloodGroup === "O+"
-                                  ? "bg-orange-100 text-orange-800"
-                                  : donor.bloodGroup === "A-"
-                                    ? "bg-blue-100 text-blue-800"
-                                    : donor.bloodGroup === "A+"
-                                      ? "bg-green-100 text-green-800"
-                                      : donor.bloodGroup === "B-"
-                                        ? "bg-purple-100 text-purple-800"
-                                        : donor.bloodGroup === "B+"
-                                          ? "bg-indigo-100 text-indigo-800"
-                                          : donor.bloodGroup === "AB-"
-                                            ? "bg-pink-100 text-pink-800"
-                                            : "bg-gray-100 text-gray-800"
-                            }`}
-                          >
-                            {donor.bloodGroup}
-                          </span>
-                          {!canDonate(donor.lastDonationDate) && (
-                            <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">
-                              Recently Donated
-                            </span>
+                    {group === "all" ? "All Donors" : group}
+                  </button>
+                ))}
+              </div>
+
+              {/* Results */}
+              <div className="space-y-4 max-h-[520px] overflow-y-auto pr-1">
+                {results.map((donor) => {
+                  const eligible = canDonate(donor.lastDonationDate);
+                  const donorName = donor.name || donor.fullName || donor.user?.name || donor.userId?.name || "Registered Donor";
+                  const donorEmail = donor.email || donor.user?.email || "—";
+                  const donorPhone = donor.phone || donor.user?.phone || donor.contact || "—";
+                  const bloodGroup = donor.bloodGroup || donor.user?.bloodGroup || "O+";
+
+                  return (
+                    <div
+                      key={donor._id}
+                      className="p-5 rounded-2xl border border-slate-100/90 bg-slate-50/40 hover:bg-white hover:shadow-md hover:border-red-150 transition-all duration-300"
+                    >
+                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-wrap items-center gap-2.5 mb-2.5">
+                            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-red-600 via-rose-600 to-red-800 text-white font-black text-sm flex items-center justify-center shadow-md shadow-red-600/20 ring-2 ring-white flex-shrink-0">
+                              {bloodGroup}
+                            </div>
+                            <div className="min-w-0">
+                              <h3 className="font-extrabold text-slate-850 text-base tracking-tight truncate leading-tight">
+                                {donorName}
+                              </h3>
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                Blood Donor
+                              </span>
+                            </div>
+
+                            {eligible ? (
+                              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-[10px] font-black uppercase tracking-wider border border-emerald-200/80 shadow-2xs">
+                                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                                Eligible to Donate
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-[10px] font-black uppercase tracking-wider border border-amber-200/80 shadow-2xs">
+                                <Clock size={12} className="text-amber-600" />
+                                Recently Donated
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-500 font-semibold mt-3 p-3 bg-white/80 rounded-xl border border-slate-100">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <Mail size={14} className="text-red-500 flex-shrink-0" />
+                              <span className="truncate text-slate-700">{donorEmail}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Phone size={14} className="text-red-500 flex-shrink-0" />
+                              <span className="text-slate-700">{donorPhone}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Calendar size={14} className="text-slate-400 flex-shrink-0" />
+                              <span>
+                                Last: <strong className="text-slate-800">{getTimeSinceLastDonation(donor.lastDonationDate)}</strong>
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <History size={14} className="text-slate-400 flex-shrink-0" />
+                              <span>
+                                Lifetime: <strong className="text-slate-800">{donor.donationHistory?.length || 0} donations</strong>
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex sm:flex-col gap-2.5 w-full sm:w-auto flex-shrink-0 pt-3 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+                          {eligible ? (
+                            <>
+                              <button
+                                onClick={() => quickDonation(donor._id)}
+                                className="flex-1 sm:flex-initial bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-xs uppercase tracking-wider px-4 py-2.5 rounded-2xl transition-all shadow-lg shadow-emerald-600/25 hover:shadow-emerald-600/35 border border-emerald-500/30 flex items-center justify-center gap-2 cursor-pointer hover:scale-105 active:scale-95"
+                                title="Quick Record 1 Supply Unit"
+                              >
+                                <Zap size={14} className="fill-emerald-300 text-emerald-300 animate-pulse" />
+                                <span>Quick (1 Unit)</span>
+                              </button>
+                              <button
+                                onClick={() => openDonationForm(donor)}
+                                className="flex-1 sm:flex-initial bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-700 hover:to-rose-800 text-white font-black text-xs uppercase tracking-wider px-5 py-2.5 rounded-2xl transition-all shadow-lg shadow-red-600/25 hover:shadow-red-600/35 border border-red-500/30 flex items-center justify-center gap-2 cursor-pointer hover:scale-105 active:scale-95"
+                              >
+                                <Heart size={14} className="fill-white text-white animate-bounce" />
+                                <span>Record Donation</span>
+                              </button>
+                            </>
+                          ) : (
+                            <div className="w-full sm:w-auto bg-slate-100 text-slate-400 font-extrabold text-[11px] uppercase tracking-wider px-4 py-2.5 rounded-2xl border border-slate-200/80 cursor-not-allowed flex items-center justify-center gap-1.5 opacity-85 shadow-2xs">
+                              <Clock size={13} className="text-amber-500 flex-shrink-0" />
+                              <span>In Cooling Period</span>
+                            </div>
                           )}
                         </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-gray-600">
-                          <div className="flex items-center gap-2">
-                            <Mail size={14} className="text-red-500" />
-                            <span className="break-all">{donor.email}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Phone size={14} className="text-red-500" />
-                            <span>{donor.phone}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Calendar size={14} className="text-red-500" />
-                            <span>
-                              Last donation:{" "}
-                              {getTimeSinceLastDonation(donor.lastDonationDate)}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <History size={14} className="text-red-500" />
-                            <span>
-                              Total donations:{" "}
-                              {donor.donationHistory?.length || 0}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex gap-2 w-full sm:w-auto sm:ml-4 justify-start sm:justify-end">
-                        <button
-                          onClick={() => quickDonation(donor._id)}
-                          disabled={!canDonate(donor.lastDonationDate)}
-                          className="flex-1 sm:flex-initial bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white px-3 py-2 rounded-lg transition-colors flex items-center justify-center gap-1 text-sm"
-                          title="Quick donation (1 unit)"
-                        >
-                          <Droplet size={14} />
-                          Quick
-                        </button>
-                        <button
-                          onClick={() => openDonationForm(donor)}
-                          disabled={!canDonate(donor.lastDonationDate)}
-                          className="flex-1 sm:flex-initial bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm"
-                        >
-                          <Plus size={16} />
-                          Donate
-                        </button>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
 
-                {results.length === 0 && !loading && term && (
-                  <div className="text-center py-8 text-gray-500">
-                    <User size={48} className="mx-auto mb-2 text-gray-400" />
-                    <p>No donors found matching "{term}"</p>
+                {results.length === 0 && !loading && (
+                  <div className="text-center py-12 text-slate-400">
+                    <User size={48} className="mx-auto mb-3 text-slate-300" />
+                    <p className="text-sm font-extrabold text-slate-600">No Donors Found</p>
+                    <p className="text-xs text-slate-400 mt-1">Try refining your search terms or register a new donor.</p>
                   </div>
                 )}
               </div>
@@ -334,45 +395,47 @@ const BloodLabDonor = () => {
 
           {/* Recent Donations Sidebar */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl shadow-lg border border-red-100 p-6">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                <History className="w-5 h-5 text-red-600" />
-                Recent Donations
-              </h2>
+            <div className="bg-white rounded-3xl shadow-xl border border-slate-100/90 p-6 sm:p-7">
+              <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
+                <div>
+                  <h2 className="text-lg font-extrabold text-slate-850 uppercase tracking-wide flex items-center gap-2.5">
+                    <div className="p-2 rounded-xl bg-red-50 text-red-600 border border-red-100">
+                      <History className="w-5 h-5" />
+                    </div>
+                    Recent Donations Log
+                  </h2>
+                  <p className="text-xs font-semibold text-slate-400 mt-1">
+                    Latest logged blood donations.
+                  </p>
+                </div>
+              </div>
 
-              <div className="space-y-3 max-h-96 overflow-y-auto">
+              <div className="space-y-3.5 max-h-[500px] overflow-y-auto pr-1">
                 {recentDonations.map((donation, index) => (
                   <div
                     key={index}
-                    className="bg-gray-50 rounded-lg p-3 border border-gray-200"
+                    className="p-4 rounded-2xl border border-slate-100 bg-slate-50/40 hover:bg-white hover:shadow-md transition-all duration-300"
                   >
-                    <div className="flex justify-between items-start mb-2">
-                      <span className="font-medium text-gray-800">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="font-extrabold text-slate-850 text-sm truncate">
                         {donation.donorName}
                       </span>
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          donation.bloodGroup === "O-"
-                            ? "bg-red-100 text-red-800"
-                            : "bg-blue-100 text-blue-800"
-                        }`}
-                      >
+                      <span className="px-2.5 py-0.5 rounded-xl text-xs font-black bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-xs">
                         {donation.bloodGroup}
                       </span>
                     </div>
-                    <div className="text-sm text-gray-600">
-                      <div className="flex justify-between">
+                    <div className="text-xs text-slate-500 font-medium">
+                      <div className="flex justify-between items-center text-slate-600 font-bold">
                         <span>
-                          {donation.quantity} unit
-                          {donation.quantity > 1 ? "s" : ""}
+                          {donation.quantity} unit{donation.quantity > 1 ? "s" : ""}
                         </span>
-                        <span>
+                        <span className="text-slate-400 text-[11px]">
                           {new Date(donation.date).toLocaleDateString()}
                         </span>
                       </div>
                       {donation.remarks && (
-                        <p className="text-xs text-gray-500 mt-1">
-                          Note: {donation.remarks}
+                        <p className="text-[11px] text-slate-400 italic mt-1.5 pt-1.5 border-t border-slate-100">
+                          "{donation.remarks}"
                         </p>
                       )}
                     </div>
@@ -380,8 +443,9 @@ const BloodLabDonor = () => {
                 ))}
 
                 {recentDonations.length === 0 && (
-                  <div className="text-center py-8 text-gray-500">
-                    <p>No recent donations</p>
+                  <div className="text-center py-12 text-slate-400">
+                    <History size={40} className="mx-auto mb-2 text-slate-300" />
+                    <p className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">No recent donations logged</p>
                   </div>
                 )}
               </div>

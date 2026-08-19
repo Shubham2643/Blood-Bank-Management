@@ -412,41 +412,45 @@ const LabProfile = () => {
           {/* Left Sidebar */}
           <div className="lg:col-span-1 space-y-6">
             {/* Verification Status */}
-            <div className="bg-white rounded-3xl shadow-xl border border-slate-100 p-6 relative overflow-hidden transition-all duration-300 hover:shadow-2xl">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-red-50/40 rounded-full blur-2xl -z-10" />
-              <h3 className="text-lg font-bold text-slate-800 mb-5 flex items-center gap-2.5 pb-3 border-b border-slate-50">
-                <div className="p-2 bg-red-50 rounded-lg text-red-600">
-                  <Shield className="w-4 h-4" />
+            <div className="bg-white/95 backdrop-blur-md rounded-3xl shadow-xl shadow-slate-100/80 border border-slate-100/90 p-6 sm:p-7 relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-red-500/10 hover:-translate-y-1">
+              <div className="absolute top-0 right-0 w-28 h-28 bg-gradient-to-br from-rose-100/40 to-red-100/10 rounded-full blur-3xl pointer-events-none -z-10" />
+              <h3 className="text-base font-black text-slate-850 mb-5 flex items-center gap-3 pb-3.5 border-b border-slate-100 uppercase tracking-wide">
+                <div className="w-9 h-9 bg-gradient-to-br from-red-500 to-rose-600 rounded-xl text-white flex items-center justify-center shadow-md shadow-red-500/20">
+                  <Shield className="w-5 h-5" />
                 </div>
-                Verification Status
+                <span>Verification Status</span>
               </h3>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center py-1.5 border-b border-slate-50/50">
-                  <span className="text-sm font-medium text-slate-500">Status</span>
+              <div className="space-y-3.5">
+                <div className="flex justify-between items-center py-2 px-3 rounded-2xl bg-slate-50/80 border border-slate-100">
+                  <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">Status</span>
                   <span
-                    className={`px-3 py-1 rounded-full text-xs font-bold border ${
+                    className={`px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider border shadow-2xs flex items-center gap-1.5 ${
                       Facility.status === "approved"
-                        ? "bg-emerald-50 text-emerald-700 border-emerald-200/50"
+                        ? "bg-emerald-50 text-emerald-800 border-emerald-200/90"
                         : Facility.status === "pending"
-                        ? "bg-amber-50 text-amber-700 border-amber-200/50"
-                        : "bg-rose-50 text-rose-700 border-rose-200/50"
+                        ? "bg-amber-50 text-amber-900 border-amber-200/90"
+                        : "bg-rose-50 text-rose-900 border-rose-200/90"
                     }`}
                   >
-                    {Facility.status?.charAt(0).toUpperCase() + Facility.status?.slice(1)}
+                    <span className={`w-1.5 h-1.5 rounded-full ${
+                      Facility.status === "approved" ? "bg-emerald-500 animate-pulse" :
+                      Facility.status === "pending" ? "bg-amber-500" : "bg-rose-500"
+                    }`} />
+                    <span>{Facility.status?.charAt(0).toUpperCase() + Facility.status?.slice(1)}</span>
                   </span>
                 </div>
 
-                <div className="flex justify-between items-center py-1.5 border-b border-slate-50/50">
-                  <span className="text-sm font-medium text-slate-500">Registration</span>
-                  <span className="text-sm font-mono font-bold text-slate-700">
+                <div className="flex justify-between items-center py-2 px-3 rounded-2xl bg-slate-50/80 border border-slate-100">
+                  <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">Registration</span>
+                  <span className="text-xs font-mono font-black text-slate-850 bg-white px-2.5 py-1 rounded-xl border border-slate-200/70 shadow-2xs">
                     {Facility.registrationNumber || "—"}
                   </span>
                 </div>
 
                 {Facility.approvedAt && (
-                  <div className="flex justify-between items-center py-1.5">
-                    <span className="text-sm font-medium text-slate-500">Approved On</span>
-                    <span className="text-sm font-bold text-slate-700 bg-slate-50 px-2.5 py-0.5 rounded-lg border border-slate-100">
+                  <div className="flex justify-between items-center py-2 px-3 rounded-2xl bg-slate-50/80 border border-slate-100">
+                    <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">Approved On</span>
+                    <span className="text-xs font-black text-slate-700 bg-white px-2.5 py-1 rounded-xl border border-slate-200/70 shadow-2xs">
                       {new Date(Facility.approvedAt).toLocaleDateString()}
                     </span>
                   </div>
@@ -455,35 +459,35 @@ const LabProfile = () => {
             </div>
 
             {/* Quick Contact Info */}
-            <div className="bg-white rounded-3xl shadow-xl border border-slate-100 p-6 relative overflow-hidden transition-all duration-300 hover:shadow-2xl">
-              <div className="absolute bottom-0 right-0 w-24 h-24 bg-rose-50/40 rounded-full blur-2xl -z-10" />
-              <h3 className="text-lg font-bold text-slate-800 mb-5 flex items-center gap-2.5 pb-3 border-b border-slate-50">
-                <div className="p-2 bg-red-50 rounded-lg text-red-600">
-                  <User className="w-4 h-4" />
+            <div className="bg-white/95 backdrop-blur-md rounded-3xl shadow-xl shadow-slate-100/80 border border-slate-100/90 p-6 sm:p-7 relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-red-500/10 hover:-translate-y-1">
+              <div className="absolute bottom-0 right-0 w-28 h-28 bg-gradient-to-br from-rose-100/40 to-red-100/10 rounded-full blur-3xl pointer-events-none -z-10" />
+              <h3 className="text-base font-black text-slate-850 mb-5 flex items-center gap-3 pb-3.5 border-b border-slate-100 uppercase tracking-wide">
+                <div className="w-9 h-9 bg-gradient-to-br from-red-500 to-rose-600 rounded-xl text-white flex items-center justify-center shadow-md shadow-red-500/20">
+                  <User className="w-5 h-5" />
                 </div>
-                Quick Contact
+                <span>Quick Contact</span>
               </h3>
-              <div className="space-y-4">
-                <div className="flex items-center gap-3.5 p-3 rounded-xl bg-slate-50/40 border border-slate-100 hover:border-red-100 hover:bg-red-50/10 transition-all duration-200">
-                  <div className="p-2 bg-white rounded-lg text-red-500 border border-slate-100 shadow-sm">
+              <div className="space-y-3">
+                <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-slate-50/80 border border-slate-200/60 hover:border-red-200 hover:bg-white transition-all shadow-2xs">
+                  <div className="p-2 bg-white rounded-xl text-red-600 border border-slate-200/60 shadow-2xs shrink-0">
                     <Mail className="w-4 h-4" />
                   </div>
-                  <span className="text-sm font-semibold text-slate-600 break-all">{Facility.email}</span>
+                  <span className="text-xs font-black text-slate-850 break-all">{Facility.email}</span>
                 </div>
                 {Facility.phone && (
-                  <div className="flex items-center gap-3.5 p-3 rounded-xl bg-slate-50/40 border border-slate-100 hover:border-red-100 hover:bg-red-50/10 transition-all duration-200">
-                    <div className="p-2 bg-white rounded-lg text-red-500 border border-slate-100 shadow-sm">
+                  <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-slate-50/80 border border-slate-200/60 hover:border-red-200 hover:bg-white transition-all shadow-2xs">
+                    <div className="p-2 bg-white rounded-xl text-red-600 border border-slate-200/60 shadow-2xs shrink-0">
                       <Phone className="w-4 h-4" />
                     </div>
-                    <span className="text-sm font-semibold text-slate-600">{Facility.phone}</span>
+                    <span className="text-xs font-black text-slate-850">{Facility.phone}</span>
                   </div>
                 )}
                 {Facility.emergencyContact && (
-                  <div className="flex items-center gap-3.5 p-3 rounded-xl bg-slate-50/40 border border-slate-100 hover:border-red-100 hover:bg-red-50/10 transition-all duration-200">
-                    <div className="p-2 bg-white rounded-lg text-red-500 border border-slate-100 shadow-sm">
+                  <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-rose-50/60 border border-rose-200/60 hover:bg-rose-50 transition-all shadow-2xs">
+                    <div className="p-2 bg-white rounded-xl text-rose-600 border border-rose-200/60 shadow-2xs shrink-0">
                       <Heart className="w-4 h-4" />
                     </div>
-                    <span className="text-sm font-semibold text-slate-600">
+                    <span className="text-xs font-black text-rose-900">
                       Emergency: {Facility.emergencyContact}
                     </span>
                   </div>
@@ -494,56 +498,56 @@ const LabProfile = () => {
 
           {/* Main Form Fields Content */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden hover:shadow-2xl transition-all duration-300">
-              {/* Tab Navigation */}
-              <div className="flex flex-wrap border-b border-slate-100 bg-slate-50/50 p-2 gap-1.5">
+            <div className="bg-white/95 backdrop-blur-md rounded-3xl shadow-xl shadow-slate-100/80 border border-slate-100/90 overflow-hidden hover:shadow-2xl transition-all duration-300">
+              {/* Tab Navigation Bar */}
+              <div className="flex flex-wrap border-b border-slate-100 bg-slate-50/70 p-3 gap-2">
                 <button
                   type="button"
                   onClick={() => setActiveTab("general")}
                   className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all duration-200 cursor-pointer ${
                     activeTab === "general"
-                      ? "bg-white text-red-600 shadow-sm border border-slate-100"
-                      : "text-slate-500 hover:text-slate-800 hover:bg-white/60"
+                      ? "bg-gradient-to-r from-red-600 via-rose-600 to-red-700 text-white shadow-lg shadow-red-600/25 border-red-500 scale-105"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-white/80"
                   }`}
                 >
-                  <Building size={14} />
-                  General Details
+                  <Building size={15} />
+                  <span>General Details</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveTab("address")}
                   className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all duration-200 cursor-pointer ${
                     activeTab === "address"
-                      ? "bg-white text-red-600 shadow-sm border border-slate-100"
-                      : "text-slate-500 hover:text-slate-800 hover:bg-white/60"
+                      ? "bg-gradient-to-r from-red-600 via-rose-600 to-red-700 text-white shadow-lg shadow-red-600/25 border-red-500 scale-105"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-white/80"
                   }`}
                 >
-                  <MapPin size={14} />
-                  Address Details
+                  <MapPin size={15} />
+                  <span>Address Details</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveTab("hours")}
                   className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all duration-200 cursor-pointer ${
                     activeTab === "hours"
-                      ? "bg-white text-red-600 shadow-sm border border-slate-100"
-                      : "text-slate-500 hover:text-slate-800 hover:bg-white/60"
+                      ? "bg-gradient-to-r from-red-600 via-rose-600 to-red-700 text-white shadow-lg shadow-red-600/25 border-red-500 scale-105"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-white/80"
                   }`}
                 >
-                  <Clock size={14} />
-                  Operating Hours
+                  <Clock size={15} />
+                  <span>Operating Hours</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveTab("security")}
                   className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all duration-200 cursor-pointer ${
                     activeTab === "security"
-                      ? "bg-white text-red-600 shadow-sm border border-slate-100"
-                      : "text-slate-500 hover:text-slate-800 hover:bg-white/60"
+                      ? "bg-gradient-to-r from-red-600 via-rose-600 to-red-700 text-white shadow-lg shadow-red-600/25 border-red-500 scale-105"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-white/80"
                   }`}
                 >
-                  <Shield size={14} />
-                  Account Security
+                  <Shield size={15} />
+                  <span>Account Security</span>
                 </button>
               </div>
 
@@ -552,17 +556,17 @@ const LabProfile = () => {
                 {/* General Tab */}
                 {activeTab === "general" && (
                   <div className="space-y-6 animate-fadeIn">
-                    <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2.5 pb-3 border-b border-slate-100">
-                      <div className="p-2 bg-red-50 rounded-lg text-red-600">
+                    <h3 className="text-lg font-black text-slate-850 flex items-center gap-3 pb-3.5 border-b border-slate-100 uppercase tracking-wide">
+                      <div className="w-9 h-9 bg-gradient-to-br from-red-500 to-rose-600 rounded-xl text-white flex items-center justify-center shadow-md shadow-red-500/20">
                         <Building className="w-5 h-5" />
                       </div>
-                      General Profile Details
+                      <span>General Profile Details</span>
                     </h3>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       {/* Name */}
                       <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                        <label className="block text-xs font-black text-slate-400 uppercase tracking-wider mb-2">
                           {labelType} Name
                         </label>
                         <input
@@ -571,10 +575,10 @@ const LabProfile = () => {
                           value={formData.name}
                           onChange={handleChange}
                           disabled={!isEditing}
-                          className={`w-full px-4 py-3 rounded-xl border transition-all duration-200 text-sm font-semibold ${
+                          className={`w-full px-4.5 py-3.5 rounded-2xl transition-all duration-200 text-sm font-extrabold ${
                             isEditing
-                              ? "border-slate-200 bg-white text-slate-700 focus:border-red-500 focus:ring-4 focus:ring-red-500/10 focus:outline-none"
-                              : "bg-slate-50 text-slate-500 border-slate-200/60 cursor-not-allowed"
+                              ? "border-2 border-red-500/40 bg-white text-slate-900 focus:ring-4 focus:ring-red-500/10 focus:outline-none shadow-md"
+                              : "bg-slate-50/90 text-slate-800 border border-slate-200/80 cursor-not-allowed shadow-inner"
                           }`}
                           placeholder={`Enter ${labelType.toLowerCase()} name`}
                         />
@@ -582,7 +586,7 @@ const LabProfile = () => {
 
                       {/* Category */}
                       <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                        <label className="block text-xs font-black text-slate-400 uppercase tracking-wider mb-2">
                           Facility Category
                         </label>
                         <input
@@ -591,10 +595,10 @@ const LabProfile = () => {
                           value={formData.FacilityCategory}
                           onChange={handleChange}
                           disabled={!isEditing}
-                          className={`w-full px-4 py-3 rounded-xl border transition-all duration-200 text-sm font-semibold ${
+                          className={`w-full px-4.5 py-3.5 rounded-2xl transition-all duration-200 text-sm font-extrabold ${
                             isEditing
-                              ? "border-slate-200 bg-white text-slate-700 focus:border-red-500 focus:ring-4 focus:ring-red-500/10 focus:outline-none"
-                              : "bg-slate-50 text-slate-500 border-slate-200/60 cursor-not-allowed"
+                              ? "border-2 border-red-500/40 bg-white text-slate-900 focus:ring-4 focus:ring-red-500/10 focus:outline-none shadow-md"
+                              : "bg-slate-50/90 text-slate-800 border border-slate-200/80 cursor-not-allowed shadow-inner"
                           }`}
                           placeholder="e.g. General Hospital, Blood Lab"
                         />
@@ -602,7 +606,7 @@ const LabProfile = () => {
 
                       {/* Phone */}
                       <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                        <label className="block text-xs font-black text-slate-400 uppercase tracking-wider mb-2">
                           Phone Number
                         </label>
                         <input
@@ -611,16 +615,16 @@ const LabProfile = () => {
                           value={formData.phone}
                           onChange={handleChange}
                           disabled={!isEditing}
-                          className={`w-full px-4 py-3 rounded-xl border transition-all duration-200 text-sm font-semibold ${
+                          className={`w-full px-4.5 py-3.5 rounded-2xl transition-all duration-200 text-sm font-extrabold ${
                             isEditing
-                              ? "border-slate-200 bg-white text-slate-700 focus:border-red-500 focus:ring-4 focus:ring-red-500/10 focus:outline-none"
-                              : "bg-slate-50 text-slate-500 border-slate-200/60 cursor-not-allowed"
-                          } ${errors.phone ? "border-red-500" : ""}`}
+                              ? "border-2 border-red-500/40 bg-white text-slate-900 focus:ring-4 focus:ring-red-500/10 focus:outline-none shadow-md"
+                              : "bg-slate-50/90 text-slate-800 border border-slate-200/80 cursor-not-allowed shadow-inner"
+                          } ${errors.phone ? "border-rose-500" : ""}`}
                           placeholder="10-digit phone number"
                         />
                         {errors.phone && (
-                          <p className="text-red-500 text-xs mt-2 flex items-center gap-1.5 font-medium">
-                            <AlertCircle size={14} className="text-red-500" />
+                          <p className="text-rose-600 text-xs mt-2 flex items-center gap-1.5 font-bold">
+                            <AlertCircle size={14} className="text-rose-600" />
                             {errors.phone}
                           </p>
                         )}
@@ -628,7 +632,7 @@ const LabProfile = () => {
 
                       {/* Emergency Contact */}
                       <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                        <label className="block text-xs font-black text-slate-400 uppercase tracking-wider mb-2">
                           Emergency Contact
                         </label>
                         <input
@@ -637,16 +641,16 @@ const LabProfile = () => {
                           value={formData.emergencyContact}
                           onChange={handleChange}
                           disabled={!isEditing}
-                          className={`w-full px-4 py-3 rounded-xl border transition-all duration-200 text-sm font-semibold ${
+                          className={`w-full px-4.5 py-3.5 rounded-2xl transition-all duration-200 text-sm font-extrabold ${
                             isEditing
-                              ? "border-slate-200 bg-white text-slate-700 focus:border-red-500 focus:ring-4 focus:ring-red-500/10 focus:outline-none"
-                              : "bg-slate-50 text-slate-500 border-slate-200/60 cursor-not-allowed"
-                          } ${errors.emergencyContact ? "border-red-500" : ""}`}
+                              ? "border-2 border-red-500/40 bg-white text-slate-900 focus:ring-4 focus:ring-red-500/10 focus:outline-none shadow-md"
+                              : "bg-slate-50/90 text-slate-800 border border-slate-200/80 cursor-not-allowed shadow-inner"
+                          } ${errors.emergencyContact ? "border-rose-500" : ""}`}
                           placeholder="Emergency contact number"
                         />
                         {errors.emergencyContact && (
-                          <p className="text-red-500 text-xs mt-2 flex items-center gap-1.5 font-medium">
-                            <AlertCircle size={14} className="text-red-500" />
+                          <p className="text-rose-600 text-xs mt-2 flex items-center gap-1.5 font-bold">
+                            <AlertCircle size={14} className="text-rose-600" />
                             {errors.emergencyContact}
                           </p>
                         )}
@@ -654,7 +658,7 @@ const LabProfile = () => {
 
                       {/* Contact Person */}
                       <div className="md:col-span-2">
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                        <label className="block text-xs font-black text-slate-400 uppercase tracking-wider mb-2">
                           Primary Contact Person
                         </label>
                         <input
@@ -663,10 +667,10 @@ const LabProfile = () => {
                           value={formData.contactPerson}
                           onChange={handleChange}
                           disabled={!isEditing}
-                          className={`w-full px-4 py-3 rounded-xl border transition-all duration-200 text-sm font-semibold ${
+                          className={`w-full px-4.5 py-3.5 rounded-2xl transition-all duration-200 text-sm font-extrabold ${
                             isEditing
-                              ? "border-slate-200 bg-white text-slate-700 focus:border-red-500 focus:ring-4 focus:ring-red-500/10 focus:outline-none"
-                              : "bg-slate-50 text-slate-500 border-slate-200/60 cursor-not-allowed"
+                              ? "border-2 border-red-500/40 bg-white text-slate-900 focus:ring-4 focus:ring-red-500/10 focus:outline-none shadow-md"
+                              : "bg-slate-50/90 text-slate-800 border border-slate-200/80 cursor-not-allowed shadow-inner"
                           }`}
                           placeholder="Name of contact representative"
                         />
@@ -678,17 +682,17 @@ const LabProfile = () => {
                 {/* Address Tab */}
                 {activeTab === "address" && (
                   <div className="space-y-6 animate-fadeIn">
-                    <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2.5 pb-3 border-b border-slate-100">
-                      <div className="p-2 bg-red-50 rounded-lg text-red-600">
+                    <h3 className="text-lg font-black text-slate-850 flex items-center gap-3 pb-3.5 border-b border-slate-100 uppercase tracking-wide">
+                      <div className="w-9 h-9 bg-gradient-to-br from-red-500 to-rose-600 rounded-xl text-white flex items-center justify-center shadow-md shadow-red-500/20">
                         <MapPin className="w-5 h-5" />
                       </div>
-                      Address Details
+                      <span>Address Details</span>
                     </h3>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       {["street", "city", "state", "pincode"].map((field) => (
                         <div key={field} className={field === "street" ? "md:col-span-2" : ""}>
-                          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 capitalize">
+                          <label className="block text-xs font-black text-slate-400 uppercase tracking-wider mb-2 capitalize">
                             {field === "pincode" ? "PIN Code" : field}
                           </label>
                           <input
@@ -697,16 +701,16 @@ const LabProfile = () => {
                             value={formData.address?.[field] || ""}
                             onChange={handleChange}
                             disabled={!isEditing}
-                            className={`w-full px-4 py-3 rounded-xl border transition-all duration-200 text-sm font-semibold ${
+                            className={`w-full px-4.5 py-3.5 rounded-2xl transition-all duration-200 text-sm font-extrabold ${
                               isEditing
-                                ? "border-slate-200 bg-white text-slate-700 focus:border-red-500 focus:ring-4 focus:ring-red-500/10 focus:outline-none"
-                                : "bg-slate-50 text-slate-500 border-slate-200/60 cursor-not-allowed"
-                            } ${errors[`address.${field}`] ? "border-red-500" : ""}`}
+                                ? "border-2 border-red-500/40 bg-white text-slate-900 focus:ring-4 focus:ring-red-500/10 focus:outline-none shadow-md"
+                                : "bg-slate-50/90 text-slate-800 border border-slate-200/80 cursor-not-allowed shadow-inner"
+                            } ${errors[`address.${field}`] ? "border-rose-500" : ""}`}
                             placeholder={`Enter ${field === "pincode" ? "PIN code" : field}`}
                           />
                           {errors[`address.${field}`] && (
-                            <p className="text-red-500 text-xs mt-2 flex items-center gap-1.5 font-medium">
-                              <AlertCircle size={14} className="text-red-500" />
+                            <p className="text-rose-600 text-xs mt-2 flex items-center gap-1.5 font-bold">
+                              <AlertCircle size={14} className="text-rose-600" />
                               {errors[`address.${field}`]}
                             </p>
                           )}
@@ -719,17 +723,17 @@ const LabProfile = () => {
                 {/* Operating Hours Tab */}
                 {activeTab === "hours" && (
                   <div className="space-y-6 animate-fadeIn">
-                    <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2.5 pb-3 border-b border-slate-100">
-                      <div className="p-2 bg-red-50 rounded-lg text-red-600">
+                    <h3 className="text-lg font-black text-slate-850 flex items-center gap-3 pb-3.5 border-b border-slate-100 uppercase tracking-wide">
+                      <div className="w-9 h-9 bg-gradient-to-br from-red-500 to-rose-600 rounded-xl text-white flex items-center justify-center shadow-md shadow-red-500/20">
                         <Clock className="w-5 h-5" />
                       </div>
-                      Operating Hours Configuration
+                      <span>Operating Hours Configuration</span>
                     </h3>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       {/* Open time */}
                       <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                        <label className="block text-xs font-black text-slate-400 uppercase tracking-wider mb-2">
                           Opening Time
                         </label>
                         <input
@@ -738,17 +742,17 @@ const LabProfile = () => {
                           value={formData.operatingHours.open}
                           onChange={handleChange}
                           disabled={!isEditing}
-                          className={`w-full px-4 py-3 rounded-xl border transition-all duration-200 text-sm font-semibold ${
+                          className={`w-full px-4.5 py-3.5 rounded-2xl transition-all duration-200 text-sm font-extrabold ${
                             isEditing
-                              ? "border-slate-200 bg-white text-slate-700 focus:border-red-500 focus:ring-4 focus:ring-red-500/10 focus:outline-none"
-                              : "bg-slate-50 text-slate-500 border-slate-200/60 cursor-not-allowed"
+                              ? "border-2 border-red-500/40 bg-white text-slate-900 focus:ring-4 focus:ring-red-500/10 focus:outline-none shadow-md"
+                              : "bg-slate-50/90 text-slate-800 border border-slate-200/80 cursor-not-allowed shadow-inner"
                           }`}
                         />
                       </div>
 
                       {/* Close time */}
                       <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                        <label className="block text-xs font-black text-slate-400 uppercase tracking-wider mb-2">
                           Closing Time
                         </label>
                         <input
@@ -757,17 +761,17 @@ const LabProfile = () => {
                           value={formData.operatingHours.close}
                           onChange={handleChange}
                           disabled={!isEditing}
-                          className={`w-full px-4 py-3 rounded-xl border transition-all duration-200 text-sm font-semibold ${
+                          className={`w-full px-4.5 py-3.5 rounded-2xl transition-all duration-200 text-sm font-extrabold ${
                             isEditing
-                              ? "border-slate-200 bg-white text-slate-700 focus:border-red-500 focus:ring-4 focus:ring-red-500/10 focus:outline-none"
-                              : "bg-slate-50 text-slate-500 border-slate-200/60 cursor-not-allowed"
+                              ? "border-2 border-red-500/40 bg-white text-slate-900 focus:ring-4 focus:ring-red-500/10 focus:outline-none shadow-md"
+                              : "bg-slate-50/90 text-slate-800 border border-slate-200/80 cursor-not-allowed shadow-inner"
                           }`}
                         />
                       </div>
 
                       {/* Working Days Selectors */}
                       <div className="md:col-span-2">
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2.5">
+                        <label className="block text-xs font-black text-slate-400 uppercase tracking-wider mb-2.5">
                           Active Working Days
                         </label>
                         <div className="flex flex-wrap gap-2.5">
@@ -779,11 +783,11 @@ const LabProfile = () => {
                                 type="button"
                                 onClick={() => toggleWorkingDay(day)}
                                 disabled={!isEditing}
-                                className={`px-4 py-2 rounded-2xl text-xs font-black border transition-all duration-200 ${
+                                className={`px-4.5 py-2.5 rounded-2xl text-xs font-black border transition-all duration-200 uppercase tracking-wider ${
                                   isActive
-                                    ? "bg-red-50 border-red-200 text-red-600 shadow-sm"
-                                    : "bg-white border-slate-200 text-slate-400 hover:text-slate-600 hover:bg-slate-50"
-                                } ${isEditing ? "cursor-pointer hover:scale-[1.03]" : "cursor-default opacity-85"}`}
+                                    ? "bg-gradient-to-r from-red-600 via-rose-600 to-red-700 text-white shadow-md shadow-red-600/25 border-red-500 scale-105"
+                                    : "bg-white border-slate-200 text-slate-400 hover:text-slate-700 hover:bg-slate-50"
+                                } ${isEditing ? "cursor-pointer hover:scale-105 active:scale-95" : "cursor-default opacity-85"}`}
                               >
                                 {day}
                               </button>
@@ -798,16 +802,16 @@ const LabProfile = () => {
                 {/* Account Security Tab */}
                 {activeTab === "security" && (
                   <div className="space-y-6 animate-fadeIn">
-                    <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2.5 pb-3 border-b border-slate-100">
-                      <div className="p-2 bg-red-50 rounded-lg text-red-600">
+                    <h3 className="text-lg font-black text-slate-850 flex items-center gap-3 pb-3.5 border-b border-slate-100 uppercase tracking-wide">
+                      <div className="w-9 h-9 bg-gradient-to-br from-red-500 to-rose-600 rounded-xl text-white flex items-center justify-center shadow-md shadow-red-500/20">
                         <Shield className="w-5 h-5" />
                       </div>
-                      Account Security
+                      <span>Account Security</span>
                     </h3>
 
                     {/* Email address display (read-only) */}
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                      <label className="block text-xs font-black text-slate-400 uppercase tracking-wider mb-2">
                         Account Email Address
                       </label>
                       <div className="relative">
@@ -815,11 +819,11 @@ const LabProfile = () => {
                           type="email"
                           value={Facility.email}
                           disabled
-                          className="w-full px-4 py-3 rounded-xl border border-slate-200/60 bg-slate-50 text-slate-500 font-semibold text-sm cursor-not-allowed"
+                          className="w-full px-4.5 py-3.5 rounded-2xl border border-slate-200/80 bg-slate-50/90 text-slate-800 font-extrabold text-sm cursor-not-allowed shadow-inner"
                         />
                       </div>
-                      <p className="text-xs text-slate-400 mt-2 font-medium">
-                        Email cannot be changed online
+                      <p className="text-xs text-slate-400 mt-2 font-extrabold">
+                        Email cannot be changed online for security compliance
                       </p>
                     </div>
 
@@ -827,7 +831,7 @@ const LabProfile = () => {
                     {isEditing && (
                       <div className="pt-6 border-t border-slate-100">
                         <div className="max-w-md">
-                          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                          <label className="block text-xs font-black text-slate-400 uppercase tracking-wider mb-2">
                             New Password (optional)
                           </label>
                           <input
@@ -835,20 +839,20 @@ const LabProfile = () => {
                             name="password"
                             value={formData.password}
                             onChange={handleChange}
-                            className={`w-full px-4 py-3 rounded-xl border transition-all duration-200 text-sm font-semibold ${
+                            className={`w-full px-4.5 py-3.5 rounded-2xl transition-all duration-200 text-sm font-extrabold ${
                               isEditing
-                                ? "border-slate-200 bg-white text-slate-700 focus:border-red-500 focus:ring-4 focus:ring-red-500/10 focus:outline-none"
-                                : "bg-slate-50 text-slate-500 border-slate-200/60 cursor-not-allowed"
-                            } ${errors.password ? "border-red-500 focus:ring-red-500/10" : ""}`}
+                                ? "border-2 border-red-500/40 bg-white text-slate-900 focus:ring-4 focus:ring-red-500/10 focus:outline-none shadow-md"
+                                : "bg-slate-50/90 text-slate-800 border border-slate-200/80 cursor-not-allowed shadow-inner"
+                            } ${errors.password ? "border-rose-500" : ""}`}
                             placeholder="Enter new password (min. 6 characters)"
                           />
                           {errors.password && (
-                            <p className="text-red-500 text-xs mt-2 flex items-center gap-1.5 font-medium">
-                              <AlertCircle size={14} className="text-red-500" />
+                            <p className="text-rose-600 text-xs mt-2 flex items-center gap-1.5 font-bold">
+                              <AlertCircle size={14} className="text-rose-600" />
                               {errors.password}
                             </p>
                           )}
-                          <p className="text-xs text-slate-400 mt-2 font-medium">
+                          <p className="text-xs text-slate-400 mt-2 font-semibold">
                             Leave empty if you don't wish to change the password
                           </p>
                         </div>

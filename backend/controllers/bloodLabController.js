@@ -314,6 +314,16 @@ export const addBloodStock = async (req, res, next) => {
 
     if (session) await session.commitTransaction();
 
+    try {
+      getIO().emit(SocketEvents.STOCK_UPDATED || "stock-updated", {
+        bloodType,
+        quantity: stock?.quantity || 0,
+        timestamp: new Date(),
+      });
+    } catch (e) {
+      console.error("Socket emit error:", e);
+    }
+
     // Check for critical levels after addition
     if (stock.quantity < 10) {
       getIO()
@@ -393,6 +403,16 @@ export const removeBloodStock = async (req, res, next) => {
     }).session(session);
 
     if (session) await session.commitTransaction();
+
+    try {
+      getIO().emit(SocketEvents.STOCK_UPDATED || "stock-updated", {
+        bloodType,
+        quantity: stock?.quantity || 0,
+        timestamp: new Date(),
+      });
+    } catch (e) {
+      console.error("Socket emit error:", e);
+    }
 
     res.json({
       success: true,

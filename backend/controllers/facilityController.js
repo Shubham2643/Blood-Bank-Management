@@ -118,8 +118,11 @@ export const updateProfile = async (req, res, next) => {
 // @access  Private/Facility
 export const getFacilityDashboard = async (req, res, next) => {
   try {
-    const facilityId = req.user._id || req.user.id;
-    const facility = await Facility.findById(facilityId);
+    const userId = req.user._id || req.user.id;
+    let facility = await Facility.findById(userId);
+    if (!facility) {
+      facility = await Facility.findOne({ user: userId });
+    }
 
     if (!facility) {
       return next(new AppError("Facility not found", 404));
@@ -272,8 +275,11 @@ export const getAllLabs = async (req, res, next) => {
 // @access  Private/Facility
 export const getFacilityStats = async (req, res, next) => {
   try {
-    const facilityId = req.user._id || req.user.id;
-    const facility = await Facility.findById(facilityId);
+    const userId = req.user._id || req.user.id;
+    let facility = await Facility.findById(userId);
+    if (!facility) {
+      facility = await Facility.findOne({ user: userId });
+    }
 
     if (!facility) {
       return next(new AppError("Facility not found", 404));
@@ -372,10 +378,13 @@ export const getFacilityStats = async (req, res, next) => {
 // @access  Private/Facility
 export const getFacilityHistory = async (req, res, next) => {
   try {
-    const facilityId = req.user._id || req.user.id;
+    const userId = req.user._id || req.user.id;
     const { page = 1, limit = 20 } = req.query;
 
-    const facility = await Facility.findById(facilityId);
+    let facility = await Facility.findById(userId);
+    if (!facility) {
+      facility = await Facility.findOne({ user: userId });
+    }
 
     if (!facility) {
       return next(new AppError("Facility not found", 404));

@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { Link } from "react-router-dom";
 import { hospitalApi } from "../../services/api.js";
 import { toast } from "react-hot-toast";
 import {
@@ -13,6 +14,8 @@ import {
   Search,
   SlidersHorizontal,
   ArrowUpDown,
+  Activity,
+  Zap,
 } from "lucide-react";
 import { io } from "socket.io-client";
 import { SOCKET_URL } from "../../config/env.js";
@@ -294,66 +297,90 @@ const HospitalBloodStock = () => {
           </div>
         </div>
 
-        {/* Stats Grid */}
+        {/* Executive 3D Metric Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          <div className="relative overflow-hidden bg-white/70 backdrop-blur-md border border-slate-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 group">
-            <div className="absolute -right-6 -bottom-6 w-24 h-24 rounded-full bg-blue-50 group-hover:scale-125 transition-transform duration-500 opacity-60" />
-            <div className="flex items-center justify-between relative z-10">
+          {/* Card 1: Total Units */}
+          <div className="bg-white rounded-3xl border border-slate-100/90 p-6 shadow-xl shadow-slate-100 relative overflow-hidden group hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-blue-100/30 rounded-full blur-2xl group-hover:scale-150 transition-transform -z-10" />
+            <div className="flex items-center justify-between">
               <div>
-                <div className="text-3xl font-black text-slate-800 tracking-tight">{stats.totalUnits}</div>
-                <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Total Units</div>
+                <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider block">Total Units</span>
+                <span className="text-3xl sm:text-4xl font-black text-slate-850 tracking-tight mt-1.5 block">{stats.totalUnits}</span>
+                <span className="text-[10px] font-bold text-slate-400 mt-1 block">Live reserve count</span>
               </div>
-              <div className="p-3 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-xl text-white shadow-md shadow-blue-100">
-                <Droplet className="w-5 h-5" />
+              <div className="w-13 h-13 rounded-2xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center shadow-md shadow-blue-500/10 group-hover:scale-110 transition-transform">
+                <Droplet className="w-6 h-6 fill-blue-600" />
               </div>
             </div>
           </div>
 
-          <div className="relative overflow-hidden bg-white/70 backdrop-blur-md border border-slate-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 group">
-            <div className="absolute -right-6 -bottom-6 w-24 h-24 rounded-full bg-emerald-50 group-hover:scale-125 transition-transform duration-500 opacity-60" />
-            <div className="flex items-center justify-between relative z-10">
+          {/* Card 2: Groups Available */}
+          <div className="bg-white rounded-3xl border border-slate-100/90 p-6 shadow-xl shadow-slate-100 relative overflow-hidden group hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-100/30 rounded-full blur-2xl group-hover:scale-150 transition-transform -z-10" />
+            <div className="flex items-center justify-between">
               <div>
-                <div className="text-3xl font-black text-emerald-600 tracking-tight">{stats.bloodTypes}</div>
-                <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Groups Available</div>
+                <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider block">Groups Available</span>
+                <span className="text-3xl sm:text-4xl font-black text-emerald-600 tracking-tight mt-1.5 block">{stats.bloodTypes} / 8</span>
+                <span className="text-[10px] font-bold text-emerald-700 mt-1 block">In stock in lab</span>
               </div>
-              <div className="p-3 bg-gradient-to-tr from-emerald-500 to-teal-600 rounded-xl text-white shadow-md shadow-emerald-100">
-                <CheckCircle className="w-5 h-5" />
+              <div className="w-13 h-13 rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center shadow-md shadow-emerald-500/10 group-hover:scale-110 transition-transform">
+                <CheckCircle className="w-6 h-6" />
               </div>
             </div>
           </div>
 
-          <div className="relative overflow-hidden bg-white/70 backdrop-blur-md border border-slate-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 group">
-            <div className="absolute -right-6 -bottom-6 w-24 h-24 rounded-full bg-orange-50 group-hover:scale-125 transition-transform duration-500 opacity-60" />
-            <div className="flex items-center justify-between relative z-10">
+          {/* Card 3: Low Stock Groups */}
+          <div className="bg-white rounded-3xl border border-slate-100/90 p-6 shadow-xl shadow-slate-100 relative overflow-hidden group hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-amber-100/30 rounded-full blur-2xl group-hover:scale-150 transition-transform -z-10" />
+            <div className="flex items-center justify-between">
               <div>
-                <div className="text-3xl font-black text-orange-500 tracking-tight">{stats.lowStock}</div>
-                <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Low Stock Groups</div>
+                <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider block">Low Stock Groups</span>
+                <span className="text-3xl sm:text-4xl font-black text-amber-600 tracking-tight mt-1.5 block">{stats.lowStock}</span>
+                <span className="text-[10px] font-bold text-amber-700 mt-1 block">&lt; 5 units threshold</span>
               </div>
-              <div className="p-3 bg-gradient-to-tr from-amber-500 to-orange-600 rounded-xl text-white shadow-md shadow-amber-100">
-                <AlertTriangle className="w-5 h-5" />
+              <div className="w-13 h-13 rounded-2xl bg-amber-50 text-amber-600 border border-amber-100 flex items-center justify-center shadow-md shadow-amber-500/10 group-hover:scale-110 transition-transform">
+                <AlertTriangle className="w-6 h-6" />
               </div>
             </div>
           </div>
 
-          <div className="relative overflow-hidden bg-white/70 backdrop-blur-md border border-slate-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 group">
-            <div className="absolute -right-6 -bottom-6 w-24 h-24 rounded-full bg-rose-50 group-hover:scale-125 transition-transform duration-500 opacity-60" />
-            <div className="flex items-center justify-between relative z-10">
+          {/* Card 4: Expiring Soon */}
+          <div className="bg-white rounded-3xl border border-slate-100/90 p-6 shadow-xl shadow-slate-100 relative overflow-hidden group hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-rose-100/30 rounded-full blur-2xl group-hover:scale-150 transition-transform -z-10" />
+            <div className="flex items-center justify-between">
               <div>
-                <div className="text-3xl font-black text-red-500 tracking-tight">{stats.expiringSoon}</div>
-                <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Expiring Soon</div>
+                <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider block">Expiring Soon</span>
+                <span className="text-3xl sm:text-4xl font-black text-rose-600 tracking-tight mt-1.5 block">{stats.expiringSoon}</span>
+                <span className="text-[10px] font-bold text-rose-700 mt-1 block">Within 7 days</span>
               </div>
-              <div className="p-3 bg-gradient-to-tr from-rose-500 to-red-600 rounded-xl text-white shadow-md shadow-rose-100">
-                <Calendar className="w-5 h-5" />
+              <div className="w-13 h-13 rounded-2xl bg-rose-50 text-rose-600 border border-rose-100 flex items-center justify-center shadow-md shadow-rose-500/10 group-hover:scale-110 transition-transform">
+                <Calendar className="w-6 h-6" />
               </div>
             </div>
           </div>
         </div>
 
         {/* Blood Type Overview Grid */}
-        <div className="space-y-4">
-          <h2 className="text-lg font-bold text-slate-800 tracking-tight">
-            Blood Groups Health Overview
-          </h2>
+        <div className="space-y-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+            <div>
+              <h2 className="text-lg font-extrabold text-slate-850 uppercase tracking-wide flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-red-50 text-red-600 border border-red-100">
+                  <Activity className="w-5 h-5" />
+                </div>
+                Blood Groups Health Overview
+              </h2>
+              <p className="text-xs font-semibold text-slate-400 mt-1">
+                Real-time laboratory blood level tube analysis across 8 major groups.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 text-xs font-bold text-slate-400">
+              <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm" /> Good
+              <span className="inline-block w-2.5 h-2.5 rounded-full bg-amber-500 shadow-sm ml-2" /> Low / Warning
+              <span className="inline-block w-2.5 h-2.5 rounded-full bg-rose-600 shadow-sm ml-2" /> Critical
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
             {bloodTypes.map((bloodType) => {
               const stockItem = getStockForType(bloodType);
@@ -365,68 +392,79 @@ const HospitalBloodStock = () => {
               const isExpiredItem = isExpired(stockItem.expiryDate);
               const percentage = Math.min(100, Math.max(0, (stockItem.quantity / 20) * 100));
 
-              let liquidColor = "bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)]";
+              let liquidGradient = "bg-gradient-to-t from-red-700 via-rose-600 to-red-500 shadow-[0_0_12px_rgba(244,63,94,0.6)]";
               if (status.status === "good") {
-                liquidColor = "bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]";
+                liquidGradient = "bg-gradient-to-t from-emerald-600 via-teal-500 to-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.6)]";
               } else if (status.status === "low" || status.status === "warning") {
-                liquidColor = "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]";
+                liquidGradient = "bg-gradient-to-t from-amber-600 via-orange-500 to-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.6)]";
               } else if (status.status === "critical" || status.status === "expired") {
-                liquidColor = "bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.6)]";
+                liquidGradient = "bg-gradient-to-t from-rose-800 via-red-600 to-rose-500 shadow-[0_0_14px_rgba(225,29,72,0.8)]";
               } else {
-                liquidColor = "bg-slate-300";
+                liquidGradient = "bg-slate-300";
               }
 
               return (
                 <div
                   key={bloodType}
-                  className={`bg-white rounded-2xl shadow-sm border border-slate-100 p-4 transition-all duration-300 hover:shadow-md hover:-translate-y-1 flex items-center justify-between ${
+                  className={`bg-white rounded-3xl border border-slate-100/90 p-4 shadow-xl shadow-slate-100 hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 relative overflow-hidden group flex flex-col justify-between items-center text-center ${
                     isExpiredItem ? "opacity-60" : ""
                   }`}
                 >
-                  <div className="flex flex-col justify-between h-full items-start">
-                    <span className={`px-2.5 py-0.5 rounded-md text-xs font-bold border ${getBloodTypeColor(bloodType)}`}>
+                  <div className="absolute top-0 right-0 w-20 h-20 bg-rose-100/20 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500 pointer-events-none" />
+
+                  {/* Header Badge */}
+                  <div className="w-full flex items-center justify-between mb-3">
+                    <span className={`px-3 py-1 rounded-2xl text-xs font-black border shadow-2xs ${getBloodTypeColor(bloodType)}`}>
                       {bloodType}
                     </span>
-                    <div className="mt-2.5">
-                      <span className="text-2xl font-black text-slate-800 block leading-none">
-                        {stockItem.quantity}
-                      </span>
-                      <span className="text-[9px] text-slate-400 font-extrabold uppercase tracking-wide mt-1 block">
-                        Units
-                      </span>
-                    </div>
-                    
-                    {/* Status Badge */}
-                    <div className="mt-3.5">
-                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold ${status.color}`}>
-                        <StatusIcon size={9} />
-                        <span className="capitalize">{status.status}</span>
-                      </span>
+                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                      {percentage.toFixed(0)}%
+                    </span>
+                  </div>
+
+                  {/* 3D Glassmorphic Specimen Vial Casing */}
+                  <div className="my-2 relative flex flex-col items-center">
+                    <div className="w-7 h-28 bg-slate-100/90 border-2 border-slate-200/90 rounded-full overflow-hidden relative shadow-inner flex flex-col justify-end p-0.5">
+                      {/* Measurement Tick Marks */}
+                      <div className="absolute inset-0 flex flex-col justify-between py-2.5 px-1 pointer-events-none z-20 opacity-30">
+                        <div className="w-full h-0.5 bg-slate-400 rounded-full" />
+                        <div className="w-full h-0.5 bg-slate-400 rounded-full" />
+                        <div className="w-full h-0.5 bg-slate-400 rounded-full" />
+                        <div className="w-full h-0.5 bg-slate-400 rounded-full" />
+                      </div>
+
+                      {/* Liquid level column */}
+                      <div
+                        className={`w-full rounded-b-full transition-all duration-1000 ease-out relative ${liquidGradient}`}
+                        style={{ height: `${percentage}%` }}
+                      >
+                        {/* Meniscus wave cap */}
+                        {percentage > 0 && (
+                          <div className="absolute -top-1 left-0 right-0 h-2 bg-white/40 rounded-full blur-[1px]" />
+                        )}
+                      </div>
+
+                      {/* Glass vertical glare streak */}
+                      <div className="absolute top-1 left-1.5 w-1 h-[90%] bg-gradient-to-b from-white/60 via-white/20 to-transparent rounded-full pointer-events-none z-30" />
                     </div>
                   </div>
 
-                  {/* Vial graphics */}
-                  <div className="flex flex-col items-center gap-1.5 shrink-0">
-                    <div className="w-4 h-16 bg-slate-50 border border-slate-200 rounded-full overflow-hidden relative shadow-inner flex flex-col justify-end">
-                      {/* Liquid representation */}
-                      <div
-                        className={`w-full rounded-b-full transition-all duration-700 ease-out ${liquidColor}`}
-                        style={{ height: `${percentage}%` }}
-                      />
-                      {/* Reflection sheen */}
-                      <div className="absolute top-0 left-0.5 w-0.5 h-full bg-white/20 rounded-full" />
-                    </div>
-                    
-                    {/* Date subtitle */}
-                    {stockItem.expiryDate ? (
-                      <span className="text-[8px] font-bold text-slate-400 mt-1 block text-center max-w-[52px] truncate">
-                        {new Date(stockItem.expiryDate).toLocaleDateString(undefined, {month: 'short', day: 'numeric'})}
-                      </span>
-                    ) : (
-                      <span className="text-[8px] font-bold text-slate-300 mt-1 block text-center">
-                        Empty
-                      </span>
-                    )}
+                  {/* Quantity & Expiry Info */}
+                  <div className="mt-2 w-full">
+                    <span className="text-2xl font-black text-slate-850 block leading-tight">
+                      {stockItem.quantity}
+                    </span>
+                    <span className="text-[9px] text-slate-400 font-black uppercase tracking-wider block">
+                      Units
+                    </span>
+                  </div>
+
+                  {/* Status Badge */}
+                  <div className="mt-3 w-full">
+                    <span className={`inline-flex items-center justify-center gap-1 w-full py-1 px-1.5 rounded-xl text-[9px] font-black uppercase tracking-wider border shadow-2xs ${status.color}`}>
+                      <StatusIcon size={9} />
+                      <span className="truncate">{status.status}</span>
+                    </span>
                   </div>
                 </div>
               );
@@ -435,30 +473,33 @@ const HospitalBloodStock = () => {
         </div>
 
         {/* Detailed Inventory Table */}
-        <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-3xl border border-slate-100/90 shadow-xl shadow-slate-100 overflow-hidden">
           
           {/* Table Header and Control bar */}
-          <div className="p-6 border-b border-slate-100 bg-slate-50/50 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <div className="p-1.5 bg-rose-50 text-rose-600 rounded-lg">
-                <Droplet className="w-5 h-5" />
-              </div>
-              <h2 className="text-lg font-bold text-slate-800">
+          <div className="p-6 border-b border-slate-100 bg-white flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div>
+              <h2 className="text-lg font-extrabold text-slate-850 uppercase tracking-wide flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-red-50 text-red-600 border border-red-100">
+                  <Droplet className="w-5 h-5 fill-red-600" />
+                </div>
                 Detailed Inventory Records
               </h2>
+              <p className="text-xs font-semibold text-slate-400 mt-1">
+                Filter and sort active laboratory blood stocks.
+              </p>
             </div>
             
             {/* Dynamic Filters */}
             <div className="flex flex-wrap items-center gap-3">
               {/* Search Bar */}
               <div className="relative shrink-0">
-                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   placeholder="Search blood group..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9 pr-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/25 focus:border-red-500 w-44 transition-all"
+                  className="pl-10 pr-4 py-2.5 bg-slate-50/70 border border-slate-200/80 rounded-2xl text-xs font-bold text-slate-850 focus:outline-none focus:ring-2 focus:ring-red-500 focus:bg-white w-48 transition-all"
                 />
               </div>
 
@@ -467,7 +508,7 @@ const HospitalBloodStock = () => {
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="pl-3 pr-8 py-2 border border-slate-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-red-500/25 focus:border-red-500 transition-all cursor-pointer appearance-none animate-none"
+                  className="pl-3.5 pr-8 py-2.5 bg-slate-50/70 border border-slate-200/80 rounded-2xl text-xs font-extrabold uppercase tracking-wider text-slate-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:bg-white transition-all cursor-pointer appearance-none"
                 >
                   <option value="all">All Statuses</option>
                   <option value="good">Good</option>
@@ -477,7 +518,7 @@ const HospitalBloodStock = () => {
                   <option value="expired">Expired</option>
                   <option value="out of stock">Out of Stock</option>
                 </select>
-                <SlidersHorizontal className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <SlidersHorizontal className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>
 
               {/* Sort Select */}
@@ -485,7 +526,7 @@ const HospitalBloodStock = () => {
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="pl-3 pr-8 py-2 border border-slate-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-red-500/25 focus:border-red-500 transition-all cursor-pointer appearance-none animate-none"
+                  className="pl-3.5 pr-8 py-2.5 bg-slate-50/70 border border-slate-200/80 rounded-2xl text-xs font-extrabold uppercase tracking-wider text-slate-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:bg-white transition-all cursor-pointer appearance-none"
                 >
                   <option value="bloodGroup">Sort: Group Name</option>
                   <option value="quantity-desc">Sort: Qty (High to Low)</option>
@@ -493,40 +534,39 @@ const HospitalBloodStock = () => {
                   <option value="expiry-asc">Sort: Expiry (Soonest)</option>
                   <option value="expiry-desc">Sort: Expiry (Latest)</option>
                 </select>
-                <ArrowUpDown className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <ArrowUpDown className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>
             </div>
           </div>
 
           {processedStock.length === 0 ? (
-            <div className="text-center py-16">
-              <Droplet className="w-14 h-14 text-slate-250 mx-auto mb-4" />
-              <h3 className="text-lg font-bold text-slate-800 mb-1">
-                No matching stock items
+            <div className="text-center py-16 bg-slate-50/50">
+              <Droplet className="w-14 h-14 text-slate-300 mx-auto mb-4 animate-bounce" />
+              <h3 className="text-lg font-extrabold text-slate-800 mb-1 uppercase tracking-wide">
+                No Matching Stock Items
               </h3>
-              <p className="text-slate-500 text-sm max-w-sm mx-auto mb-5 font-semibold">
+              <p className="text-slate-500 text-xs max-w-sm mx-auto mb-5 font-semibold leading-relaxed">
                 We couldn't find any blood stocks matching the current filters. Request blood from labs to add new entries.
               </p>
-              <button
-                onClick={() =>
-                  (window.location.href = "/hospital/blood-request-create")
-                }
-                className="bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-md shadow-red-100 transition-all hover:shadow-lg active:scale-95"
+              <Link
+                to="/hospital/blood-request-create"
+                className="bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-700 hover:to-rose-800 text-white px-5 py-3 rounded-2xl font-black text-xs uppercase tracking-wider shadow-lg shadow-red-600/25 transition-all hover:scale-[1.02] active:scale-95 inline-flex items-center gap-2 border border-red-500/30"
               >
-                Request Blood
-              </button>
+                <Plus size={16} />
+                <span>Request Blood</span>
+              </Link>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-slate-800">
                 <thead>
-                  <tr className="bg-slate-50/50 border-b border-slate-100 text-slate-400 text-[11px] uppercase font-bold tracking-wider">
-                    <th className="p-4 text-left font-extrabold">Blood Group</th>
-                    <th className="p-4 text-left font-extrabold">Quantity</th>
-                    <th className="p-4 text-left font-extrabold">Inventory Status</th>
-                    <th className="p-4 text-left font-extrabold">Expiry Date</th>
-                    <th className="p-4 text-left font-extrabold">Days Left</th>
-                    <th className="p-4 text-left font-extrabold">Last Synced</th>
+                  <tr className="bg-slate-50/80 border-b border-slate-100 text-slate-400 text-[11px] uppercase font-extrabold tracking-wider">
+                    <th className="p-4 text-left">Blood Group</th>
+                    <th className="p-4 text-left">Quantity</th>
+                    <th className="p-4 text-left">Inventory Status</th>
+                    <th className="p-4 text-left">Expiry Date</th>
+                    <th className="p-4 text-left">Days Left</th>
+                    <th className="p-4 text-left">Last Synced</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -559,7 +599,7 @@ const HospitalBloodStock = () => {
                       >
                         <td className="p-4">
                           <span
-                            className={`px-3 py-1 rounded-full text-xs font-bold border ${getBloodTypeColor(item.bloodGroup)}`}
+                            className={`px-3.5 py-1.5 rounded-2xl text-xs font-black border shadow-2xs ${getBloodTypeColor(item.bloodGroup)}`}
                           >
                             {item.bloodGroup}
                           </span>
@@ -567,16 +607,16 @@ const HospitalBloodStock = () => {
                         <td className="p-4">
                           <div className="flex flex-col gap-1.5">
                             <div className="flex items-center gap-1.5">
-                              <span className="text-base font-extrabold text-slate-850">
+                              <span className="text-base font-black text-slate-850">
                                 {item.quantity}
                               </span>
-                              <span className="text-xs text-slate-400 font-semibold">units</span>
+                              <span className="text-xs text-slate-400 font-extrabold">units</span>
                               {item.quantity < 5 && (
                                 <Minus size={13} className="text-orange-500 ml-1" />
                               )}
                             </div>
                             {/* Stock Indicator Progress */}
-                            <div className="w-24 bg-slate-100 h-1 rounded-full overflow-hidden">
+                            <div className="w-24 bg-slate-150 h-1.5 rounded-full overflow-hidden">
                               <div
                                 className={`h-full rounded-full ${
                                   item.quantity < 5 ? "bg-orange-500" : "bg-emerald-500"
@@ -588,23 +628,23 @@ const HospitalBloodStock = () => {
                         </td>
                         <td className="p-4">
                           <span
-                            className={`px-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1 w-fit border ${status.color}`}
+                            className={`px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider flex items-center gap-1.5 w-fit border shadow-2xs ${status.color}`}
                           >
                             <StatusIcon size={12} />
                             <span className="capitalize">{status.status}</span>
                           </span>
                         </td>
                         <td className="p-4">
-                          <div className="flex items-center gap-2 text-sm text-slate-650 font-medium">
+                          <div className="flex items-center gap-2 text-xs font-bold text-slate-700">
                             <Calendar size={13} className="text-slate-400" />
-                            <span className={isExpiredItem ? "text-red-650 font-bold" : "text-slate-700 font-semibold"}>
+                            <span className={isExpiredItem ? "text-red-600 font-black" : "text-slate-800 font-bold"}>
                               {new Date(item.expiryDate).toLocaleDateString()}
                             </span>
                           </div>
                         </td>
                         <td className="p-4">
                           <span
-                            className={`text-sm font-bold ${
+                            className={`text-xs font-extrabold ${
                               daysLeft <= 0
                                 ? "text-red-650"
                                 : daysLeft <= 3
@@ -615,7 +655,7 @@ const HospitalBloodStock = () => {
                             }`}
                           >
                             {daysLeft <= 0 ? (
-                              <span className="inline-flex items-center gap-1 text-red-600">
+                              <span className="inline-flex items-center gap-1 text-red-600 font-black">
                                 <AlertTriangle className="w-3.5 h-3.5" />
                                 EXPIRED
                               </span>
@@ -624,7 +664,7 @@ const HospitalBloodStock = () => {
                             )}
                           </span>
                         </td>
-                        <td className="p-4 text-xs text-slate-455 font-semibold">
+                        <td className="p-4 text-xs text-slate-400 font-bold">
                           {new Date(
                             item.updatedAt || item.createdAt,
                           ).toLocaleDateString()}
@@ -647,14 +687,13 @@ const HospitalBloodStock = () => {
             item.quantity < 3
           );
         }) && (
-          <div className="bg-rose-50/50 border border-rose-100 rounded-3xl p-6 relative overflow-hidden">
-            {/* Soft decorative backdrop glow */}
+          <div className="bg-gradient-to-br from-rose-50/70 to-red-50/40 border border-rose-200/80 rounded-3xl p-6 sm:p-7 relative overflow-hidden shadow-xl shadow-rose-950/5">
             <div className="absolute right-0 top-0 w-32 h-32 bg-rose-100 rounded-full blur-3xl opacity-60" />
             
-            <h3 className="text-base font-extrabold text-rose-800 mb-4 flex items-center gap-2 relative z-10">
-              <span className="flex h-2 w-2 relative">
+            <h3 className="text-base font-black text-rose-950 uppercase tracking-wide mb-4 flex items-center gap-2 relative z-10">
+              <span className="flex h-2.5 w-2.5 relative">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-450 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-600"></span>
               </span>
               Action Required: Important Inventory Alerts
             </h3>
@@ -672,24 +711,24 @@ const HospitalBloodStock = () => {
                   return (
                     <div
                       key={item._id}
-                      className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 bg-white border border-rose-100/60 rounded-2xl shadow-sm hover:shadow-md transition-shadow gap-3"
+                      className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white/90 border border-rose-150 rounded-2xl shadow-sm hover:shadow-md transition-all gap-3"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="p-2 bg-rose-50 rounded-xl text-rose-600 shrink-0">
-                          <AlertTriangle size={15} />
+                        <div className="p-2.5 bg-rose-100 text-rose-700 rounded-xl shrink-0">
+                          <AlertTriangle size={16} />
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="font-extrabold text-slate-800">
+                            <span className="font-black text-slate-850 text-sm">
                               {item.bloodGroup}
                             </span>
-                            <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-wider ${
-                              isExpiredItem ? "bg-red-150 text-red-800" : "bg-orange-100 text-orange-800"
+                            <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border shadow-2xs ${
+                              isExpiredItem ? "bg-rose-100 text-rose-800 border-rose-200" : "bg-amber-100 text-amber-800 border-amber-200"
                             }`}>
                               {isExpiredItem ? "Expired" : "Action Needed"}
                             </span>
                           </div>
-                          <span className="text-xs text-slate-500 font-semibold block mt-0.5">
+                          <span className="text-xs text-slate-500 font-semibold block mt-0.5 leading-relaxed">
                             {isExpiredItem
                               ? "These blood units have expired and must be disposed of safely."
                               : status.status === "critical"
@@ -699,11 +738,11 @@ const HospitalBloodStock = () => {
                         </div>
                       </div>
                       <div className="text-right shrink-0 flex sm:flex-col items-baseline sm:items-end justify-between sm:justify-center border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-100">
-                        <span className="text-sm font-extrabold text-slate-700">
+                        <span className="text-sm font-black text-slate-850">
                           {item.quantity} units
                         </span>
                         {item.expiryDate && (
-                          <span className="text-[10px] text-slate-400 font-bold mt-0.5">
+                          <span className="text-[10px] text-slate-400 font-extrabold mt-0.5">
                             Exp: {new Date(item.expiryDate).toLocaleDateString()}
                           </span>
                         )}
@@ -720,84 +759,100 @@ const HospitalBloodStock = () => {
         {/* Lower Widget Row: Quick Actions + Guide */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           
-          {/* Quick Actions Panel */}
-          <div className="bg-white rounded-3xl border border-slate-100 p-6 flex flex-col justify-between shadow-sm">
+          {/* Quick Operations Panel */}
+          <div className="bg-white rounded-3xl border border-slate-100/90 p-6 sm:p-7 flex flex-col justify-between shadow-xl shadow-slate-100 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-28 h-28 bg-rose-100/20 rounded-full blur-3xl -z-10" />
+
             <div>
-              <h3 className="text-base font-bold text-slate-800 mb-2 flex items-center gap-2">
-                <Plus size={18} className="text-slate-500" />
-                Quick Operations
-              </h3>
-              <p className="text-xs text-slate-500 mb-6 font-semibold">
-                Replenish inventory or run manual updates to align database states instantly.
+              <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                <h3 className="text-base font-extrabold text-slate-850 uppercase tracking-wide flex items-center gap-2.5">
+                  <div className="p-2 rounded-xl bg-red-50 text-red-600 border border-red-100">
+                    <Zap className="w-4 h-4" />
+                  </div>
+                  Quick Operations
+                </h3>
+              </div>
+              <p className="text-xs text-slate-400 font-semibold mb-6">
+                Replenish blood supply reserves or execute real-time inventory synchronization.
               </p>
             </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <button
-                onClick={() =>
-                  (window.location.href = "/hospital/blood-request-create")
-                }
-                className="bg-red-600 bg-gradient-to-br hover:from-red-700 hover:to-rose-700 text-white py-2.5 px-4 rounded-xl font-bold transition-all text-sm flex items-center justify-center gap-2 shadow-md shadow-rose-100 hover:shadow-lg active:scale-95"
+              <Link
+                to="/hospital/blood-request-create"
+                className="bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-700 hover:to-rose-800 text-white py-3.5 px-4 rounded-2xl font-extrabold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-lg shadow-red-600/25 hover:scale-[1.02] active:scale-95 cursor-pointer border border-red-500/30"
               >
-                <Plus size={15} />
-                Request More Blood
-              </button>
+                <Plus size={16} />
+                <span>Request More Blood</span>
+              </Link>
+
               <button
                 onClick={loadStock}
-                className="bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-600 py-2.5 px-4 rounded-xl font-bold transition-all text-sm flex items-center justify-center gap-2 active:scale-95"
+                className="bg-slate-50/80 hover:bg-slate-100 border border-slate-200/80 text-slate-700 py-3.5 px-4 rounded-2xl font-extrabold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 active:scale-95 cursor-pointer"
               >
-                <RefreshCw size={15} className={loading ? "animate-spin" : ""} />
-                Sync Inventory
+                <RefreshCw size={15} className={`text-slate-600 ${loading ? "animate-spin" : ""}`} />
+                <span>Sync Inventory</span>
               </button>
             </div>
           </div>
 
           {/* Stock Status Guide */}
-          <div className="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm">
-            <h3 className="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
-              <SlidersHorizontal className="w-4 h-4 text-slate-500" />
-              Stock Health Guide
-            </h3>
+          <div className="bg-white rounded-3xl border border-slate-100/90 p-6 sm:p-7 shadow-xl shadow-slate-100 relative overflow-hidden">
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+              <h3 className="text-base font-extrabold text-slate-850 uppercase tracking-wide flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-red-50 text-red-600 border border-red-100">
+                  <SlidersHorizontal className="w-4 h-4" />
+                </div>
+                Stock Health Guide
+              </h3>
+            </div>
+
             <div className="grid grid-cols-2 gap-3 text-xs">
-              <div className="flex items-start gap-2 p-2 bg-slate-50 rounded-xl">
-                <CheckCircle size={14} className="text-emerald-600 mt-0.5 shrink-0" />
+              <div className="flex items-start gap-2.5 p-3 bg-emerald-50/50 border border-emerald-100 rounded-2xl">
+                <CheckCircle size={15} className="text-emerald-600 mt-0.5 shrink-0" />
                 <div>
-                  <span className="font-bold text-slate-700 block">Good</span>
-                  <span className="text-[9px] text-slate-400 font-semibold">Qty &ge; 5, Days &gt; 7</span>
+                  <span className="font-extrabold text-emerald-900 block uppercase tracking-wider text-[11px]">Good</span>
+                  <span className="text-[10px] text-emerald-700 font-semibold">Qty &ge; 5, Expiry &gt; 7d</span>
                 </div>
               </div>
-              <div className="flex items-start gap-2 p-2 bg-slate-50 rounded-xl">
-                <AlertCircle size={14} className="text-slate-400 mt-0.5 shrink-0" />
+
+              <div className="flex items-start gap-2.5 p-3 bg-slate-50 border border-slate-200/60 rounded-2xl">
+                <AlertCircle size={15} className="text-slate-500 mt-0.5 shrink-0" />
                 <div>
-                  <span className="font-bold text-slate-700 block">Out of Stock</span>
-                  <span className="text-[9px] text-slate-400 font-semibold">Qty = 0</span>
+                  <span className="font-extrabold text-slate-800 block uppercase tracking-wider text-[11px]">Out of Stock</span>
+                  <span className="text-[10px] text-slate-500 font-semibold">Quantity = 0 units</span>
                 </div>
               </div>
-              <div className="flex items-start gap-2 p-2 bg-slate-50 rounded-xl">
-                <AlertTriangle size={14} className="text-orange-500 mt-0.5 shrink-0" />
+
+              <div className="flex items-start gap-2.5 p-3 bg-amber-50/50 border border-amber-100 rounded-2xl">
+                <AlertTriangle size={15} className="text-amber-600 mt-0.5 shrink-0" />
                 <div>
-                  <span className="font-bold text-slate-700 block">Low Stock</span>
-                  <span className="text-[9px] text-slate-400 font-semibold">Qty &lt; 5</span>
+                  <span className="font-extrabold text-amber-900 block uppercase tracking-wider text-[11px]">Low Stock</span>
+                  <span className="text-[10px] text-amber-700 font-semibold">Quantity &lt; 5 units</span>
                 </div>
               </div>
-              <div className="flex items-start gap-2 p-2 bg-slate-50 rounded-xl">
-                <AlertTriangle size={14} className="text-yellow-600 mt-0.5 shrink-0" />
+
+              <div className="flex items-start gap-2.5 p-3 bg-amber-50/70 border border-amber-200/80 rounded-2xl">
+                <AlertTriangle size={15} className="text-amber-700 mt-0.5 shrink-0" />
                 <div>
-                  <span className="font-bold text-slate-700 block">Warning</span>
-                  <span className="text-[9px] text-slate-400 font-semibold">Expiry &le; 7 days</span>
+                  <span className="font-extrabold text-amber-950 block uppercase tracking-wider text-[11px]">Warning</span>
+                  <span className="text-[10px] text-amber-800 font-semibold">Expiry &le; 7 days</span>
                 </div>
               </div>
-              <div className="flex items-start gap-2 p-2 bg-slate-50 rounded-xl">
-                <AlertTriangle size={14} className="text-red-500 mt-0.5 shrink-0" />
+
+              <div className="flex items-start gap-2.5 p-3 bg-rose-50/60 border border-rose-100 rounded-2xl">
+                <AlertTriangle size={15} className="text-rose-600 mt-0.5 shrink-0" />
                 <div>
-                  <span className="font-bold text-slate-700 block">Critical</span>
-                  <span className="text-[9px] text-slate-400 font-semibold">Expiry &le; 3 days</span>
+                  <span className="font-extrabold text-rose-900 block uppercase tracking-wider text-[11px]">Critical</span>
+                  <span className="text-[10px] text-rose-700 font-semibold">Expiry &le; 3 days</span>
                 </div>
               </div>
-              <div className="flex items-start gap-2 p-2 bg-slate-50 rounded-xl">
-                <AlertTriangle size={14} className="text-red-600 mt-0.5 shrink-0" />
+
+              <div className="flex items-start gap-2.5 p-3 bg-rose-100/70 border border-rose-200 rounded-2xl">
+                <AlertTriangle size={15} className="text-rose-700 mt-0.5 shrink-0" />
                 <div>
-                  <span className="font-bold text-slate-700 block">Expired</span>
-                  <span className="text-[9px] text-slate-400 font-semibold">Passed expiry date</span>
+                  <span className="font-extrabold text-rose-950 block uppercase tracking-wider text-[11px]">Expired</span>
+                  <span className="text-[10px] text-rose-800 font-semibold">Passed expiry date</span>
                 </div>
               </div>
             </div>

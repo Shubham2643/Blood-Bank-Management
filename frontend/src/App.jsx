@@ -57,6 +57,7 @@ import CentralStockDirectory from "./pages/public/CentralStockDirectory";
 import BloodTestingAndComponents from "./pages/bloodlab/BloodTestingAndComponents";
 import CampDonationsManager from "./pages/bloodlab/CampDonationsManager";
 import DonorCertificates from "./pages/donor/DonorCertificates";
+import AdminSettings from "./pages/admin/AdminSettings";
 
 function App() {
   return (
@@ -197,6 +198,7 @@ function App() {
           <Route path="camps" element={<AdminCamps />} />
           <Route path="reports" element={<AdminReports />} />
           <Route path="messages" element={<AdminContactMessages />} />
+          <Route path="settings" element={<AdminSettings />} />
         </Route>
 
         {/* Fallback Route */}

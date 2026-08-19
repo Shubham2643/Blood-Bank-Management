@@ -297,12 +297,12 @@ const BloodLabDashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Blood Stock Section */}
         <Section
-          title="Blood Inventory"
-          icon={<Droplet className="w-5 h-5 text-red-600" />}
-          subtitle="Current blood stock levels"
+          title="Blood Inventory Reserves"
+          icon={<Droplet className="w-5 h-5 text-red-600 fill-red-600" />}
+          subtitle="Real-time blood stock levels & capacity status"
         >
           {stock.length > 0 ? (
-            <div className="space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               {stock.map((blood) => {
                 const bloodType = blood.bloodGroup || blood.bloodType;
                 const quantity = blood.quantity || 0;
@@ -318,7 +318,7 @@ const BloodLabDashboard = () => {
             </div>
           ) : (
             <EmptyState
-              icon={<Droplet className="w-8 h-8" />}
+              icon={<Droplet className="w-8 h-8 text-red-400" />}
               message="No blood stock data available"
             />
           )}
@@ -327,66 +327,71 @@ const BloodLabDashboard = () => {
         {/* Recent Camps Section */}
         <Section
           title="Recent Blood Donation Camps"
-          icon={<Calendar className="w-5 h-5 text-red-600" />}
-          subtitle="Latest organized camps"
+          icon={<Calendar className="w-5 h-5 text-rose-600" />}
+          subtitle="Latest organized donation drives & mobile units"
         >
           {dashboard?.recentCamps?.length > 0 ? (
-            <div className="space-y-4">
+            <div className="space-y-3.5">
               {dashboard.recentCamps.slice(0, 4).map((camp) => (
                 <CampCard key={camp._id} camp={camp} />
               ))}
             </div>
           ) : (
             <EmptyState
-              icon={<Calendar className="w-8 h-8" />}
+              icon={<Calendar className="w-8 h-8 text-rose-400" />}
               message="No recent camps organized"
             />
           )}
         </Section>
       </div>
 
-      {/* Access History Section */}
-      <Section
-        title="Access History"
-        icon={<Shield className="w-5 h-5 text-red-600" />}
-        subtitle="Recent login activity"
-        className="mt-8"
-      >
-        {loginHistory.length > 0 ? (
-          <div className="space-y-3">
-            {loginHistory
-              .slice(-5)
-              .reverse()
-              .map((h, idx) => (
-                <LoginHistoryItem key={h._id || idx} history={h} />
-              ))}
-          </div>
-        ) : (
-          <EmptyState
-            icon={<LogIn className="w-8 h-8" />}
-            message="No login history available"
-          />
-        )}
-      </Section>
-
-      {/* Activity History Section */}
-      {lab?.history?.length > 0 && (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+        {/* Access History Section */}
         <Section
-          title="Recent Activity"
-          icon={<Activity className="w-5 h-5 text-red-600" />}
-          subtitle="All laboratory activities"
-          className="mt-8"
+          title="Security & System Access Log"
+          icon={<Shield className="w-5 h-5 text-blue-600" />}
+          subtitle="Authentication audit log & portal sessions"
         >
-          <div className="space-y-3">
-            {lab.history
-              .slice(-5)
-              .reverse()
-              .map((h, idx) => (
-                <ActivityHistoryItem key={h._id || idx} history={h} />
-              ))}
-          </div>
+          {loginHistory.length > 0 ? (
+            <div className="space-y-3">
+              {loginHistory
+                .slice(-5)
+                .reverse()
+                .map((h, idx) => (
+                  <LoginHistoryItem key={h._id || idx} history={h} />
+                ))}
+            </div>
+          ) : (
+            <EmptyState
+              icon={<LogIn className="w-8 h-8 text-blue-400" />}
+              message="No login history available"
+            />
+          )}
         </Section>
-      )}
+
+        {/* Activity History Section */}
+        <Section
+          title="Recent Operations & Activity"
+          icon={<Activity className="w-5 h-5 text-emerald-600" />}
+          subtitle="Real-time laboratory workflow events"
+        >
+          {lab?.history?.length > 0 ? (
+            <div className="space-y-3">
+              {lab.history
+                .slice(-5)
+                .reverse()
+                .map((h, idx) => (
+                  <ActivityHistoryItem key={h._id || idx} history={h} />
+                ))}
+            </div>
+          ) : (
+            <EmptyState
+              icon={<Activity className="w-8 h-8 text-emerald-400" />}
+              message="No recent activity recorded"
+            />
+          )}
+        </Section>
+      </div>
     </div>
   );
 };
@@ -402,37 +407,37 @@ const MetricCard = ({
   alert = false,
 }) => {
   const colorClasses = {
-    blue: { border: "border-l-blue-400", bg: "bg-blue-50 text-blue-600" },
-    green: { border: "border-l-emerald-400", bg: "bg-emerald-50 text-emerald-600" },
-    red: { border: "border-l-red-400", bg: "bg-red-50 text-red-600" },
-    purple: { border: "border-l-purple-400", bg: "bg-purple-50 text-purple-600" },
+    blue: { border: "border-l-blue-500", bg: "bg-blue-50 text-blue-600", shadow: "shadow-blue-500/10" },
+    green: { border: "border-l-emerald-500", bg: "bg-emerald-50 text-emerald-600", shadow: "shadow-emerald-500/10" },
+    red: { border: "border-l-red-500", bg: "bg-red-50 text-red-600", shadow: "shadow-red-500/10" },
+    purple: { border: "border-l-purple-500", bg: "bg-purple-50 text-purple-600", shadow: "shadow-purple-500/10" },
   };
 
   const colors = colorClasses[color] || colorClasses.blue;
 
   return (
-    <div className={`bg-white rounded-2xl shadow-md border-l-4 ${alert ? "border-l-red-400" : colors.border} p-5 relative overflow-hidden hover:shadow-lg transition-shadow`}>
+    <div className={`bg-white rounded-3xl shadow-lg ${colors.shadow} border border-slate-100 border-l-4 ${alert ? "border-l-red-500" : colors.border} p-6 relative overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5`}>
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{label}</p>
-          <p className="text-2xl font-black text-slate-800">
+          <p className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider mb-1.5">{label}</p>
+          <p className="text-3xl font-black text-slate-850 tracking-tight">
             {value.toLocaleString()}
           </p>
           {subtitle && (
-            <p className={`text-xs ${alert ? "text-red-600 font-bold" : "text-gray-500"} mt-1`}>
+            <p className={`text-xs ${alert ? "text-red-600 font-extrabold" : "text-slate-500 font-semibold"} mt-1.5`}>
               {subtitle}
             </p>
           )}
         </div>
-        <div className={`p-3 rounded-xl ${alert ? "bg-red-55 text-red-600" : colors.bg}`}>
+        <div className={`p-3.5 rounded-2xl ${alert ? "bg-red-100 text-red-600" : colors.bg} shadow-sm`}>
           {icon}
         </div>
       </div>
       {trend && (
-        <div className="flex items-center gap-1 mt-3 text-xs">
-          <TrendingUp className="w-3 h-3 text-emerald-500" />
-          <span className="text-emerald-600 font-medium">{trend}%</span>
-          <span className="text-gray-400">from last month</span>
+        <div className="flex items-center gap-1.5 mt-3.5 text-xs font-bold">
+          <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
+          <span className="text-emerald-600">{trend}%</span>
+          <span className="text-slate-400 font-medium">from last month</span>
         </div>
       )}
     </div>
@@ -440,81 +445,116 @@ const MetricCard = ({
 };
 
 const Section = ({ title, icon, subtitle, children, className = "" }) => (
-  <div className={`bg-white rounded-2xl shadow-lg border border-red-50 p-6 ${className}`}>
-    <div className="flex items-center justify-between mb-4">
+  <div className={`bg-white rounded-3xl shadow-xl border border-slate-100/80 p-6 sm:p-7 ${className}`}>
+    <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
       <div>
-        <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-          {icon} {title}
+        <h3 className="text-lg font-extrabold text-slate-850 uppercase tracking-wide flex items-center gap-2.5">
+          <div className="p-2 rounded-xl bg-slate-50 border border-slate-100">
+            {icon}
+          </div>
+          {title}
         </h3>
-        {subtitle && <p className="text-sm text-gray-500 mt-1">{subtitle}</p>}
+        {subtitle && <p className="text-xs font-semibold text-slate-400 mt-1">{subtitle}</p>}
       </div>
     </div>
     {children}
   </div>
 );
 
-const BloodStockItem = ({ bloodType, quantity, critical = false }) => (
-  <div className="flex items-center justify-between p-3 border border-gray-100 rounded-xl hover:bg-slate-50 transition-colors">
-    <div className="flex items-center gap-3">
-      <div className={`p-2 rounded-lg ${critical ? "bg-red-50 text-red-600" : "bg-emerald-50 text-emerald-600"}`}>
-        <Droplet className="w-4 h-4" />
+const BloodStockItem = ({ bloodType, quantity, critical = false }) => {
+  const maxCapacity = 100;
+  const percentage = Math.min(100, Math.round((quantity / maxCapacity) * 100));
+
+  return (
+    <div className="p-4 border border-slate-100/90 rounded-2xl bg-slate-50/40 hover:bg-white hover:shadow-md hover:border-red-150 transition-all duration-300 group">
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2.5">
+          <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-black text-xs ${
+            critical 
+              ? "bg-red-100 text-red-600 shadow-sm shadow-red-500/20" 
+              : "bg-emerald-100/80 text-emerald-700 shadow-sm shadow-emerald-500/20"
+          }`}>
+            <Droplet className={`w-4 h-4 ${critical ? "fill-red-600 animate-pulse" : "fill-emerald-600"}`} />
+          </div>
+          <div>
+            <span className="font-extrabold text-slate-850 text-base tracking-tight">{bloodType}</span>
+            <span className={`block text-[10px] font-extrabold uppercase tracking-wider ${
+              critical ? "text-red-600" : quantity > 40 ? "text-emerald-600" : "text-amber-600"
+            }`}>
+              {critical ? "Critical Low" : quantity > 40 ? "Adequate" : "Moderate"}
+            </span>
+          </div>
+        </div>
+        <div className="text-right">
+          <span className={`font-black text-lg ${critical ? "text-red-600" : "text-slate-850"}`}>
+            {quantity}
+          </span>
+          <span className="text-xs font-bold text-slate-400 ml-1">units</span>
+        </div>
       </div>
-      <span className="font-semibold text-gray-850">{bloodType}</span>
+
+      {/* Capacity Progress Bar */}
+      <div className="w-full h-2 rounded-full bg-slate-200/60 overflow-hidden mt-2">
+        <div 
+          className={`h-full rounded-full transition-all duration-500 ${
+            critical ? "bg-gradient-to-r from-red-500 to-rose-600" : "bg-gradient-to-r from-emerald-500 to-teal-500"
+          }`}
+          style={{ width: `${percentage}%` }}
+        />
+      </div>
     </div>
-    <div className="text-right">
-      <span className={`font-black text-lg ${critical ? "text-red-600" : "text-slate-800"}`}>
-        {quantity} units
-      </span>
-      {critical && <p className="text-xs text-red-500 font-medium mt-0.5">Low stock</p>}
-    </div>
-  </div>
-);
+  );
+};
 
 const CampCard = ({ camp }) => {
   const normalizedStatus = String(camp.status).toLowerCase();
   const statusClass =
     normalizedStatus === "upcoming"
-      ? "bg-yellow-50 text-yellow-700 border-yellow-250/50"
+      ? "bg-amber-50 text-amber-700 border-amber-200"
       : normalizedStatus === "completed"
-        ? "bg-emerald-50 text-emerald-700 border-emerald-250/50"
-        : "bg-slate-50 text-slate-650 border-slate-250/50";
+        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+        : "bg-blue-50 text-blue-700 border-blue-200";
 
   return (
-    <div className="flex items-center justify-between p-4 border border-gray-100 rounded-xl hover:bg-slate-50 transition-colors">
-      <div className="flex-1">
-        <h4 className="font-bold text-gray-800 mb-1">{camp.title}</h4>
-        <p className="text-xs text-gray-500">
-          {new Date(camp.date).toLocaleDateString()}
-        </p>
+    <div className="flex items-center justify-between p-4 border border-slate-100/90 rounded-2xl bg-slate-50/40 hover:bg-white hover:shadow-md hover:border-red-150 transition-all duration-300">
+      <div className="flex-1 min-w-0 pr-3">
+        <h4 className="font-extrabold text-slate-850 text-sm truncate">{camp.title}</h4>
+        <div className="flex items-center gap-3 mt-1.5 text-xs text-slate-400 font-semibold">
+          <span className="flex items-center gap-1">
+            <Calendar className="w-3.5 h-3.5 text-slate-400" />
+            {new Date(camp.date).toLocaleDateString()}
+          </span>
+          {camp.expectedDonors && (
+            <span className="flex items-center gap-1 text-slate-500 font-bold">
+              <Users className="w-3.5 h-3.5 text-slate-400" />
+              {camp.expectedDonors} donors
+            </span>
+          )}
+        </div>
       </div>
-      <div className="text-right">
-        <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${statusClass}`}>
+      <div className="flex-shrink-0">
+        <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border shadow-2xs ${statusClass}`}>
           {camp.status?.toUpperCase()}
         </span>
-        {camp.expectedDonors && (
-          <p className="text-xs text-gray-400 mt-1 font-semibold">
-            {camp.expectedDonors} donors
-          </p>
-        )}
       </div>
     </div>
   );
 };
 
 const LoginHistoryItem = ({ history }) => (
-  <div className="flex items-center justify-between p-3 border border-gray-100 rounded-xl hover:bg-slate-50 transition-colors">
+  <div className="flex items-center justify-between p-3.5 border border-slate-100/90 rounded-2xl bg-slate-50/40 hover:bg-white hover:shadow-md transition-all duration-300">
     <div className="flex items-center gap-3">
-      <div className="p-2 bg-blue-100 rounded-lg text-blue-600">
-        <LogIn className="w-3 h-3" />
+      <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl flex-shrink-0">
+        <LogIn className="w-4 h-4" />
       </div>
       <div>
-        <p className="text-sm font-semibold text-gray-800">System Access</p>
-        <p className="text-xs text-gray-550 mt-0.5">
+        <p className="text-xs font-extrabold uppercase tracking-wide text-slate-850">System Access</p>
+        <p className="text-xs text-slate-500 font-medium mt-0.5">
           {history.description || "Successful login"}
         </p>
       </div>
     </div>
-    <span className="text-xs text-gray-400 font-medium">
+    <span className="text-[11px] text-slate-400 font-bold flex-shrink-0">
       {new Date(history.date).toLocaleString()}
     </span>
   </div>
@@ -524,13 +564,13 @@ const ActivityHistoryItem = ({ history }) => {
   const getIcon = (eventType) => {
     switch (eventType) {
       case "Login":
-        return <LogIn className="w-3 h-3" />;
+        return <LogIn className="w-4 h-4" />;
       case "Stock Update":
-        return <Droplet className="w-3 h-3" />;
+        return <Droplet className="w-4 h-4" />;
       case "Blood Camp":
-        return <Calendar className="w-3 h-3" />;
+        return <Calendar className="w-4 h-4" />;
       default:
-        return <Activity className="w-3 h-3" />;
+        return <Activity className="w-4 h-4" />;
     }
   };
 
@@ -548,21 +588,21 @@ const ActivityHistoryItem = ({ history }) => {
   };
 
   return (
-    <div className="flex items-center justify-between p-3 border border-gray-100 rounded-xl hover:bg-slate-50 transition-colors">
+    <div className="flex items-center justify-between p-3.5 border border-slate-100/90 rounded-2xl bg-slate-50/40 hover:bg-white hover:shadow-md transition-all duration-300">
       <div className="flex items-center gap-3">
-        <div className={`p-2 rounded-lg ${getColor(history.eventType)}`}>
+        <div className={`p-2.5 rounded-xl flex-shrink-0 ${getColor(history.eventType)}`}>
           {getIcon(history.eventType)}
         </div>
         <div>
-          <p className="text-sm font-semibold text-gray-800">
+          <p className="text-xs font-extrabold uppercase tracking-wide text-slate-850">
             {history.eventType}
           </p>
-          <p className="text-xs text-gray-550 mt-0.5">
+          <p className="text-xs text-slate-500 font-medium mt-0.5">
             {history.description || "Activity recorded"}
           </p>
         </div>
       </div>
-      <span className="text-xs text-gray-400 font-medium">
+      <span className="text-[11px] text-slate-400 font-bold flex-shrink-0">
         {new Date(history.date).toLocaleString()}
       </span>
     </div>
@@ -570,11 +610,11 @@ const ActivityHistoryItem = ({ history }) => {
 };
 
 const EmptyState = ({ icon, message }) => (
-  <div className="text-center py-8 text-gray-500">
-    <div className="bg-gray-50 border border-gray-100 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-3">
+  <div className="text-center py-10 text-slate-400">
+    <div className="bg-slate-50 border border-slate-100 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-2xs">
       {icon}
     </div>
-    <p className="text-sm font-semibold text-gray-400">{message}</p>
+    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{message}</p>
   </div>
 );
 

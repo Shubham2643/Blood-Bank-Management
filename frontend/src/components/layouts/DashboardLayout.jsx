@@ -394,6 +394,13 @@ const DashboardLayout = ({ userRole = "donor" }) => {
           badge: null,
           description: "System reports",
         },
+        {
+          path: "/admin/settings",
+          label: "Settings",
+          icon: Settings,
+          badge: null,
+          description: "System configuration",
+        },
       ],
     },
   };
@@ -834,39 +841,23 @@ const DashboardLayout = ({ userRole = "donor" }) => {
             sidebarCollapsed ? "w-16" : "w-64"
           } bg-white shadow-xl border-r border-slate-200/80 transition-all duration-300 ease-in-out flex flex-col transform lg:transform-none`}
         >
-          {/* Sidebar Header */}
-          <div className={`flex items-center ${sidebarCollapsed ? "justify-center p-2.5" : "justify-between p-4.5"} border-b border-slate-100 bg-gradient-to-r from-red-50/60 via-rose-50/30 to-transparent`}>
-            {!sidebarCollapsed && (
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-red-600 via-rose-600 to-red-800 text-white flex items-center justify-center shadow-md shadow-red-600/25 ring-2 ring-red-100/80">
-                  <config.icon size={18} />
-                </div>
-                <div>
-                  <h2 className="font-extrabold text-xs uppercase tracking-wide text-slate-850">
-                    {config.shortTitle}
-                  </h2>
-                  <p className="text-[10px] font-extrabold uppercase tracking-wider text-red-600/80 mt-0.5">
-                    Portal Navigation
-                  </p>
-                </div>
-              </div>
-            )}
-            <button
-              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className="hidden lg:flex p-1.5 rounded-xl hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors border border-slate-100"
-            >
-              {sidebarCollapsed ? (
-                <ChevronRight size={16} />
-              ) : (
-                <ChevronLeft size={16} />
-              )}
-            </button>
-          </div>
+          {/* Collapse Toggle when Collapsed */}
+          {sidebarCollapsed && (
+            <div className="p-3 border-b border-slate-100 flex justify-center bg-slate-50/50">
+              <button
+                onClick={() => setSidebarCollapsed(false)}
+                className="hidden lg:flex p-2 rounded-xl hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors border border-slate-200/60"
+                title="Expand Sidebar"
+              >
+                <ChevronRight size={18} />
+              </button>
+            </div>
+          )}
 
           {/* User Quick Info */}
           {!sidebarCollapsed && userData && (
-            <div className="p-3.5 border-b border-slate-100 bg-gradient-to-r from-red-50/80 via-rose-50/30 to-white">
-              <div className="flex items-center gap-3">
+            <div className="p-3.5 border-b border-slate-100 bg-gradient-to-r from-red-50/80 via-rose-50/30 to-white flex items-center justify-between gap-2">
+              <div className="flex items-center gap-3 min-w-0 flex-1">
                 {getAvatarUrl(userData) ? (
                   <img
                     src={getAvatarUrl(userData)}
@@ -894,6 +885,14 @@ const DashboardLayout = ({ userRole = "donor" }) => {
                   </span>
                 </div>
               </div>
+
+              <button
+                onClick={() => setSidebarCollapsed(true)}
+                className="hidden lg:flex p-1.5 rounded-xl hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors border border-slate-200/60 flex-shrink-0"
+                title="Collapse Sidebar"
+              >
+                <ChevronLeft size={16} />
+              </button>
             </div>
           )}
 

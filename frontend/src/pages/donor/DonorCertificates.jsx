@@ -104,7 +104,7 @@ const DonorCertificates = () => {
             printWindow.moveTo(0, 0);
             printWindow.resizeTo(screenW, screenH);
           } catch (e) {
-            // Ignore window movement restrictions in certain browsers
+            console.error("Failed to set window size:", e);
           }
         }
         printWindow.document.write(`
