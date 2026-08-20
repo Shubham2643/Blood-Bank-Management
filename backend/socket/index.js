@@ -26,7 +26,13 @@ export const initializeSocket = (server) => {
 
   io = new Server(server, {
     cors: {
-      origin: origins,
+      origin: (origin, callback) => {
+        if (!origin || origins.includes(origin) || origin.endsWith(".onrender.com") || origin.includes("localhost") || origin.includes("127.0.0.1")) {
+          callback(null, true);
+        } else {
+          callback(null, true);
+        }
+      },
       credentials: true,
       methods: ["GET", "POST"],
     },

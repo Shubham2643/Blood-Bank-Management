@@ -86,10 +86,15 @@ app.use(
     const protocol = req.secure ? "https" : "http";
     const selfOrigin = `${protocol}://${host}`;
 
+    const isRenderApp = origin && origin.endsWith(".onrender.com");
+    const isLocalhost = origin && (origin.includes("localhost") || origin.includes("127.0.0.1"));
+
     const allowed =
       !origin ||
       allowedOrigins.includes(origin) ||
-      origin === selfOrigin;
+      origin === selfOrigin ||
+      isRenderApp ||
+      isLocalhost;
 
     if (allowed) {
       callback(null, { origin: true, credentials: true });
