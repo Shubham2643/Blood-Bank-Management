@@ -32,6 +32,7 @@ import { Line, Bar, Doughnut } from "react-chartjs-2";
 import { io } from "socket.io-client";
 import { SOCKET_URL } from "../../config/env.js";
 import { getAuthToken } from "../../utils/auth.js";
+import DemandForecastChart from "../../components/analytics/DemandForecastChart";
 
 import {
   Chart as ChartJS,
@@ -461,6 +462,9 @@ const AdminDashboard = () => {
           ))}
         </div>
       )}
+
+      {/* AI Predictive Demand & Shortage Forecast */}
+      <DemandForecastChart />
 
       {/* Stats Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

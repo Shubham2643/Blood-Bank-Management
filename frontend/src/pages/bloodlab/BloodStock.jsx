@@ -10,11 +10,15 @@ import {
   TrendingDown
 } from "lucide-react";
 import { toast } from "react-hot-toast";
+import BarcodeScannerModal from "../../components/bloodlab/BarcodeScannerModal";
+import ColdChainMonitor from "../../components/bloodlab/ColdChainMonitor";
+import { QrCode, Trash2 } from "lucide-react";
 
 const BloodStock = () => {
   const [stock, setStock] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [showScannerModal, setShowScannerModal] = useState(false);
   const [action, setAction] = useState("add");
   const [form, setForm] = useState({ 
     bloodType: "", 
@@ -143,11 +147,26 @@ const BloodStock = () => {
               </p>
             </div>
           </div>
-          <span className="hidden sm:inline-block px-3 py-1 bg-amber-200/60 text-amber-800 rounded-full font-black text-xs uppercase tracking-wider">
-            Action Required
-          </span>
+          <button
+            onClick={() => setShowScannerModal(true)}
+            className="px-4 py-2 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-xl font-black text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-md hover:scale-105 active:scale-95 transition-all cursor-pointer"
+          >
+            <QrCode size={16} /> Scan Barcode
+          </button>
         </div>
       )}
+
+      {/* Cold Chain Refrigeration Temperature Monitor */}
+      <ColdChainMonitor />
+
+      <BarcodeScannerModal
+        isOpen={showScannerModal}
+        onClose={() => setShowScannerModal(false)}
+        onScanSuccess={(bag) => {
+          setForm({ bloodType: bag.bloodGroup, quantity: String(bag.quantity) });
+          toast.success(`Loaded ${bag.bloodGroup} bag from barcode!`);
+        }}
+      />
 
       {/* Stock Management Form */}
       <div className="bg-white rounded-3xl shadow-xl border border-slate-100/90 p-6 sm:p-8 mb-8 relative overflow-hidden">

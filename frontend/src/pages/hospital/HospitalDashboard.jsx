@@ -30,6 +30,7 @@ import { getAuthToken } from "../../utils/auth.js";
 import { toast } from "react-hot-toast";
 import { SOCKET_URL } from "../../config/env.js";
 import { io } from "socket.io-client";
+import DemandForecastChart from "../../components/analytics/DemandForecastChart";
 
 const HospitalDashboard = () => {
   const [data, setData] = useState(null);
@@ -296,6 +297,9 @@ const HospitalDashboard = () => {
             </div>
           </div>
         )}
+
+        {/* AI Predictive Demand & Shortage Forecast */}
+        <DemandForecastChart />
 
         {/* Executive Hospital Identity Card */}
         <div className="bg-white rounded-3xl shadow-[0_10px_35px_-10px_rgba(0,0,0,0.05)] border border-slate-200/80 p-6 sm:p-8 relative overflow-hidden transition-all">

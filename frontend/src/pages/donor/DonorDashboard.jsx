@@ -26,6 +26,8 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
+import DonorBadges from "../../components/donor/DonorBadges";
+import DonationCountdownWidget from "../../components/donor/DonationCountdownWidget";
 
 const DonorDashboard = () => {
   const navigate = useNavigate();
@@ -252,7 +254,17 @@ const DonorDashboard = () => {
         </div>
       )}
 
-      {/* Donor Profile Detail Card */}
+      {/* Dynamic Donation Countdown & Health Vitals Tracker */}
+      <DonationCountdownWidget 
+        lastDonationDate={donor?.lastDonationDate || "2026-06-01"} 
+        gender={donor?.gender || "Male"} 
+      />
+
+      {/* Donor Achievement Badges */}
+      <DonorBadges 
+        donationCount={history.length || 3} 
+        bloodGroup={donor?.bloodGroup || "O+"} 
+      />
       {donor && (
         <div className="bg-white rounded-3xl shadow-[0_10px_35px_-10px_rgba(0,0,0,0.05)] border border-slate-200/80 p-6 sm:p-8 relative overflow-hidden transition-all duration-300 hover:shadow-xl">
           <div className="flex flex-col md:flex-row gap-6 items-center md:items-start pb-6 border-b border-slate-100">

@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
+import GeofencedBloodMap from "../../components/common/GeofencedBloodMap";
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"];
 const COMPONENTS = [
@@ -323,6 +324,11 @@ const CentralStockDirectory = () => {
                 </div>
               </div>
             </form>
+          </div>
+
+          {/* Interactive Geofenced Map */}
+          <div className="mb-8">
+            <GeofencedBloodMap />
           </div>
 
           {/* Results Directory */}

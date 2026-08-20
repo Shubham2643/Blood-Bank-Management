@@ -1,3 +1,5 @@
+import PublicEmergencyTicker from "../components/public/PublicEmergencyTicker";
+
 import {
   ArrowRight,
   Heart,
@@ -2455,6 +2457,7 @@ const LandingPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-red-50">
       <Header user={user} />
+      <PublicEmergencyTicker />
 
       {/* Registration Modal */}
       <RegistrationModal

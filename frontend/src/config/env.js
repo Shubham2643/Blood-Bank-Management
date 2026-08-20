@@ -12,8 +12,11 @@ if (apiBaseUrl && !apiBaseUrl.endsWith("/api") && !apiBaseUrl.endsWith("/api/"))
 }
 
 if (import.meta.env.PROD) {
-  // Force relative path in production if empty or misconfigured to localhost
+  // If VITE_API_URL is NOT set in Render settings, warn in console
   if (!apiBaseUrl || apiBaseUrl.includes("localhost") || apiBaseUrl.includes("127.0.0.1")) {
+    console.warn(
+      "⚠️ VITE_API_URL is missing or set to localhost in production build! Set VITE_API_URL in Render static site Environment Variables."
+    );
     apiBaseUrl = "/api";
   }
   if (!socketUrl || socketUrl.includes("localhost") || socketUrl.includes("127.0.0.1")) {
