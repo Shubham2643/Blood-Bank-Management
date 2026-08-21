@@ -517,29 +517,31 @@ const HospitalDashboard = () => {
           
           {/* Blood Stock Status Visual Card */}
           <div className="lg:col-span-7 bg-white/95 backdrop-blur-xl rounded-3xl border border-slate-100/90 p-6 sm:p-7 flex flex-col justify-between shadow-xl shadow-slate-100/80 relative overflow-hidden hover:shadow-2xl transition-all duration-300">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-red-100/20 rounded-full blur-3xl -z-10" />
+            <div className="absolute top-0 right-0 w-32 h-32 bg-red-100/20 rounded-full blur-3xl pointer-events-none" />
             
             <div>
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-4 border-b border-slate-100">
-                <div>
-                  <h3 className="text-lg font-extrabold text-slate-850 uppercase tracking-wide flex items-center gap-2.5">
-                    <div className="p-2 rounded-xl bg-red-50 text-red-600 border border-red-100">
-                      <Droplet className="w-5 h-5 fill-red-600 animate-pulse" />
-                    </div>
-                    Blood Reserve & Stock Levels
-                  </h3>
-                  <p className="text-xs font-semibold text-slate-400 mt-1">
-                    Live laboratory blood inventory status for emergency hospital allocation.
-                  </p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-red-600 to-rose-700 text-white flex items-center justify-center shadow-lg shadow-red-600/25 shrink-0 border border-red-400/30">
+                    <Droplet className="w-5 h-5 fill-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-black text-slate-850 tracking-tight">
+                      Blood Reserve & Stock Levels
+                    </h3>
+                    <p className="text-[11px] font-bold text-slate-400 mt-0.5">
+                      Live laboratory blood inventory status for emergency allocation
+                    </p>
+                  </div>
                 </div>
                 
-                <div className="flex items-center gap-2.5">
-                  <span className="px-3.5 py-1.5 rounded-2xl bg-red-50 text-red-700 font-extrabold text-xs uppercase tracking-wider border border-red-150 shadow-2xs">
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <span className="px-3.5 py-1.5 rounded-2xl bg-red-50 text-red-700 font-extrabold text-xs uppercase tracking-wider border border-red-200/80 shadow-2xs">
                     Total: <strong className="text-sm font-black text-red-800">{inventoryList.reduce((sum, item) => sum + item.quantity, 0)}</strong> Units
                   </span>
                   <Link
                     to="/hospital/inventory"
-                    className="text-xs font-extrabold text-red-600 hover:text-red-700 bg-red-50/80 hover:bg-red-100/80 border border-red-200/80 px-4 py-2 rounded-2xl transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer active:scale-95"
+                    className="text-xs font-extrabold text-white bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-700 hover:to-rose-800 px-4 py-2 rounded-2xl transition-all flex items-center gap-1.5 shadow-md shadow-red-600/20 cursor-pointer active:scale-95 border border-red-500/30"
                   >
                     <span>Manage Stock</span>
                     <ChevronRight size={14} />
@@ -548,11 +550,11 @@ const HospitalDashboard = () => {
               </div>
 
               {inventoryList.length === 0 ? (
-                <div className="bg-gradient-to-br from-slate-50 to-red-50/30 rounded-3xl p-8 text-center border border-slate-150 relative overflow-hidden">
+                <div className="bg-gradient-to-br from-slate-50 to-red-50/30 rounded-3xl p-8 text-center border border-slate-200/60 relative overflow-hidden shadow-inner">
                   <div className="w-16 h-16 rounded-3xl bg-red-50 text-red-600 flex items-center justify-center mx-auto mb-4 shadow-md border border-red-100">
                     <Droplet className="w-8 h-8 fill-red-600 animate-pulse" />
                   </div>
-                  <h4 className="text-base font-extrabold text-slate-850 uppercase tracking-wide">
+                  <h4 className="text-base font-black text-slate-850 uppercase tracking-wide">
                     Hospital Blood Reserve Is Empty
                   </h4>
                   <p className="text-xs text-slate-500 font-semibold mt-1 max-w-sm mx-auto leading-relaxed">
@@ -583,10 +585,10 @@ const HospitalDashboard = () => {
                     const percentage = Math.min((item.quantity / maxQty) * 100, 100);
 
                     return (
-                      <div key={item._id} className="p-4 border border-slate-150 rounded-2xl bg-white hover:bg-slate-50/70 hover:shadow-md transition-all flex flex-col justify-between group">
-                        <div className="flex justify-between items-start mb-2">
+                      <div key={item._id} className="p-4 border border-slate-200/70 rounded-2xl bg-gradient-to-b from-slate-50/80 via-white to-slate-50/30 hover:border-red-200 hover:shadow-lg transition-all duration-300 flex flex-col justify-between group">
+                        <div className="flex justify-between items-start mb-3">
                           <div className="flex items-center gap-3">
-                            <span className={`w-10 h-10 rounded-2xl flex items-center justify-center font-black text-sm shadow-md border-2 border-white ring-2 ${getBloodTypeBg(item.bloodGroup)}`}>
+                            <span className={`w-11 h-11 rounded-2xl flex items-center justify-center font-black text-sm shadow-md border-2 border-white ring-2 group-hover:scale-105 transition-transform ${getBloodTypeBg(item.bloodGroup)}`}>
                               {item.bloodGroup}
                             </span>
                             <div>
@@ -600,18 +602,18 @@ const HospitalDashboard = () => {
                         </div>
                         
                         {/* Visual Capacity Fill Bar */}
-                        <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden mt-4 shadow-inner">
+                        <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden mt-3 p-0.5 border border-slate-200/60 shadow-inner">
                           <div 
-                            className={`h-full rounded-full transition-all duration-500 ${
-                              item.quantity < 5 ? "bg-red-500" : item.quantity < 10 ? "bg-amber-500" : "bg-emerald-500"
+                            className={`h-full rounded-full transition-all duration-700 shadow-xs ${
+                              item.quantity < 5 ? "bg-gradient-to-r from-red-500 to-rose-600" : item.quantity < 10 ? "bg-gradient-to-r from-amber-500 to-orange-500" : "bg-gradient-to-r from-emerald-500 to-teal-600"
                             }`}
                             style={{ width: `${percentage}%` }}
                           />
                         </div>
                         
-                        <div className="flex items-center justify-between mt-3 text-[10px] text-slate-400 font-extrabold">
+                        <div className="flex items-center justify-between mt-3 text-[10px] text-slate-400 font-bold">
                           <span>Expires: {new Date(item.expiryDate).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</span>
-                          <span className="text-slate-500 font-black">{Math.round(percentage)}% Capacity</span>
+                          <span className="text-slate-600 font-black">{Math.round(percentage)}% Capacity</span>
                         </div>
                       </div>
                     );
@@ -622,12 +624,12 @@ const HospitalDashboard = () => {
           </div>
 
           {/* Requests Summary & Allocation Board */}
-          <div className="lg:col-span-5 bg-white/95 backdrop-blur-xl rounded-3xl border border-slate-100/90 p-6 sm:p-7 flex flex-col justify-start shadow-xl shadow-slate-100/80 relative overflow-hidden hover:shadow-2xl transition-all duration-300">
+          <div className="lg:col-span-5 bg-white/95 backdrop-blur-xl rounded-3xl border border-slate-100/90 p-6 sm:p-7 flex flex-col justify-between shadow-xl shadow-slate-100/80 relative overflow-hidden hover:shadow-2xl transition-all duration-300">
             <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/5 rounded-full blur-3xl pointer-events-none" />
 
             <div>
               {/* Header */}
-              <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+              <div className="flex items-center justify-between mb-5 pb-4 border-b border-slate-100">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-red-600 to-rose-700 text-white flex items-center justify-center shadow-lg shadow-red-600/25 shrink-0 border border-red-400/30">
                     <TrendingUp className="w-5 h-5 text-white" />
@@ -636,8 +638,8 @@ const HospitalDashboard = () => {
                     <h3 className="text-base font-black text-slate-850 tracking-tight">
                       Request Summary
                     </h3>
-                    <p className="text-[11px] font-bold text-slate-400">
-                      Real-time allocation breakdown
+                    <p className="text-[11px] font-bold text-slate-400 mt-0.5">
+                      Real-time emergency allocation breakdown
                     </p>
                   </div>
                 </div>
@@ -647,71 +649,79 @@ const HospitalDashboard = () => {
                 </span>
               </div>
 
-              {/* Clean Enterprise 2x2 Metric Tiles Grid */}
-              <div className="grid grid-cols-2 gap-3 my-4">
-                <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-150 flex flex-col justify-between transition-all hover:bg-white hover:shadow-md">
-                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider">Total Raised</span>
-                  <div className="flex items-center justify-between mt-2">
-                    <span className="text-xl font-black text-slate-850">{stats.totalRequests}</span>
-                    <div className="p-1.5 rounded-lg bg-slate-200/60 text-slate-600">
+              {/* 4 Premium Specimen Cards */}
+              <div className="space-y-3">
+                <div className="flex justify-between items-center p-3.5 rounded-2xl bg-slate-50/90 border border-slate-200/60 transition-all hover:bg-white hover:shadow-md">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-xl bg-slate-100 text-slate-600">
                       <ClipboardList className="w-4 h-4" />
                     </div>
+                    <span className="text-xs font-extrabold text-slate-700 uppercase tracking-wider">Total Requests Raised</span>
                   </div>
+                  <span className="text-sm font-black text-slate-850 bg-white px-3 py-1 rounded-xl border border-slate-200 shadow-2xs">
+                    {stats.totalRequests}
+                  </span>
                 </div>
 
-                <div className="p-3.5 rounded-2xl bg-amber-50/70 border border-amber-200/80 flex flex-col justify-between transition-all hover:bg-amber-50 hover:shadow-md">
-                  <span className="text-[10px] font-black text-amber-800 uppercase tracking-wider">Pending</span>
-                  <div className="flex items-center justify-between mt-2">
-                    <span className="text-xl font-black text-amber-900">{stats.pendingRequests}</span>
-                    <div className="p-1.5 rounded-lg bg-amber-100 text-amber-700">
+                <div className="flex justify-between items-center p-3.5 rounded-2xl bg-amber-50/60 border border-amber-200/70 transition-all hover:bg-amber-50 hover:shadow-md">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-xl bg-amber-100 text-amber-700">
                       <Clock className="w-4 h-4 animate-pulse" />
                     </div>
+                    <span className="text-xs font-extrabold text-amber-950 uppercase tracking-wider">Pending Approvals</span>
                   </div>
+                  <span className="text-sm font-black text-amber-800 bg-amber-100 px-3 py-1 rounded-xl border border-amber-200 shadow-2xs">
+                    {stats.pendingRequests}
+                  </span>
                 </div>
 
-                <div className="p-3.5 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 flex flex-col justify-between transition-all hover:bg-emerald-50 hover:shadow-md">
-                  <span className="text-[10px] font-black text-emerald-800 uppercase tracking-wider">Approved</span>
-                  <div className="flex items-center justify-between mt-2">
-                    <span className="text-xl font-black text-emerald-900">{stats.acceptedRequests}</span>
-                    <div className="p-1.5 rounded-lg bg-emerald-100 text-emerald-700">
+                <div className="flex justify-between items-center p-3.5 rounded-2xl bg-emerald-50/60 border border-emerald-200/70 transition-all hover:bg-emerald-50 hover:shadow-md">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-xl bg-emerald-100 text-emerald-700">
                       <CheckCircle className="w-4 h-4" />
                     </div>
+                    <span className="text-xs font-extrabold text-emerald-950 uppercase tracking-wider">Approved & Fulfilled</span>
                   </div>
+                  <span className="text-sm font-black text-emerald-800 bg-emerald-100 px-3 py-1 rounded-xl border border-emerald-200 shadow-2xs">
+                    {stats.acceptedRequests}
+                  </span>
                 </div>
 
-                <div className="p-3.5 rounded-2xl bg-rose-50/70 border border-rose-200/80 flex flex-col justify-between transition-all hover:bg-rose-50 hover:shadow-md">
-                  <span className="text-[10px] font-black text-rose-800 uppercase tracking-wider">Rejected</span>
-                  <div className="flex items-center justify-between mt-2">
-                    <span className="text-xl font-black text-rose-900">{stats.rejectedRequests}</span>
-                    <div className="p-1.5 rounded-lg bg-rose-100 text-rose-700">
+                <div className="flex justify-between items-center p-3.5 rounded-2xl bg-rose-50/60 border border-rose-200/70 transition-all hover:bg-rose-50 hover:shadow-md">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-xl bg-rose-100 text-rose-700">
                       <XCircle className="w-4 h-4" />
                     </div>
+                    <span className="text-xs font-extrabold text-rose-950 uppercase tracking-wider">Rejected / Cancelled</span>
                   </div>
+                  <span className="text-sm font-black text-rose-800 bg-rose-100 px-3 py-1 rounded-xl border border-rose-200 shadow-2xs">
+                    {stats.rejectedRequests}
+                  </span>
                 </div>
               </div>
 
               {/* Fulfillment Gauge */}
-              <div className="p-3.5 bg-gradient-to-r from-slate-50 to-rose-50/40 border border-slate-200/70 rounded-2xl mb-4">
-                <div className="flex justify-between items-center text-[11px] font-black uppercase tracking-wider mb-1.5">
-                  <span className="text-slate-600">Fulfillment Success Rate</span>
-                  <span className="text-rose-600 font-black">{stats.fulfillmentRate}% Efficiency</span>
+              <div className="mt-5 p-4 bg-gradient-to-r from-slate-50 to-rose-50/50 border border-slate-200/80 rounded-2xl shadow-2xs">
+                <div className="flex justify-between items-center text-xs font-black uppercase tracking-wider mb-2">
+                  <span className="text-slate-600">Lab Fulfillment Efficiency</span>
+                  <span className="text-rose-600 font-black">{stats.fulfillmentRate}% Success Ratio</span>
                 </div>
-                <div className="w-full bg-slate-200/80 h-2 rounded-full overflow-hidden p-0.5 border border-slate-200/60 shadow-inner">
+                <div className="w-full bg-slate-200/80 h-2.5 rounded-full overflow-hidden p-0.5 border border-slate-200/60 shadow-inner">
                   <div
                     className="h-full rounded-full bg-gradient-to-r from-red-600 via-rose-600 to-red-700 transition-all duration-700 shadow-xs"
                     style={{ width: `${Math.min(100, Number(stats.fulfillmentRate || 0))}%` }}
                   />
                 </div>
               </div>
-
-              <Link
-                to="/hospital/blood-request-create"
-                className="w-full py-3.5 px-5 bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-700 hover:to-rose-800 text-white font-extrabold text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-red-600/25 border border-red-500/30 flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-95 cursor-pointer"
-              >
-                <Plus size={16} />
-                <span>Create Blood Request</span>
-              </Link>
             </div>
+
+            <Link
+              to="/hospital/blood-request-create"
+              className="w-full mt-6 py-3.5 px-5 bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-700 hover:to-rose-800 text-white font-extrabold text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-red-600/25 border border-red-500/30 flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-95 cursor-pointer"
+            >
+              <Plus size={16} />
+              <span>Create Blood Request</span>
+            </Link>
           </div>
         </div>
 
