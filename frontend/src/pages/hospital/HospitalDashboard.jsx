@@ -302,15 +302,17 @@ const HospitalDashboard = () => {
         <DemandForecastChart />
 
         {/* Executive Hospital Identity Card */}
-        <div className="bg-white rounded-3xl shadow-[0_10px_35px_-10px_rgba(0,0,0,0.05)] border border-slate-200/80 p-6 sm:p-8 relative overflow-hidden transition-all">
+        <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl shadow-slate-100/90 border border-slate-100/90 p-6 sm:p-8 relative overflow-hidden transition-all duration-300 hover:shadow-2xl">
           <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start pb-6 border-b border-slate-100">
+            {/* 3D Specimen Avatar Badge */}
             <div className="relative flex-shrink-0">
-              <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-red-600 via-rose-600 to-red-800 text-white font-black text-3xl shadow-xl flex items-center justify-center border-4 border-white ring-4 ring-red-100">
+              <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-red-600 via-rose-600 to-red-800 text-white font-black text-3xl shadow-xl shadow-red-600/30 flex items-center justify-center border-4 border-white ring-4 ring-red-50 relative group">
                 {(hospital.name || "H").charAt(0).toUpperCase()}
+                <span className="absolute -bottom-1 -right-1 p-1 bg-emerald-500 rounded-full ring-2 ring-white" title="Operational Ready" />
               </div>
             </div>
 
-            <div className="flex-1 text-center sm:text-left">
+            <div className="flex-1 text-center sm:text-left space-y-2">
               <div className="flex flex-col sm:flex-row sm:items-center gap-3 justify-center sm:justify-start">
                 <h2 className="text-2xl sm:text-3xl font-black text-slate-850 tracking-tight">
                   {hospital.name}
@@ -321,12 +323,12 @@ const HospitalDashboard = () => {
                 </span>
               </div>
               
-              <div className="flex flex-wrap gap-2 mt-3 justify-center sm:justify-start">
-                <span className="inline-flex items-center px-3 py-1 rounded-xl text-xs font-black bg-slate-100 text-slate-700 border border-slate-200/80 uppercase tracking-wider">
+              <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
+                <span className="inline-flex items-center px-3 py-1 rounded-xl text-xs font-extrabold bg-slate-100/90 text-slate-700 border border-slate-200 uppercase tracking-wider">
                   Type: {hospital.facilityType ? hospital.facilityType.replace('-', ' ').toUpperCase() : "HOSPITAL"}
                 </span>
                 {hospital.facilityCategory && (
-                  <span className="inline-flex items-center px-3 py-1 rounded-xl text-xs font-black bg-rose-50 text-rose-700 border border-rose-200/80 uppercase tracking-wider">
+                  <span className="inline-flex items-center px-3 py-1 rounded-xl text-xs font-extrabold bg-rose-50 text-rose-700 border border-rose-200/80 uppercase tracking-wider">
                     Category: {hospital.facilityCategory}
                   </span>
                 )}
@@ -334,50 +336,51 @@ const HospitalDashboard = () => {
             </div>
           </div>
 
+          {/* 4 Contact & Operational Info Pills */}
           <div className="pt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-slate-50/80 border border-slate-200/60 transition-all hover:bg-white hover:shadow-md">
-              <div className="p-3 bg-red-50 text-red-600 rounded-xl flex-shrink-0 font-bold border border-red-100">
-                <Mail className="w-4.5 h-4.5 text-red-600" />
+            <div className="flex items-center gap-3.5 p-4 rounded-2xl bg-gradient-to-b from-slate-50/90 to-white border border-slate-200/70 transition-all hover:border-red-200 hover:shadow-md group">
+              <div className="p-3 bg-red-50 text-red-600 rounded-xl shrink-0 font-bold border border-red-100 group-hover:scale-110 transition-transform">
+                <Mail className="w-5 h-5 text-red-600" />
               </div>
               <div className="min-w-0 flex-1">
                 <span className="block text-[10px] font-black text-slate-400 uppercase tracking-wider">Email Support</span>
-                <span className="block text-xs font-extrabold text-slate-850 mt-0.5 break-all">
+                <span className="block text-xs font-black text-slate-850 mt-0.5 truncate" title={hospital.email}>
                   {hospital.email || "—"}
                 </span>
               </div>
             </div>
 
-            <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-slate-50/80 border border-slate-200/60 transition-all hover:bg-white hover:shadow-md">
-              <div className="p-3 bg-rose-50 text-rose-600 rounded-xl flex-shrink-0 font-bold border border-rose-100">
-                <Phone className="w-4.5 h-4.5 text-rose-600" />
+            <div className="flex items-center gap-3.5 p-4 rounded-2xl bg-gradient-to-b from-slate-50/90 to-white border border-slate-200/70 transition-all hover:border-rose-200 hover:shadow-md group">
+              <div className="p-3 bg-rose-50 text-rose-600 rounded-xl shrink-0 font-bold border border-rose-100 group-hover:scale-110 transition-transform">
+                <Phone className="w-5 h-5 text-rose-600" />
               </div>
               <div className="min-w-0 flex-1">
-                <span className="block text-[10px] font-black text-slate-400 uppercase tracking-wider">Contact Number</span>
-                <span className="block text-xs font-extrabold text-slate-850 mt-0.5">
+                <span className="block text-[10px] font-black text-slate-400 uppercase tracking-wider">Contact Line</span>
+                <span className="block text-xs font-black text-slate-850 mt-0.5">
                   {hospital.phone || "—"}
                 </span>
               </div>
             </div>
 
-            <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-slate-50/80 border border-slate-200/60 transition-all hover:bg-white hover:shadow-md">
-              <div className="p-3 bg-amber-50 text-amber-600 rounded-xl flex-shrink-0 font-bold border border-amber-100">
-                <Clock className="w-4.5 h-4.5 text-amber-600" />
+            <div className="flex items-center gap-3.5 p-4 rounded-2xl bg-gradient-to-b from-slate-50/90 to-white border border-slate-200/70 transition-all hover:border-amber-200 hover:shadow-md group">
+              <div className="p-3 bg-amber-50 text-amber-600 rounded-xl shrink-0 font-bold border border-amber-100 group-hover:scale-110 transition-transform">
+                <Clock className="w-5 h-5 text-amber-600" />
               </div>
               <div className="min-w-0 flex-1">
                 <span className="block text-[10px] font-black text-slate-400 uppercase tracking-wider">Operating Hours</span>
-                <span className="block text-xs font-extrabold text-slate-850 mt-0.5">
-                  {hospital.operatingHours ? `${hospital.operatingHours.open || "09:00"} - ${hospital.operatingHours.close || "18:00"}` : "—"}
+                <span className="block text-xs font-black text-slate-850 mt-0.5">
+                  {hospital.operatingHours ? `${hospital.operatingHours.open || "09:00"} - ${hospital.operatingHours.close || "18:00"}` : "24 / 7 Emergency"}
                 </span>
               </div>
             </div>
 
-            <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-slate-50/80 border border-slate-200/60 transition-all hover:bg-white hover:shadow-md">
-              <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl flex-shrink-0 font-bold border border-emerald-100">
-                <MapPin className="w-4.5 h-4.5 text-emerald-600" />
+            <div className="flex items-center gap-3.5 p-4 rounded-2xl bg-gradient-to-b from-slate-50/90 to-white border border-slate-200/70 transition-all hover:border-emerald-200 hover:shadow-md group">
+              <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl shrink-0 font-bold border border-emerald-100 group-hover:scale-110 transition-transform">
+                <MapPin className="w-5 h-5 text-emerald-600" />
               </div>
               <div className="min-w-0 flex-1">
                 <span className="block text-[10px] font-black text-slate-400 uppercase tracking-wider">Facility Address</span>
-                <span className="block text-xs font-extrabold text-slate-850 mt-0.5 truncate" title={hospital.address}>
+                <span className="block text-xs font-black text-slate-850 mt-0.5 truncate" title={hospital.address}>
                   {hospital.address ? `${hospital.address.street || ""}, ${hospital.address.city || ""}` : "—"}
                 </span>
               </div>
@@ -388,12 +391,12 @@ const HospitalDashboard = () => {
         {/* Signature Executive 3D Stats Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
           {/* Card 1: Total Units */}
-          <div className="relative overflow-hidden bg-gradient-to-br from-white via-red-50/30 to-white rounded-3xl border border-red-150/80 p-6 shadow-xl shadow-red-500/5 hover:shadow-2xl hover:shadow-red-500/15 hover:border-red-300 transition-all duration-300 transform hover:-translate-y-1 group flex flex-col justify-between">
+          <div className="relative overflow-hidden bg-white/95 backdrop-blur-xl rounded-3xl border border-slate-100/90 p-6 shadow-xl shadow-slate-100/80 hover:shadow-2xl hover:shadow-red-500/10 hover:-translate-y-1.5 transition-all duration-300 group flex flex-col justify-between">
             <div className="absolute top-0 right-0 w-28 h-28 bg-red-500/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500 pointer-events-none" />
             
             <div className="flex items-center justify-between mb-4">
               <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Total Reserves</span>
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-red-600 via-rose-600 to-red-700 text-white shadow-lg shadow-red-600/30 flex items-center justify-center flex-shrink-0 ring-2 ring-red-100 group-hover:scale-110 transition-transform">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-red-600 via-rose-600 to-red-700 text-white shadow-lg shadow-red-600/30 flex items-center justify-center shrink-0 ring-4 ring-red-50 group-hover:scale-110 transition-transform">
                 <Droplet className="w-6 h-6 fill-white animate-pulse" />
               </div>
             </div>
@@ -401,22 +404,22 @@ const HospitalDashboard = () => {
             <div>
               <div className="flex items-baseline gap-1.5">
                 <span className="text-3xl sm:text-4xl font-black text-slate-850 tracking-tight">{stats.totalUnits}</span>
-                <span className="text-xs font-extrabold text-red-600 uppercase tracking-wider">Units</span>
+                <span className="text-xs font-black text-red-600 uppercase tracking-wider">Units</span>
               </div>
-              <p className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mt-1 flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping" />
+              <p className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mt-1.5 flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
                 Live Total Stock
               </p>
             </div>
           </div>
 
           {/* Card 2: Types In Stock */}
-          <div className="relative overflow-hidden bg-gradient-to-br from-white via-blue-50/30 to-white rounded-3xl border border-blue-150/80 p-6 shadow-xl shadow-blue-500/5 hover:shadow-2xl hover:shadow-blue-500/15 hover:border-blue-300 transition-all duration-300 transform hover:-translate-y-1 group flex flex-col justify-between">
+          <div className="relative overflow-hidden bg-white/95 backdrop-blur-xl rounded-3xl border border-slate-100/90 p-6 shadow-xl shadow-slate-100/80 hover:shadow-2xl hover:shadow-blue-500/10 hover:-translate-y-1.5 transition-all duration-300 group flex flex-col justify-between">
             <div className="absolute top-0 right-0 w-28 h-28 bg-blue-500/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500 pointer-events-none" />
             
             <div className="flex items-center justify-between mb-4">
               <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Blood Groups</span>
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-blue-700 text-white shadow-lg shadow-blue-600/30 flex items-center justify-center flex-shrink-0 ring-2 ring-blue-100 group-hover:scale-110 transition-transform">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-blue-700 text-white shadow-lg shadow-blue-600/30 flex items-center justify-center shrink-0 ring-4 ring-blue-50 group-hover:scale-110 transition-transform">
                 <Activity className="w-6 h-6" />
               </div>
             </div>
@@ -424,27 +427,27 @@ const HospitalDashboard = () => {
             <div>
               <div className="flex items-baseline gap-1.5">
                 <span className="text-3xl sm:text-4xl font-black text-blue-600 tracking-tight">{stats.bloodTypesInStock}</span>
-                <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">/ 8 Types</span>
+                <span className="text-xs font-black text-slate-400 uppercase tracking-wider">/ 8 Types</span>
               </div>
-              <p className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mt-1 flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+              <p className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mt-1.5 flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-blue-500" />
                 Groups In Stock
               </p>
             </div>
           </div>
 
           {/* Card 3: Low Stock Warning */}
-          <div className={`relative overflow-hidden bg-gradient-to-br from-white via-amber-50/40 to-white rounded-3xl border border-amber-200/90 p-6 shadow-xl shadow-amber-500/5 hover:shadow-2xl hover:shadow-amber-500/15 hover:border-amber-300 transition-all duration-300 transform hover:-translate-y-1 group flex flex-col justify-between ${
+          <div className={`relative overflow-hidden bg-white/95 backdrop-blur-xl rounded-3xl border border-slate-100/90 p-6 shadow-xl shadow-slate-100/80 hover:shadow-2xl hover:shadow-amber-500/10 hover:-translate-y-1.5 transition-all duration-300 group flex flex-col justify-between ${
             stats.lowStock > 0 ? "ring-2 ring-amber-500/40" : ""
           }`}>
             <div className="absolute top-0 right-0 w-28 h-28 bg-amber-500/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500 pointer-events-none" />
             
             <div className="flex items-center justify-between mb-4">
               <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Inventory Status</span>
-              <div className={`w-12 h-12 rounded-2xl text-white shadow-lg flex items-center justify-center flex-shrink-0 ring-2 ring-amber-100 group-hover:scale-110 transition-transform ${
+              <div className={`w-12 h-12 rounded-2xl text-white shadow-lg flex items-center justify-center shrink-0 ring-4 ring-amber-50 group-hover:scale-110 transition-transform ${
                 stats.lowStock > 0 
-                  ? "bg-gradient-to-tr from-amber-500 via-orange-600 to-red-600 shadow-orange-600/40 animate-pulse" 
-                  : "bg-gradient-to-tr from-amber-500 to-orange-600 shadow-amber-600/30"
+                  ? "bg-gradient-to-br from-amber-500 via-orange-600 to-red-600 shadow-orange-600/40 animate-pulse" 
+                  : "bg-gradient-to-br from-amber-500 to-orange-600 shadow-amber-600/30"
               }`}>
                 <AlertTriangle className="w-6 h-6" />
               </div>
@@ -453,22 +456,22 @@ const HospitalDashboard = () => {
             <div>
               <div className="flex items-baseline gap-1.5">
                 <span className={`text-3xl sm:text-4xl font-black tracking-tight ${stats.lowStock > 0 ? "text-amber-600" : "text-slate-850"}`}>{stats.lowStock}</span>
-                <span className="text-xs font-extrabold text-amber-700 uppercase tracking-wider">Alerts</span>
+                <span className="text-xs font-black text-amber-700 uppercase tracking-wider">Alerts</span>
               </div>
-              <p className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mt-1 flex items-center gap-1.5">
-                <span className={`w-1.5 h-1.5 rounded-full ${stats.lowStock > 0 ? "bg-amber-500 animate-ping" : "bg-emerald-500"}`} />
+              <p className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mt-1.5 flex items-center gap-1.5">
+                <span className={`w-2 h-2 rounded-full ${stats.lowStock > 0 ? "bg-amber-500 animate-ping" : "bg-emerald-500"}`} />
                 {stats.lowStock > 0 ? "Action Required" : "Optimal Levels"}
               </p>
             </div>
           </div>
 
           {/* Card 4: Expiring Soon */}
-          <div className="relative overflow-hidden bg-gradient-to-br from-white via-purple-50/30 to-white rounded-3xl border border-purple-150/80 p-6 shadow-xl shadow-purple-500/5 hover:shadow-2xl hover:shadow-purple-500/15 hover:border-purple-300 transition-all duration-300 transform hover:-translate-y-1 group flex flex-col justify-between">
+          <div className="relative overflow-hidden bg-white/95 backdrop-blur-xl rounded-3xl border border-slate-100/90 p-6 shadow-xl shadow-slate-100/80 hover:shadow-2xl hover:shadow-purple-500/10 hover:-translate-y-1.5 transition-all duration-300 group flex flex-col justify-between">
             <div className="absolute top-0 right-0 w-28 h-28 bg-purple-500/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500 pointer-events-none" />
             
             <div className="flex items-center justify-between mb-4">
               <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Shelf-Life Risk</span>
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-purple-700 text-white shadow-lg shadow-purple-600/30 flex items-center justify-center flex-shrink-0 ring-2 ring-purple-100 group-hover:scale-110 transition-transform">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-600 via-indigo-600 to-purple-700 text-white shadow-lg shadow-purple-600/30 flex items-center justify-center shrink-0 ring-4 ring-purple-50 group-hover:scale-110 transition-transform">
                 <Clock className="w-6 h-6" />
               </div>
             </div>
@@ -476,22 +479,22 @@ const HospitalDashboard = () => {
             <div>
               <div className="flex items-baseline gap-1.5">
                 <span className="text-3xl sm:text-4xl font-black text-purple-600 tracking-tight">{stats.expiringSoon}</span>
-                <span className="text-xs font-extrabold text-purple-700 uppercase tracking-wider">Batches</span>
+                <span className="text-xs font-black text-purple-700 uppercase tracking-wider">Batches</span>
               </div>
-              <p className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mt-1 flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-purple-500" />
+              <p className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mt-1.5 flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-purple-500" />
                 Expiring &lt; 7 Days
               </p>
             </div>
           </div>
 
-          {/* Card 5: Fulfillment Rate */}
-          <div className="relative overflow-hidden bg-gradient-to-br from-white via-emerald-50/30 to-white rounded-3xl border border-emerald-150/80 p-6 shadow-xl shadow-emerald-500/5 hover:shadow-2xl hover:shadow-emerald-500/15 hover:border-emerald-300 transition-all duration-300 transform hover:-translate-y-1 group flex flex-col justify-between">
+          {/* Card 5: Emergency Fulfillment Efficiency */}
+          <div className="relative overflow-hidden bg-white/95 backdrop-blur-xl rounded-3xl border border-slate-100/90 p-6 shadow-xl shadow-slate-100/80 hover:shadow-2xl hover:shadow-emerald-500/10 hover:-translate-y-1.5 transition-all duration-300 group flex flex-col justify-between">
             <div className="absolute top-0 right-0 w-28 h-28 bg-emerald-500/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500 pointer-events-none" />
             
             <div className="flex items-center justify-between mb-4">
               <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Efficiency</span>
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 via-teal-600 to-emerald-700 text-white shadow-lg shadow-emerald-600/30 flex items-center justify-center flex-shrink-0 ring-2 ring-emerald-100 group-hover:scale-110 transition-transform">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-600 via-teal-600 to-emerald-700 text-white shadow-lg shadow-emerald-600/30 flex items-center justify-center shrink-0 ring-4 ring-emerald-50 group-hover:scale-110 transition-transform">
                 <Award className="w-6 h-6" />
               </div>
             </div>
@@ -499,10 +502,10 @@ const HospitalDashboard = () => {
             <div>
               <div className="flex items-baseline gap-1.5">
                 <span className="text-3xl sm:text-4xl font-black text-emerald-600 tracking-tight">{stats.fulfillmentRate}%</span>
-                <span className="text-xs font-extrabold text-emerald-700 uppercase tracking-wider">Fulfilled</span>
+                <span className="text-xs font-black text-emerald-700 uppercase tracking-wider">Fulfilled</span>
               </div>
-              <p className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mt-1 flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <p className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mt-1.5 flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-500" />
                 Success Ratio
               </p>
             </div>
@@ -510,10 +513,10 @@ const HospitalDashboard = () => {
         </div>
 
         {/* Central Dashboard Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
           {/* Blood Stock Status Visual Card */}
-          <div className="lg:col-span-2 bg-white rounded-3xl border border-slate-100/90 p-6 sm:p-8 flex flex-col justify-between shadow-xl shadow-slate-100 relative overflow-hidden">
+          <div className="lg:col-span-7 bg-white/95 backdrop-blur-xl rounded-3xl border border-slate-100/90 p-6 sm:p-7 flex flex-col justify-between shadow-xl shadow-slate-100/80 relative overflow-hidden hover:shadow-2xl transition-all duration-300">
             <div className="absolute top-0 right-0 w-32 h-32 bg-red-100/20 rounded-full blur-3xl -z-10" />
             
             <div>
@@ -618,119 +621,97 @@ const HospitalDashboard = () => {
             </div>
           </div>
 
-          {/* Requests Summary & circular SVG dial */}
-          <div className="bg-white rounded-3xl border border-slate-100/90 p-6 sm:p-7 flex flex-col justify-between shadow-xl shadow-slate-100 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-28 h-28 bg-rose-100/20 rounded-full blur-3xl -z-10" />
+          {/* Requests Summary & Allocation Board */}
+          <div className="lg:col-span-5 bg-white/95 backdrop-blur-xl rounded-3xl border border-slate-100/90 p-6 sm:p-7 flex flex-col justify-start shadow-xl shadow-slate-100/80 relative overflow-hidden hover:shadow-2xl transition-all duration-300">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/5 rounded-full blur-3xl pointer-events-none" />
 
             <div>
-              <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
-                <div>
-                  <h3 className="text-lg font-extrabold text-slate-850 uppercase tracking-wide flex items-center gap-2.5">
-                    <div className="p-2 rounded-xl bg-red-50 text-red-600 border border-red-100">
-                      <TrendingUp className="w-5 h-5" />
-                    </div>
-                    Request Summary
-                  </h3>
-                  <p className="text-xs font-semibold text-slate-400 mt-1">
-                    Real-time allocation status breakdown.
-                  </p>
+              {/* Header */}
+              <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-red-600 to-rose-700 text-white flex items-center justify-center shadow-lg shadow-red-600/25 shrink-0 border border-red-400/30">
+                    <TrendingUp className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-black text-slate-850 tracking-tight">
+                      Request Summary
+                    </h3>
+                    <p className="text-[11px] font-bold text-slate-400">
+                      Real-time allocation breakdown
+                    </p>
+                  </div>
                 </div>
+
+                <span className="px-3 py-1 bg-red-50 text-red-700 border border-red-200/80 rounded-full font-black text-[10px] uppercase tracking-wider shadow-2xs">
+                  Live Status
+                </span>
               </div>
 
-              <div className="space-y-3">
-                <div className="flex justify-between items-center p-3 rounded-2xl bg-slate-50/70 border border-slate-100 transition-all hover:bg-white hover:shadow-sm">
-                  <div className="flex items-center gap-2.5">
-                    <div className="p-2 rounded-xl bg-slate-100 text-slate-600">
+              {/* Clean Enterprise 2x2 Metric Tiles Grid */}
+              <div className="grid grid-cols-2 gap-3 my-4">
+                <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-150 flex flex-col justify-between transition-all hover:bg-white hover:shadow-md">
+                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider">Total Raised</span>
+                  <div className="flex items-center justify-between mt-2">
+                    <span className="text-xl font-black text-slate-850">{stats.totalRequests}</span>
+                    <div className="p-1.5 rounded-lg bg-slate-200/60 text-slate-600">
                       <ClipboardList className="w-4 h-4" />
                     </div>
-                    <span className="text-xs font-extrabold text-slate-700 uppercase tracking-wider">Total Requests</span>
                   </div>
-                  <span className="text-xs font-black text-slate-850 bg-white px-3 py-1 rounded-xl border border-slate-200/80 shadow-2xs">
-                    {stats.totalRequests}
-                  </span>
                 </div>
 
-                <div className="flex justify-between items-center p-3 rounded-2xl bg-amber-50/40 border border-amber-100 transition-all hover:bg-amber-50/80 hover:shadow-sm">
-                  <div className="flex items-center gap-2.5">
-                    <div className="p-2 rounded-xl bg-amber-100 text-amber-700">
+                <div className="p-3.5 rounded-2xl bg-amber-50/70 border border-amber-200/80 flex flex-col justify-between transition-all hover:bg-amber-50 hover:shadow-md">
+                  <span className="text-[10px] font-black text-amber-800 uppercase tracking-wider">Pending</span>
+                  <div className="flex items-center justify-between mt-2">
+                    <span className="text-xl font-black text-amber-900">{stats.pendingRequests}</span>
+                    <div className="p-1.5 rounded-lg bg-amber-100 text-amber-700">
                       <Clock className="w-4 h-4 animate-pulse" />
                     </div>
-                    <span className="text-xs font-extrabold text-amber-900 uppercase tracking-wider">Pending Approvals</span>
                   </div>
-                  <span className="text-xs font-black text-amber-800 bg-amber-100/90 px-3 py-1 rounded-xl border border-amber-200 shadow-2xs">
-                    {stats.pendingRequests}
-                  </span>
                 </div>
 
-                <div className="flex justify-between items-center p-3 rounded-2xl bg-emerald-50/40 border border-emerald-100 transition-all hover:bg-emerald-50/80 hover:shadow-sm">
-                  <div className="flex items-center gap-2.5">
-                    <div className="p-2 rounded-xl bg-emerald-100 text-emerald-700">
+                <div className="p-3.5 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 flex flex-col justify-between transition-all hover:bg-emerald-50 hover:shadow-md">
+                  <span className="text-[10px] font-black text-emerald-800 uppercase tracking-wider">Approved</span>
+                  <div className="flex items-center justify-between mt-2">
+                    <span className="text-xl font-black text-emerald-900">{stats.acceptedRequests}</span>
+                    <div className="p-1.5 rounded-lg bg-emerald-100 text-emerald-700">
                       <CheckCircle className="w-4 h-4" />
                     </div>
-                    <span className="text-xs font-extrabold text-emerald-900 uppercase tracking-wider">Approved & Filled</span>
                   </div>
-                  <span className="text-xs font-black text-emerald-800 bg-emerald-100/90 px-3 py-1 rounded-xl border border-emerald-200 shadow-2xs">
-                    {stats.acceptedRequests}
-                  </span>
                 </div>
 
-                <div className="flex justify-between items-center p-3 rounded-2xl bg-rose-50/40 border border-rose-100 transition-all hover:bg-rose-50/80 hover:shadow-sm">
-                  <div className="flex items-center gap-2.5">
-                    <div className="p-2 rounded-xl bg-rose-100 text-rose-700">
+                <div className="p-3.5 rounded-2xl bg-rose-50/70 border border-rose-200/80 flex flex-col justify-between transition-all hover:bg-rose-50 hover:shadow-md">
+                  <span className="text-[10px] font-black text-rose-800 uppercase tracking-wider">Rejected</span>
+                  <div className="flex items-center justify-between mt-2">
+                    <span className="text-xl font-black text-rose-900">{stats.rejectedRequests}</span>
+                    <div className="p-1.5 rounded-lg bg-rose-100 text-rose-700">
                       <XCircle className="w-4 h-4" />
                     </div>
-                    <span className="text-xs font-extrabold text-rose-900 uppercase tracking-wider">Rejected / Cancelled</span>
                   </div>
-                  <span className="text-xs font-black text-rose-800 bg-rose-100/90 px-3 py-1 rounded-xl border border-rose-200 shadow-2xs">
-                    {stats.rejectedRequests}
-                  </span>
                 </div>
               </div>
 
-              {/* Circular fulfillment SVG dial */}
-              <div className="mt-6 bg-gradient-to-br from-slate-50 to-rose-50/30 border border-slate-150 rounded-2xl p-4 flex items-center gap-4 shadow-2xs">
-                <div className="relative w-16 h-16 flex items-center justify-center rounded-full bg-white border border-slate-200 shadow-md flex-shrink-0">
-                  <svg className="w-full h-full transform -rotate-90" viewBox="0 0 80 80">
-                    <circle
-                      cx="40"
-                      cy="40"
-                      r="32"
-                      className="stroke-slate-100 fill-none"
-                      strokeWidth="6"
-                    />
-                    <circle
-                      cx="40"
-                      cy="40"
-                      r="32"
-                      className="stroke-rose-600 fill-none transition-all duration-1000 ease-out"
-                      strokeWidth="6"
-                      strokeDasharray={2 * Math.PI * 32}
-                      strokeDashoffset={2 * Math.PI * 32 - (2 * Math.PI * 32 * Number(stats.fulfillmentRate || 0)) / 100}
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                  <div className="absolute flex flex-col items-center">
-                    <span className="text-xs font-black text-slate-850 leading-none">
-                      {stats.fulfillmentRate}%
-                    </span>
-                  </div>
+              {/* Fulfillment Gauge */}
+              <div className="p-3.5 bg-gradient-to-r from-slate-50 to-rose-50/40 border border-slate-200/70 rounded-2xl mb-4">
+                <div className="flex justify-between items-center text-[11px] font-black uppercase tracking-wider mb-1.5">
+                  <span className="text-slate-600">Fulfillment Success Rate</span>
+                  <span className="text-rose-600 font-black">{stats.fulfillmentRate}% Efficiency</span>
                 </div>
-                <div>
-                  <span className="block text-[11px] font-black text-slate-850 uppercase tracking-wider">Fulfillment Rate</span>
-                  <p className="text-[10px] text-slate-500 mt-0.5 leading-relaxed font-semibold">
-                    Percentage of emergency requests successfully fulfilled by blood labs.
-                  </p>
+                <div className="w-full bg-slate-200/80 h-2 rounded-full overflow-hidden p-0.5 border border-slate-200/60 shadow-inner">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-red-600 via-rose-600 to-red-700 transition-all duration-700 shadow-xs"
+                    style={{ width: `${Math.min(100, Number(stats.fulfillmentRate || 0))}%` }}
+                  />
                 </div>
               </div>
+
+              <Link
+                to="/hospital/blood-request-create"
+                className="w-full py-3.5 px-5 bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-700 hover:to-rose-800 text-white font-extrabold text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-red-600/25 border border-red-500/30 flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-95 cursor-pointer"
+              >
+                <Plus size={16} />
+                <span>Create Blood Request</span>
+              </Link>
             </div>
-
-            <Link
-              to="/hospital/blood-request-create"
-              className="w-full mt-6 py-3.5 px-5 bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-700 hover:to-rose-800 text-white font-extrabold text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-red-600/25 border border-red-500/30 flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-95 cursor-pointer"
-            >
-              <Plus size={16} />
-              <span>Create Blood Request</span>
-            </Link>
           </div>
         </div>
 
@@ -866,109 +847,142 @@ const HospitalDashboard = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           
           {/* Recent Activities Timeline */}
-          <div className="bg-white rounded-3xl border border-slate-100/90 p-6 sm:p-7 shadow-xl shadow-slate-100 relative overflow-hidden">
-            <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
-              <div>
-                <h3 className="text-lg font-extrabold text-slate-850 uppercase tracking-wide flex items-center gap-2.5">
-                  <div className="p-2 rounded-xl bg-red-50 text-red-600 border border-red-100">
-                    <History className="w-5 h-5" />
+          <div className="bg-white/95 backdrop-blur-xl rounded-3xl border border-slate-100/90 p-6 sm:p-7 shadow-xl shadow-slate-100/80 relative overflow-hidden flex flex-col justify-between hover:shadow-2xl transition-all duration-300">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/5 rounded-full blur-3xl pointer-events-none" />
+
+            <div>
+              <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-red-600 to-rose-700 text-white flex items-center justify-center shadow-lg shadow-red-600/25 shrink-0 border border-red-400/30">
+                    <History className="w-5 h-5 text-white" />
                   </div>
-                  Activity Timeline
-                </h3>
-                <p className="text-xs font-semibold text-slate-400 mt-1">
-                  Audit trail of hospital inventory operations.
-                </p>
-              </div>
-            </div>
+                  <div>
+                    <h3 className="text-lg font-black text-slate-850 tracking-tight">
+                      Activity Timeline
+                    </h3>
+                    <p className="text-[11px] font-bold text-slate-400 mt-0.5">
+                      Real-time audit trail of hospital inventory operations
+                    </p>
+                  </div>
+                </div>
 
-            {recentActivity.length === 0 ? (
-              <div className="bg-slate-50/70 rounded-2xl p-8 text-center border border-slate-100 my-2">
-                <History className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                <h4 className="text-sm font-extrabold text-slate-700 uppercase tracking-wide">No Activity Recorded Yet</h4>
-                <p className="text-xs text-slate-400 font-medium mt-1">System activity logs will appear here in real-time as operations occur.</p>
+                <span className="px-3 py-1 bg-red-50 text-red-700 border border-red-200/80 rounded-full font-black text-[10px] uppercase tracking-wider flex items-center gap-1.5 shadow-2xs">
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-ping" />
+                  Live Sync
+                </span>
               </div>
-            ) : (
-              <div className="space-y-4 max-h-[350px] overflow-y-auto pr-2">
-                {recentActivity.map((activity, idx) => {
-                  let indicatorBg = "bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]";
-                  if (activity.eventType?.toLowerCase().includes("request")) {
-                    indicatorBg = "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]";
-                  } else if (activity.eventType?.toLowerCase().includes("stock") || activity.eventType?.toLowerCase().includes("inventory")) {
-                    indicatorBg = "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]";
-                  } else if (activity.eventType?.toLowerCase().includes("alert") || activity.eventType?.toLowerCase().includes("critical")) {
-                    indicatorBg = "bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]";
-                  }
 
-                  return (
-                    <div key={idx} className="flex gap-4 relative pb-4 last:pb-0 group">
-                      {idx < recentActivity.length - 1 && (
-                        <span className="absolute left-[17px] top-9 bottom-0 w-0.5 bg-slate-100" />
-                      )}
-                      <div className="w-9 h-9 bg-slate-50 border border-slate-150 rounded-full flex items-center justify-center flex-shrink-0 relative z-10 shadow-xs">
-                        <span className={`h-2.5 w-2.5 rounded-full ${indicatorBg}`} />
-                      </div>
-                      <div className="flex-1 bg-slate-50/70 p-3.5 rounded-2xl border border-slate-100 hover:bg-white hover:shadow-md transition-all">
-                        <div className="flex items-center justify-between gap-2 flex-wrap">
-                          <span className="font-extrabold text-xs text-slate-850 uppercase tracking-wider">
-                            {activity.eventType?.replace('_', ' ')}
-                          </span>
-                          <span className="text-[10px] text-slate-400 font-bold">
-                            {new Date(activity.date).toLocaleDateString()} {new Date(activity.date).toLocaleTimeString(undefined, {hour: '2-digit', minute:'2-digit'})}
-                          </span>
+              {recentActivity.length === 0 ? (
+                <div className="bg-gradient-to-b from-slate-50/80 to-white rounded-3xl p-8 text-center border border-slate-200/60 my-2 shadow-inner">
+                  <div className="w-14 h-14 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3 border border-slate-200/80 shadow-xs">
+                    <History className="w-7 h-7 text-slate-400" />
+                  </div>
+                  <h4 className="text-sm font-black text-slate-800 uppercase tracking-wide">No Activity Recorded Yet</h4>
+                  <p className="text-xs text-slate-500 font-semibold mt-1 max-w-sm mx-auto">
+                    System activity logs will stream here in real-time as stock allocations and emergency requests occur.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4 max-h-[360px] overflow-y-auto pr-2">
+                  {recentActivity.map((activity, idx) => {
+                    let indicatorBg = "bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.6)]";
+                    if (activity.eventType?.toLowerCase().includes("request")) {
+                      indicatorBg = "bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.6)]";
+                    } else if (activity.eventType?.toLowerCase().includes("stock") || activity.eventType?.toLowerCase().includes("inventory")) {
+                      indicatorBg = "bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.6)]";
+                    } else if (activity.eventType?.toLowerCase().includes("alert") || activity.eventType?.toLowerCase().includes("critical")) {
+                      indicatorBg = "bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.6)]";
+                    }
+
+                    return (
+                      <div key={idx} className="flex gap-4 relative pb-4 last:pb-0 group">
+                        {idx < recentActivity.length - 1 && (
+                          <span className="absolute left-[17px] top-9 bottom-0 w-0.5 bg-slate-100" />
+                        )}
+                        <div className="w-9 h-9 bg-slate-50 border border-slate-200 rounded-full flex items-center justify-center shrink-0 relative z-10 shadow-2xs">
+                          <span className={`h-2.5 w-2.5 rounded-full ${indicatorBg}`} />
                         </div>
-                        <p className="text-xs text-slate-500 mt-1.5 font-semibold leading-relaxed">{activity.description}</p>
+                        <div className="flex-1 bg-gradient-to-b from-slate-50/90 to-white p-4 rounded-2xl border border-slate-200/70 hover:border-slate-300 hover:shadow-md transition-all">
+                          <div className="flex items-center justify-between gap-2 flex-wrap">
+                            <span className="font-black text-xs text-slate-850 uppercase tracking-wider">
+                              {activity.eventType?.replace('_', ' ')}
+                            </span>
+                            <span className="text-[10px] text-slate-400 font-bold">
+                              {new Date(activity.date).toLocaleDateString()} {new Date(activity.date).toLocaleTimeString(undefined, {hour: '2-digit', minute:'2-digit'})}
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-600 mt-1.5 font-bold leading-relaxed">{activity.description}</p>
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Security & Access Log */}
-          <div className="bg-white rounded-3xl border border-slate-100/90 p-6 sm:p-7 shadow-xl shadow-slate-100 relative overflow-hidden">
-            <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
-              <div>
-                <h3 className="text-lg font-extrabold text-slate-850 uppercase tracking-wide flex items-center gap-2.5">
-                  <div className="p-2 rounded-xl bg-red-50 text-red-600 border border-red-100">
-                    <ShieldCheck className="w-5 h-5" />
-                  </div>
-                  Security & Access Log
-                </h3>
-                <p className="text-xs font-semibold text-slate-400 mt-1">
-                  System authentication & login history.
-                </p>
-              </div>
-            </div>
+          <div className="bg-white/95 backdrop-blur-xl rounded-3xl border border-slate-100/90 p-6 sm:p-7 shadow-xl shadow-slate-100/80 relative overflow-hidden flex flex-col justify-between hover:shadow-2xl transition-all duration-300">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
 
-            {loginHistory.length === 0 ? (
-              <div className="bg-slate-50/70 rounded-2xl p-8 text-center border border-slate-100 my-2">
-                <ShieldCheck className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                <h4 className="text-sm font-extrabold text-slate-700 uppercase tracking-wide">No Login Logs Recorded</h4>
-                <p className="text-xs text-slate-400 font-medium mt-1">Authentication audit logs will appear here.</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {loginHistory.map((login, idx) => (
-                  <div key={idx} className="p-3.5 rounded-2xl border border-slate-100 bg-slate-50/40 hover:bg-white hover:shadow-md transition-all flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2.5 bg-slate-100 border border-slate-200/60 rounded-xl text-slate-600">
-                        <LogIn size={15} />
-                      </div>
-                      <div>
-                        <span className="block font-black text-sm text-slate-850">{login.ip}</span>
-                        <span className="block text-[10px] text-slate-400 font-bold mt-0.5">
-                          {new Date(login.date).toLocaleString()}
-                        </span>
-                      </div>
-                    </div>
-                    <span className="text-[10px] font-black text-emerald-800 bg-emerald-100 px-3 py-1 rounded-full border border-emerald-200 uppercase tracking-wider shadow-2xs">
-                      SUCCESS
-                    </span>
+            <div>
+              <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-700 text-white flex items-center justify-center shadow-lg shadow-emerald-600/25 shrink-0 border border-emerald-400/30">
+                    <ShieldCheck className="w-5 h-5 text-white" />
                   </div>
-                ))}
+                  <div>
+                    <h3 className="text-lg font-black text-slate-850 tracking-tight">
+                      Security & Access Log
+                    </h3>
+                    <p className="text-[11px] font-bold text-slate-400 mt-0.5">
+                      System authentication & session audit logs
+                    </p>
+                  </div>
+                </div>
+
+                <span className="px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200/80 rounded-full font-black text-[10px] uppercase tracking-wider flex items-center gap-1.5 shadow-2xs">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  Encrypted SSL
+                </span>
               </div>
-            )}
+
+              {loginHistory.length === 0 ? (
+                <div className="bg-gradient-to-b from-slate-50/80 to-white rounded-3xl p-8 text-center border border-slate-200/60 my-2 shadow-inner">
+                  <div className="w-14 h-14 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3 border border-slate-200/80 shadow-xs">
+                    <ShieldCheck className="w-7 h-7 text-slate-400" />
+                  </div>
+                  <h4 className="text-sm font-black text-slate-800 uppercase tracking-wide">No Login Logs Recorded</h4>
+                  <p className="text-xs text-slate-500 font-semibold mt-1">Authentication audit logs will appear here.</p>
+                </div>
+              ) : (
+                <div className="space-y-3 max-h-[360px] overflow-y-auto pr-1">
+                  {loginHistory.map((login, idx) => (
+                    <div
+                      key={idx}
+                      className="p-4 rounded-2xl border border-slate-200/70 bg-gradient-to-b from-slate-50/90 to-white hover:border-emerald-200 hover:shadow-md transition-all flex items-center justify-between group"
+                    >
+                      <div className="flex items-center gap-3.5">
+                        <div className="w-10 h-10 rounded-2xl bg-emerald-50 border border-emerald-100 text-emerald-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                          <LogIn size={18} />
+                        </div>
+                        <div>
+                          <h4 className="font-black text-sm text-slate-850 tracking-tight">Hospital Session Login</h4>
+                          <p className="text-[10px] text-slate-400 font-bold mt-0.5 flex items-center gap-2">
+                            <span>{new Date(login.date).toLocaleString()}</span>
+                            {login.ip && <span className="px-1.5 py-0.5 bg-slate-100 rounded text-slate-600 font-mono text-[9px]">{login.ip}</span>}
+                          </p>
+                        </div>
+                      </div>
+
+                      <span className="text-[10px] font-black text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 uppercase tracking-wider shadow-2xs flex items-center gap-1">
+                        ✓ AUTHENTICATED
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
