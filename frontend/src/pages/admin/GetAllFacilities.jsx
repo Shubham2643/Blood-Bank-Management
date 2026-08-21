@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { toast } from "react-hot-toast";
 import {
   Building,
+  Building2,
   MapPin,
   Phone,
   Mail,
@@ -12,6 +13,11 @@ import {
   AlertTriangle,
   Clock,
   CheckCircle,
+  FlaskConical,
+  ShieldCheck,
+  Award,
+  FileText,
+  Users
 } from "lucide-react";
 import { adminApi } from "../../services/api.js";
 
@@ -52,7 +58,7 @@ function GetAllFacilities() {
 
       const params = {
         page: currentPage,
-        limit: 12, // fits 3x4 grid
+        limit: 12,
         status: statusFilter,
         type: typeFilter,
       };
@@ -119,73 +125,168 @@ function GetAllFacilities() {
 
   const getStatusBadge = (status) => {
     const styles = {
-      pending: "bg-yellow-50 text-yellow-700 border-yellow-100",
-      approved: "bg-emerald-50 text-emerald-700 border-emerald-100",
-      rejected: "bg-red-50 text-red-700 border-red-100",
+      pending: "bg-amber-50 text-amber-800 border-amber-200/90",
+      approved: "bg-emerald-50 text-emerald-800 border-emerald-200/90",
+      rejected: "bg-rose-50 text-rose-800 border-rose-200/90",
+      suspended: "bg-rose-50 text-rose-800 border-rose-200/90",
     };
     return (
-      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border uppercase ${styles[status] || "bg-gray-50 text-gray-700"}`}>
-        {status}
+      <span className={`px-3 py-1 rounded-full text-[10px] font-black border uppercase tracking-wider shadow-2xs ${styles[status] || "bg-slate-50 text-slate-700"}`}>
+        ● {status}
       </span>
     );
   };
 
+  const hospitalsCount = facilities.filter(f => f.facilityType === 'hospital').length;
+  const labsCount = facilities.filter(f => f.facilityType === 'blood-lab').length;
+  const approvedCount = facilities.filter(f => f.status === 'approved').length;
+
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <Building className="w-7 h-7 text-red-600" />
-            Facilities Directory
-          </h1>
-          <p className="text-gray-500 mt-1">Audit blood stock centers, hospitals, emergency labs, and locations</p>
+    <div className="p-6 sm:p-8 max-w-7xl mx-auto space-y-8">
+      {/* 3D Executive Header */}
+      <div className="bg-white/95 backdrop-blur-xl rounded-3xl border border-slate-100/90 p-6 sm:p-8 shadow-xl shadow-slate-100/80 relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6 hover:shadow-2xl transition-all duration-300">
+        <div className="absolute top-0 right-0 w-48 h-48 bg-red-500/5 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="flex items-center gap-4 relative z-10">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-red-600 via-rose-600 to-red-700 text-white flex items-center justify-center shadow-xl shadow-red-600/30 border border-red-400/30 shrink-0">
+            <Building2 className="w-7 h-7 text-white animate-pulse" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2.5">
+              <h1 className="text-2xl font-black text-slate-850 tracking-tight">
+                Facilities & Healthcare Directory
+              </h1>
+              <span className="px-3 py-1 bg-red-50 text-red-700 border border-red-200/80 rounded-full font-black text-[10px] uppercase tracking-wider shadow-2xs">
+                {totalFacilities} Facilities
+              </span>
+            </div>
+            <p className="text-xs font-bold text-slate-400 mt-1">
+              Audit blood stock centers, accredited hospitals, emergency labs, and verification status
+            </p>
+          </div>
         </div>
+
         <button
           onClick={() => fetchFacilities(true)}
-          className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-200 rounded-xl bg-white hover:bg-gray-50 text-gray-600 font-medium text-sm transition-all shadow-sm"
+          className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-700 hover:to-rose-800 text-white font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-red-600/25 border border-red-500/30 flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95 cursor-pointer relative z-10"
         >
           <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
-          Refresh
+          <span>Sync Facilities</span>
         </button>
       </div>
 
-      {/* Filters & Search */}
-      <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
-        <div className="relative w-full md:w-80">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+      {/* 4 Executive Clean & Uniform Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="bg-white/95 backdrop-blur-xl rounded-3xl border border-slate-100 p-6 shadow-md shadow-slate-100/70 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group">
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-xs font-black text-slate-500 uppercase tracking-wide">
+              Total Facilities
+            </span>
+            <div className="w-10 h-10 rounded-2xl bg-slate-100 text-slate-700 flex items-center justify-center font-black border border-slate-200/80 group-hover:scale-110 transition-transform">
+              <Building2 className="w-5 h-5 text-slate-700" />
+            </div>
+          </div>
+          <div className="flex items-baseline justify-between">
+            <span className="text-3xl font-black text-slate-900 tracking-tight">{totalFacilities}</span>
+            <span className="text-[11px] font-black text-slate-600 bg-slate-100 px-2.5 py-1 rounded-xl border border-slate-200/70">
+              Registered
+            </span>
+          </div>
+        </div>
+
+        <div className="bg-white/95 backdrop-blur-xl rounded-3xl border border-slate-100 p-6 shadow-md shadow-slate-100/70 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group">
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-xs font-black text-slate-500 uppercase tracking-wide">
+              Hospitals
+            </span>
+            <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-black border border-blue-100 group-hover:scale-110 transition-transform">
+              <Building className="w-5 h-5 text-blue-600" />
+            </div>
+          </div>
+          <div className="flex items-baseline justify-between">
+            <span className="text-3xl font-black text-slate-900 tracking-tight">{hospitalsCount}</span>
+            <span className="text-[11px] font-black text-blue-700 bg-blue-50 px-2.5 py-1 rounded-xl border border-blue-200/80">
+              Accredited
+            </span>
+          </div>
+        </div>
+
+        <div className="bg-white/95 backdrop-blur-xl rounded-3xl border border-slate-100 p-6 shadow-md shadow-slate-100/70 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group">
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-xs font-black text-slate-500 uppercase tracking-wide">
+              Blood Labs
+            </span>
+            <div className="w-10 h-10 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center font-black border border-purple-100 group-hover:scale-110 transition-transform">
+              <FlaskConical className="w-5 h-5 text-purple-600" />
+            </div>
+          </div>
+          <div className="flex items-baseline justify-between">
+            <span className="text-3xl font-black text-slate-900 tracking-tight">{labsCount}</span>
+            <span className="text-[11px] font-black text-purple-700 bg-purple-50 px-2.5 py-1 rounded-xl border border-purple-200/80">
+              Testing Hubs
+            </span>
+          </div>
+        </div>
+
+        <div className="bg-white/95 backdrop-blur-xl rounded-3xl border border-slate-100 p-6 shadow-md shadow-slate-100/70 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group">
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-xs font-black text-slate-500 uppercase tracking-wide">
+              Approved Status
+            </span>
+            <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-black border border-emerald-100 group-hover:scale-110 transition-transform">
+              <CheckCircle className="w-5 h-5 text-emerald-600" />
+            </div>
+          </div>
+          <div className="flex items-baseline justify-between">
+            <span className="text-3xl font-black text-slate-900 tracking-tight">{approvedCount}</span>
+            <span className="text-[11px] font-black text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-xl border border-emerald-200/80">
+              Verified
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Glassmorphic Filters & Search Bar */}
+      <div className="bg-white/95 backdrop-blur-xl rounded-3xl border border-slate-100/90 p-5 sm:p-6 shadow-xl shadow-slate-100/80 flex flex-col md:flex-row gap-4 items-center justify-between hover:shadow-2xl transition-all duration-300 relative z-40">
+        <div className="relative w-full md:w-96">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4.5 h-4.5" />
           <input
             type="text"
             placeholder="Search by name, email, or registration..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-11 pr-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 text-sm transition-all bg-gray-50/50"
+            className="w-full pl-11 pr-4 py-3 rounded-2xl border border-slate-200/80 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 font-bold text-xs text-slate-800 transition-all placeholder:text-slate-400"
           />
         </div>
 
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
           {/* Type Filter */}
-          <select
-            value={typeFilter}
-            onChange={(e) => { setTypeFilter(e.target.value); setCurrentPage(1); }}
-            className="bg-gray-50 border border-gray-100 rounded-xl px-3 py-2 text-sm text-gray-700 font-medium focus:outline-none cursor-pointer"
-          >
-            <option value="all">All Types</option>
-            <option value="hospital">Hospitals Only</option>
-            <option value="blood-lab">Blood Labs Only</option>
-          </select>
+          <div className="flex items-center gap-2 bg-slate-50/80 rounded-2xl px-3.5 py-2 border border-slate-200/80">
+            <Building2 className="w-4 h-4 text-slate-500" />
+            <select
+              value={typeFilter}
+              onChange={(e) => { setTypeFilter(e.target.value); setCurrentPage(1); }}
+              className="bg-transparent font-black text-xs text-slate-700 uppercase tracking-wider focus:outline-none cursor-pointer"
+            >
+              <option value="all">All Facility Types</option>
+              <option value="hospital">Hospitals Only</option>
+              <option value="blood-lab">Blood Labs Only</option>
+            </select>
+          </div>
 
           {/* Status Filter */}
-          <select
-            value={statusFilter}
-            onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
-            className="bg-gray-50 border border-gray-100 rounded-xl px-3 py-2 text-sm text-gray-700 font-medium focus:outline-none cursor-pointer"
-          >
-            <option value="all">All Status</option>
-            <option value="pending">Pending Review</option>
-            <option value="approved">Approved</option>
-            <option value="rejected">Rejected / Suspended</option>
-          </select>
+          <div className="flex items-center gap-2 bg-slate-50/80 rounded-2xl px-3.5 py-2 border border-slate-200/80">
+            <select
+              value={statusFilter}
+              onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
+              className="bg-transparent font-black text-xs text-slate-700 uppercase tracking-wider focus:outline-none cursor-pointer"
+            >
+              <option value="all">All Verification Status</option>
+              <option value="pending">Pending Review</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected / Suspended</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -193,71 +294,104 @@ function GetAllFacilities() {
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="h-48 bg-gray-100 rounded-2xl"></div>
+            <div key={i} className="h-56 bg-slate-100 rounded-3xl"></div>
           ))}
         </div>
       ) : facilities.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-gray-100 p-20 text-center flex flex-col items-center">
-          <div className="w-16 h-16 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center mb-4">
-            <Building className="w-8 h-8" />
+        <div className="bg-white/95 backdrop-blur-xl rounded-3xl border border-slate-100/90 p-16 text-center flex flex-col items-center shadow-xl">
+          <div className="w-16 h-16 bg-red-50 text-red-600 rounded-3xl flex items-center justify-center mb-4 border border-red-100 shadow-md">
+            <Building2 className="w-8 h-8" />
           </div>
-          <h3 className="text-lg font-bold text-gray-900">No Facilities Found</h3>
-          <p className="text-gray-500 max-w-sm mt-1">We couldn't find any hospitals or labs matching your filters.</p>
+          <h3 className="text-base font-black text-slate-850 uppercase tracking-wide">No Facilities Found</h3>
+          <p className="text-xs font-semibold text-slate-400 max-w-sm mt-1">We couldn't find any hospitals or labs matching your search filters.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {facilities.map((fac) => (
             <div
               key={fac._id}
-              className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between"
+              className="relative p-6 rounded-3xl bg-gradient-to-b from-white via-slate-50/40 to-white border border-slate-200/90 shadow-lg shadow-slate-100/80 hover:shadow-2xl hover:border-red-400/50 hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between group overflow-hidden"
             >
+              <div className={`absolute -top-12 -right-12 w-32 h-32 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500 pointer-events-none ${fac.facilityType === "blood-lab" ? "bg-gradient-to-br from-purple-500/15 to-pink-500/10" : "bg-gradient-to-br from-blue-500/15 to-indigo-500/10"}`} />
+
               <div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-red-50 text-red-600 flex items-center justify-center font-bold">
-                      {fac.name?.charAt(0).toUpperCase()}
-                    </div>
-                    <h3 className="font-bold text-gray-900 leading-snug line-clamp-1">{fac.name}</h3>
-                  </div>
+                {/* Top Row: Type Pill & Status Badge */}
+                <div className="flex justify-between items-center mb-4 relative z-10">
+                  <span className={`px-3 py-1 rounded-xl font-black text-[10px] uppercase tracking-wider border flex items-center gap-1.5 shadow-2xs ${fac.facilityType === "blood-lab" ? "bg-purple-50 text-purple-800 border-purple-200/90" : "bg-blue-50 text-blue-800 border-blue-200/90"}`}>
+                    {fac.facilityType === "blood-lab" ? (
+                      <>
+                        <FlaskConical className="w-3.5 h-3.5 text-purple-600" />
+                        <span>BLOOD LAB</span>
+                      </>
+                    ) : (
+                      <>
+                        <Building2 className="w-3.5 h-3.5 text-blue-600" />
+                        <span>HOSPITAL</span>
+                      </>
+                    )}
+                  </span>
+
                   {getStatusBadge(fac.status)}
                 </div>
 
-                <div className="mt-4 space-y-2 text-xs text-gray-600 bg-gray-50/50 p-3 rounded-xl border border-gray-100/50">
-                  <div className="flex items-center gap-2"><Mail className="w-4 h-4 text-gray-400" /> <span>{fac.email}</span></div>
-                  <div className="flex items-center gap-2"><Phone className="w-4 h-4 text-gray-400" /> <span>{fac.phone || "N/A"}</span></div>
-                  <div className="flex items-center gap-2"><MapPin className="w-4 h-4 text-gray-400" /> <span className="line-clamp-1">{fac.address?.city}, {fac.address?.state}</span></div>
+                {/* Identity Row: 3D Role Avatar & Name */}
+                <div className="flex items-center gap-3.5 mb-4 relative z-10">
+                  <div className={`w-13 h-13 rounded-2xl flex items-center justify-center text-white shadow-xl border-2 border-white ring-2 ring-slate-100 shrink-0 group-hover:scale-110 transition-transform ${fac.facilityType === "blood-lab" ? "bg-gradient-to-br from-purple-600 via-pink-600 to-purple-700 shadow-purple-600/30" : "bg-gradient-to-br from-blue-600 via-indigo-600 to-blue-700 shadow-blue-600/30"}`}>
+                    {fac.facilityType === "blood-lab" ? <FlaskConical className="w-6 h-6 text-white" /> : <Building2 className="w-6 h-6 text-white" />}
+                  </div>
+
+                  <div className="min-w-0">
+                    <h3 className="font-black text-slate-900 text-base leading-snug tracking-tight truncate" title={fac.name}>
+                      {fac.name}
+                    </h3>
+                    <span className="block text-[11px] font-bold text-slate-400 mt-0.5 truncate">
+                      {fac.email}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Telemetry Contact Box */}
+                <div className="space-y-2 text-xs font-extrabold text-slate-600 bg-slate-50/90 p-3.5 rounded-2xl border border-slate-200/80 relative z-10 shadow-2xs">
+                  <div className="flex items-center gap-2 text-slate-700">
+                    <Phone className="w-3.5 h-3.5 text-red-500 shrink-0" />
+                    <span>{fac.phone || "Phone N/A"}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-slate-700 truncate">
+                    <MapPin className="w-3.5 h-3.5 text-red-500 shrink-0" />
+                    <span className="truncate">{fac.address?.city || "Unknown City"}, {fac.address?.state || "State"}</span>
+                  </div>
                 </div>
               </div>
 
-              <div className="mt-5 pt-3 border-t border-gray-100 flex items-center justify-between text-xs">
-                <div className="flex items-center gap-2">
-                  <span className="text-gray-400 block text-[9px] uppercase font-bold">Type</span>
-                  <strong className="text-gray-700 font-bold uppercase">{fac.facilityType}</strong>
-                </div>
+              {/* Footer ID Badge & Action Bar */}
+              <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between text-xs relative z-10">
+                <span className="bg-slate-100 text-slate-700 font-extrabold px-3 py-1 rounded-xl border border-slate-200/80 text-[11px]">
+                  Reg: <strong className="text-slate-900 font-black">{fac.registrationNumber || "VERIFIED"}</strong>
+                </span>
 
                 <div className="flex items-center gap-1.5">
                   <button
                     onClick={() => handleOpenDetails(fac)}
-                    className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                    className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all border border-slate-200/80 cursor-pointer active:scale-95 shadow-2xs"
                     title="View Documents & Logs"
                   >
-                    <Eye className="w-4.5 h-4.5" />
+                    <Eye className="w-4 h-4" />
                   </button>
                   {fac.status === "approved" && (
                     <button
                       onClick={() => setConfirmModal({ type: "suspend", facility: fac })}
-                      className="p-1.5 text-amber-500 hover:bg-amber-50 rounded-lg transition-all"
+                      className="p-2 text-amber-600 hover:bg-amber-50 border border-amber-200/90 rounded-xl transition-all cursor-pointer active:scale-95 shadow-2xs"
                       title="Suspend Facility"
                     >
-                      <AlertTriangle className="w-4.5 h-4.5" />
+                      <AlertTriangle className="w-4 h-4" />
                     </button>
                   )}
                   <button
                     onClick={() => setConfirmModal({ type: "delete", facility: fac })}
-                    className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                    className="p-2 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all border border-slate-200/80 cursor-pointer active:scale-95 shadow-2xs"
                     title="Delete Facility"
                   >
-                    <Trash2 className="w-4.5 h-4.5" />
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               </div>
@@ -268,22 +402,22 @@ function GetAllFacilities() {
 
       {/* Pagination */}
       {!loading && totalPages > 1 && (
-        <div className="flex items-center justify-between gap-4 mt-6">
-          <span className="text-sm text-gray-500">
-            Page <strong className="font-semibold text-gray-900">{currentPage}</strong> of <strong className="font-semibold text-gray-900">{totalPages}</strong> ({totalFacilities} total facilities)
+        <div className="bg-white/95 backdrop-blur-xl rounded-3xl border border-slate-100/90 p-4 shadow-xl flex items-center justify-between gap-4">
+          <span className="text-xs font-bold text-slate-500">
+            Page <strong className="font-black text-slate-850">{currentPage}</strong> of <strong className="font-black text-slate-850">{totalPages}</strong> ({totalFacilities} facilities)
           </span>
-          <div className="flex gap-1.5">
+          <div className="flex gap-2">
             <button
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="px-3.5 py-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-600 text-sm font-semibold disabled:opacity-50"
+              className="px-4 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-black uppercase tracking-wider transition-all disabled:opacity-50 shadow-2xs"
             >
               Previous
             </button>
             <button
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              className="px-3.5 py-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-600 text-sm font-semibold disabled:opacity-50"
+              className="px-4 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-black uppercase tracking-wider transition-all disabled:opacity-50 shadow-2xs"
             >
               Next
             </button>
@@ -293,12 +427,15 @@ function GetAllFacilities() {
 
       {/* Confirmation Modal */}
       {confirmModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm bg-black/40 animate-fadeIn">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-gray-100 animate-scaleIn">
-            <h3 className="text-lg font-bold text-gray-900">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md bg-slate-900/40 animate-fadeIn">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl border border-slate-100 animate-scaleIn">
+            <div className="w-12 h-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center mb-4 border border-red-100 shadow-md">
+              <ShieldCheck className="w-6 h-6" />
+            </div>
+            <h3 className="text-lg font-black text-slate-850">
               {confirmModal.type === "delete" ? "Delete Facility Account?" : "Suspend Facility Account?"}
             </h3>
-            <p className="text-gray-500 mt-2 text-sm leading-relaxed">
+            <p className="text-slate-500 mt-2 text-xs font-semibold leading-relaxed">
               {confirmModal.type === "delete"
                 ? `Are you sure you want to delete facility "${confirmModal.facility.name}"? This deletes the profile and the login user permanently.`
                 : `Are you sure you want to suspend facility "${confirmModal.facility.name}"? They will lose access to stock logs and requests immediately.`}
@@ -306,7 +443,7 @@ function GetAllFacilities() {
             <div className="flex items-center justify-end gap-3 mt-6">
               <button
                 onClick={() => setConfirmModal(null)}
-                className="px-4 py-2 border border-gray-200 rounded-xl hover:bg-gray-50 text-gray-600 text-sm font-medium transition-all"
+                className="px-4 py-2.5 border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-700 text-xs font-black uppercase tracking-wider transition-all"
               >
                 Cancel
               </button>
@@ -317,10 +454,10 @@ function GetAllFacilities() {
                     : handleSuspendFacility(confirmModal.facility)
                 }
                 disabled={actionLoading}
-                className={`px-5 py-2 rounded-xl text-white text-sm font-semibold transition-all shadow-sm flex items-center gap-2 ${confirmModal.type === "delete" ? "bg-red-600 hover:bg-red-700" : "bg-amber-600 hover:bg-amber-700"}`}
+                className={`px-5 py-2.5 rounded-xl text-white text-xs font-black uppercase tracking-wider transition-all shadow-md flex items-center gap-2 ${confirmModal.type === "delete" ? "bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-700 hover:to-rose-800" : "bg-gradient-to-r from-amber-600 to-orange-700 hover:from-amber-700 hover:to-orange-800"}`}
               >
                 {actionLoading && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
-                Confirm
+                Confirm Action
               </button>
             </div>
           </div>
@@ -329,18 +466,20 @@ function GetAllFacilities() {
 
       {/* Details Modal */}
       {detailModalOpen && selectedFacility && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm bg-black/40 animate-fadeIn">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-gray-100 flex flex-col justify-between overflow-y-auto max-h-[85vh] animate-scaleIn">
-            <div className="space-y-5">
-              <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-                <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                  <Building className="w-5.5 h-5.5 text-red-600" />
-                  Facility File Audit
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md bg-slate-900/40 animate-fadeIn">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-slate-100 flex flex-col justify-between overflow-y-auto max-h-[85vh] animate-scaleIn">
+            <div className="space-y-6">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                <h3 className="text-lg font-black text-slate-850 flex items-center gap-2.5">
+                  <div className="p-2 rounded-xl bg-red-50 text-red-600 border border-red-100">
+                    <FileText className="w-5 h-5" />
+                  </div>
+                  Facility Record Audit File
                 </h3>
                 <button
                   type="button"
                   onClick={() => setDetailModalOpen(false)}
-                  className="p-1 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600"
+                  className="w-8 h-8 rounded-xl bg-slate-100 text-slate-500 hover:bg-slate-200 transition-colors flex items-center justify-center font-bold"
                 >
                   &times;
                 </button>
@@ -349,33 +488,33 @@ function GetAllFacilities() {
               {/* Title & Badge */}
               <div className="flex justify-between items-start">
                 <div>
-                  <h4 className="font-bold text-gray-900 text-lg leading-tight">{selectedFacility.name}</h4>
-                  <span className="text-xs text-gray-400 font-semibold uppercase mt-1 block">Reg: {selectedFacility.registrationNumber}</span>
+                  <h4 className="font-black text-slate-900 text-lg leading-tight">{selectedFacility.name}</h4>
+                  <span className="text-xs text-slate-400 font-extrabold uppercase mt-1 block">Reg: {selectedFacility.registrationNumber}</span>
                 </div>
                 {getStatusBadge(selectedFacility.status)}
               </div>
 
               {/* Basic Fields */}
-              <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 space-y-3.5 text-sm">
+              <div className="bg-slate-50/80 p-4.5 rounded-2xl border border-slate-200/70 space-y-3.5 text-xs font-bold">
                 <div className="flex justify-between">
-                  <span className="text-gray-500 font-medium">Email Address</span>
-                  <strong className="text-gray-800 break-all ml-4">{selectedFacility.email}</strong>
+                  <span className="text-slate-500">Email Address</span>
+                  <strong className="text-slate-850 break-all ml-4">{selectedFacility.email}</strong>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500 font-medium">Contact Phone</span>
-                  <strong className="text-gray-800">{selectedFacility.phone || "N/A"}</strong>
+                  <span className="text-slate-500">Contact Phone</span>
+                  <strong className="text-slate-850">{selectedFacility.phone || "N/A"}</strong>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500 font-medium">Category</span>
-                  <strong className="text-gray-800 capitalize">{selectedFacility.facilityCategory || "Not specified"}</strong>
+                  <span className="text-slate-500">Category</span>
+                  <strong className="text-slate-850 capitalize">{selectedFacility.facilityCategory || "Not specified"}</strong>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500 font-medium">Facility Type</span>
-                  <strong className="text-gray-800 uppercase font-bold text-red-600">{selectedFacility.facilityType}</strong>
+                  <span className="text-slate-500">Facility Type</span>
+                  <strong className="text-red-600 uppercase font-black">{selectedFacility.facilityType}</strong>
                 </div>
                 {selectedFacility.address && (
-                  <div className="border-t border-gray-100 pt-3 mt-1.5 text-xs text-gray-600">
-                    <span className="text-gray-500 font-medium block mb-1">Registered Address</span>
+                  <div className="border-t border-slate-200/70 pt-3 mt-1.5 text-slate-600">
+                    <span className="text-slate-400 font-extrabold block mb-1 uppercase text-[10px]">Registered Address</span>
                     {selectedFacility.address.street}, {selectedFacility.address.city}, {selectedFacility.address.state} - {selectedFacility.address.pincode}
                   </div>
                 )}
@@ -383,18 +522,18 @@ function GetAllFacilities() {
 
               {/* History / Timeline logs */}
               <div>
-                <h5 className="font-semibold text-gray-900 text-xs uppercase tracking-wider text-gray-400 mb-2">History & Event logs</h5>
+                <h5 className="font-black text-xs uppercase tracking-wider text-slate-400 mb-2">History & Verification Telemetry</h5>
                 {selectedFacility.history?.length === 0 ? (
-                  <p className="text-xs text-gray-400 italic">No historical events recorded.</p>
+                  <p className="text-xs text-slate-400 font-semibold italic p-4 bg-slate-50 rounded-2xl border border-slate-200/60 text-center">No historical events recorded.</p>
                 ) : (
-                  <div className="border border-gray-100 rounded-xl divide-y divide-gray-50 text-xs max-h-32 overflow-y-auto">
+                  <div className="border border-slate-200/70 rounded-2xl divide-y divide-slate-100 text-xs max-h-32 overflow-y-auto font-bold">
                     {selectedFacility.history?.map((h, idx) => (
-                      <div key={idx} className="p-2.5 flex items-center justify-between">
+                      <div key={idx} className="p-3 flex items-center justify-between bg-white hover:bg-slate-50/60">
                         <div>
-                          <strong className="text-gray-700 block">{h.eventType}</strong>
-                          <span className="text-gray-500 mt-0.5 block">{h.description}</span>
+                          <strong className="text-slate-850 font-black block">{h.eventType}</strong>
+                          <span className="text-slate-500 mt-0.5 block">{h.description}</span>
                         </div>
-                        <span className="text-gray-400">{new Date(h.date).toLocaleDateString()}</span>
+                        <span className="text-slate-400 text-[11px] px-2 py-1 bg-slate-100 rounded-lg">{new Date(h.date).toLocaleDateString()}</span>
                       </div>
                     ))}
                   </div>
@@ -402,10 +541,10 @@ function GetAllFacilities() {
               </div>
             </div>
 
-            <div className="pt-4 border-t border-gray-100 mt-5">
+            <div className="pt-4 border-t border-slate-100 mt-6">
               <button
                 onClick={() => setDetailModalOpen(false)}
-                className="w-full py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-all text-sm"
+                className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-black rounded-2xl transition-all text-xs uppercase tracking-wider"
               >
                 Close Audit File
               </button>
