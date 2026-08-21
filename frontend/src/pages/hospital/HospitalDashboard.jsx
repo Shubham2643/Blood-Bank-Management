@@ -512,216 +512,225 @@ const HospitalDashboard = () => {
           </div>
         </div>
 
-        {/* Central Dashboard Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* 1. Full-Width Blood Stock Status Visual Card */}
+        <div className="bg-white/95 backdrop-blur-xl rounded-3xl border border-slate-100/90 p-6 sm:p-8 shadow-xl shadow-slate-100/80 relative overflow-hidden mb-8 hover:shadow-2xl transition-all duration-300">
+          <div className="absolute top-0 right-0 w-48 h-48 bg-red-100/20 rounded-full blur-3xl pointer-events-none" />
           
-          {/* Blood Stock Status Visual Card */}
-          <div className="lg:col-span-7 bg-white/95 backdrop-blur-xl rounded-3xl border border-slate-100/90 p-6 sm:p-7 flex flex-col justify-between shadow-xl shadow-slate-100/80 relative overflow-hidden hover:shadow-2xl transition-all duration-300">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-red-100/20 rounded-full blur-3xl pointer-events-none" />
-            
-            <div>
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-4 border-b border-slate-100">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-red-600 to-rose-700 text-white flex items-center justify-center shadow-lg shadow-red-600/25 shrink-0 border border-red-400/30">
-                    <Droplet className="w-5 h-5 fill-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-black text-slate-850 tracking-tight">
-                      Blood Reserve & Stock Levels
-                    </h3>
-                    <p className="text-[11px] font-bold text-slate-400 mt-0.5">
-                      Live laboratory blood inventory status for emergency allocation
-                    </p>
-                  </div>
+          <div>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-5 border-b border-slate-100">
+              <div className="flex items-center gap-3.5">
+                <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-red-600 to-rose-700 text-white flex items-center justify-center shadow-lg shadow-red-600/25 shrink-0 border border-red-400/30">
+                  <Droplet className="w-5.5 h-5.5 fill-white" />
                 </div>
+                <div>
+                  <h3 className="text-xl font-black text-slate-850 tracking-tight">
+                    Blood Reserve & Stock Levels
+                  </h3>
+                  <p className="text-xs font-bold text-slate-400 mt-0.5">
+                    Live laboratory blood inventory status for emergency hospital allocation
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3 flex-wrap">
+                <span className="px-4 py-2 rounded-2xl bg-red-50 text-red-700 font-extrabold text-xs uppercase tracking-wider border border-red-200/80 shadow-2xs">
+                  Total: <strong className="text-sm font-black text-red-800">{inventoryList.reduce((sum, item) => sum + item.quantity, 0)}</strong> Units
+                </span>
+                <Link
+                  to="/hospital/inventory"
+                  className="text-xs font-extrabold text-white bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-700 hover:to-rose-800 px-5 py-2.5 rounded-2xl transition-all flex items-center gap-2 shadow-md shadow-red-600/20 cursor-pointer active:scale-95 border border-red-500/30"
+                >
+                  <span>Manage Stock</span>
+                  <ChevronRight size={15} />
+                </Link>
+              </div>
+            </div>
+
+            {inventoryList.length === 0 ? (
+              <div className="bg-gradient-to-br from-slate-50 to-red-50/30 rounded-3xl p-10 text-center border border-slate-200/60 relative overflow-hidden shadow-inner">
+                <div className="w-16 h-16 rounded-3xl bg-red-50 text-red-600 flex items-center justify-center mx-auto mb-4 shadow-md border border-red-100">
+                  <Droplet className="w-8 h-8 fill-red-600 animate-pulse" />
+                </div>
+                <h4 className="text-base font-black text-slate-850 uppercase tracking-wide">
+                  Hospital Blood Reserve Is Empty
+                </h4>
+                <p className="text-xs text-slate-500 font-semibold mt-1 max-w-sm mx-auto leading-relaxed">
+                  No active blood inventory units currently deposited in your hospital reserve. Create an emergency request to order supplies from verified blood labs.
+                </p>
                 
-                <div className="flex items-center gap-2.5 flex-wrap">
-                  <span className="px-3.5 py-1.5 rounded-2xl bg-red-50 text-red-700 font-extrabold text-xs uppercase tracking-wider border border-red-200/80 shadow-2xs">
-                    Total: <strong className="text-sm font-black text-red-800">{inventoryList.reduce((sum, item) => sum + item.quantity, 0)}</strong> Units
-                  </span>
+                <div className="mt-6 flex flex-wrap justify-center items-center gap-3">
+                  <Link
+                    to="/hospital/blood-request-create"
+                    className="bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-700 hover:to-rose-800 text-white font-extrabold text-xs uppercase tracking-wider px-6 py-3 rounded-2xl shadow-lg shadow-red-600/25 border border-red-500/30 flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
+                  >
+                    <Plus size={16} />
+                    <span>Create Blood Request</span>
+                  </Link>
                   <Link
                     to="/hospital/inventory"
-                    className="text-xs font-extrabold text-white bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-700 hover:to-rose-800 px-4 py-2 rounded-2xl transition-all flex items-center gap-1.5 shadow-md shadow-red-600/20 cursor-pointer active:scale-95 border border-red-500/30"
+                    className="bg-white hover:bg-slate-50 text-slate-700 font-extrabold text-xs uppercase tracking-wider px-5 py-3 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
                   >
-                    <span>Manage Stock</span>
-                    <ChevronRight size={14} />
+                    <span>Deposit Local Stock</span>
                   </Link>
                 </div>
               </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+                {inventoryList.map((item) => {
+                  const status = getStockStatusConfig(item.quantity, item.expiryDate);
+                  const maxQty = 30; // Max visual scaling reference
+                  const percentage = Math.min((item.quantity / maxQty) * 100, 100);
 
-              {inventoryList.length === 0 ? (
-                <div className="bg-gradient-to-br from-slate-50 to-red-50/30 rounded-3xl p-8 text-center border border-slate-200/60 relative overflow-hidden shadow-inner">
-                  <div className="w-16 h-16 rounded-3xl bg-red-50 text-red-600 flex items-center justify-center mx-auto mb-4 shadow-md border border-red-100">
-                    <Droplet className="w-8 h-8 fill-red-600 animate-pulse" />
-                  </div>
-                  <h4 className="text-base font-black text-slate-850 uppercase tracking-wide">
-                    Hospital Blood Reserve Is Empty
-                  </h4>
-                  <p className="text-xs text-slate-500 font-semibold mt-1 max-w-sm mx-auto leading-relaxed">
-                    No active blood inventory units currently deposited in your hospital reserve. Create an emergency request to order supplies from verified blood labs.
-                  </p>
-                  
-                  <div className="mt-6 flex flex-wrap justify-center items-center gap-3">
-                    <Link
-                      to="/hospital/blood-request-create"
-                      className="bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-700 hover:to-rose-800 text-white font-extrabold text-xs uppercase tracking-wider px-6 py-3 rounded-2xl shadow-lg shadow-red-600/25 border border-red-500/30 flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
-                    >
-                      <Plus size={16} />
-                      <span>Create Blood Request</span>
-                    </Link>
-                    <Link
-                      to="/hospital/inventory"
-                      className="bg-white hover:bg-slate-50 text-slate-700 font-extrabold text-xs uppercase tracking-wider px-5 py-3 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
-                    >
-                      <span>Deposit Local Stock</span>
-                    </Link>
-                  </div>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {inventoryList.map((item) => {
-                    const status = getStockStatusConfig(item.quantity, item.expiryDate);
-                    const maxQty = 30; // Max visual scaling reference
-                    const percentage = Math.min((item.quantity / maxQty) * 100, 100);
-
-                    return (
-                      <div key={item._id} className="p-4 border border-slate-200/70 rounded-2xl bg-gradient-to-b from-slate-50/80 via-white to-slate-50/30 hover:border-red-200 hover:shadow-lg transition-all duration-300 flex flex-col justify-between group">
-                        <div className="flex justify-between items-start mb-3">
-                          <div className="flex items-center gap-3">
-                            <span className={`w-11 h-11 rounded-2xl flex items-center justify-center font-black text-sm shadow-md border-2 border-white ring-2 group-hover:scale-105 transition-transform ${getBloodTypeBg(item.bloodGroup)}`}>
-                              {item.bloodGroup}
-                            </span>
-                            <div>
-                              <span className="block font-black text-slate-850 text-base leading-tight">{item.quantity} Units</span>
-                              <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Whole Blood Reserve</span>
-                            </div>
-                          </div>
-                          <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border shadow-2xs ${status.color}`}>
-                            {status.label}
+                  return (
+                    <div key={item._id} className="p-4 sm:p-5 border border-slate-200/70 rounded-2xl bg-gradient-to-b from-slate-50/80 via-white to-slate-50/30 hover:border-red-200 hover:shadow-xl transition-all duration-300 flex flex-col justify-between group">
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex items-center gap-3">
+                          <span className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-base shadow-md border-2 border-white ring-2 group-hover:scale-105 transition-transform ${getBloodTypeBg(item.bloodGroup)}`}>
+                            {item.bloodGroup}
                           </span>
+                          <div>
+                            <span className="block font-black text-slate-850 text-lg leading-tight">{item.quantity} Units</span>
+                            <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Whole Blood Reserve</span>
+                          </div>
                         </div>
-                        
-                        {/* Visual Capacity Fill Bar */}
-                        <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden mt-3 p-0.5 border border-slate-200/60 shadow-inner">
-                          <div 
-                            className={`h-full rounded-full transition-all duration-700 shadow-xs ${
-                              item.quantity < 5 ? "bg-gradient-to-r from-red-500 to-rose-600" : item.quantity < 10 ? "bg-gradient-to-r from-amber-500 to-orange-500" : "bg-gradient-to-r from-emerald-500 to-teal-600"
-                            }`}
-                            style={{ width: `${percentage}%` }}
-                          />
-                        </div>
-                        
-                        <div className="flex items-center justify-between mt-3 text-[10px] text-slate-400 font-bold">
-                          <span>Expires: {new Date(item.expiryDate).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</span>
-                          <span className="text-slate-600 font-black">{Math.round(percentage)}% Capacity</span>
-                        </div>
+                        <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border shadow-2xs ${status.color}`}>
+                          {status.label}
+                        </span>
                       </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+                      
+                      {/* Visual Capacity Fill Bar */}
+                      <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden mt-4 p-0.5 border border-slate-200/60 shadow-inner">
+                        <div 
+                          className={`h-full rounded-full transition-all duration-700 shadow-xs ${
+                            item.quantity < 5 ? "bg-gradient-to-r from-red-500 to-rose-600" : item.quantity < 10 ? "bg-gradient-to-r from-amber-500 to-orange-500" : "bg-gradient-to-r from-emerald-500 to-teal-600"
+                          }`}
+                          style={{ width: `${percentage}%` }}
+                        />
+                      </div>
+                      
+                      <div className="flex items-center justify-between mt-3 text-[10px] text-slate-400 font-bold">
+                        <span>Expires: {new Date(item.expiryDate).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+                        <span className="text-slate-600 font-black">{Math.round(percentage)}% Capacity</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
+        </div>
 
-          {/* Requests Summary & Allocation Board */}
-          <div className="lg:col-span-5 bg-white/95 backdrop-blur-xl rounded-3xl border border-slate-100/90 p-6 sm:p-7 flex flex-col justify-between shadow-xl shadow-slate-100/80 relative overflow-hidden hover:shadow-2xl transition-all duration-300">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/5 rounded-full blur-3xl pointer-events-none" />
+        {/* 2. Full-Width Request Summary & Emergency Allocation Board */}
+        <div className="bg-white/95 backdrop-blur-xl rounded-3xl border border-slate-100/90 p-6 sm:p-8 shadow-xl shadow-slate-100/80 relative overflow-hidden mb-8 hover:shadow-2xl transition-all duration-300">
+          <div className="absolute top-0 right-0 w-48 h-48 bg-rose-500/5 rounded-full blur-3xl pointer-events-none" />
 
-            <div>
-              {/* Header */}
-              <div className="flex items-center justify-between mb-5 pb-4 border-b border-slate-100">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-red-600 to-rose-700 text-white flex items-center justify-center shadow-lg shadow-red-600/25 shrink-0 border border-red-400/30">
-                    <TrendingUp className="w-5 h-5 text-white" />
+          <div>
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-5 border-b border-slate-100">
+              <div className="flex items-center gap-3.5">
+                <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-red-600 to-rose-700 text-white flex items-center justify-center shadow-lg shadow-red-600/25 shrink-0 border border-red-400/30">
+                  <TrendingUp className="w-5.5 h-5.5 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-slate-850 tracking-tight">
+                    Request Summary & Emergency Allocation
+                  </h3>
+                  <p className="text-xs font-bold text-slate-400 mt-0.5">
+                    Real-time emergency request status breakdown and laboratory fulfillment telemetry
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 flex-wrap">
+                <span className="px-3.5 py-1.5 bg-red-50 text-red-700 border border-red-200/80 rounded-full font-black text-xs uppercase tracking-wider shadow-2xs">
+                  Live Status
+                </span>
+                <Link
+                  to="/hospital/blood-request-create"
+                  className="bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-700 hover:to-rose-800 text-white font-black text-xs uppercase tracking-wider px-5 py-2.5 rounded-2xl shadow-md shadow-red-600/20 border border-red-500/30 flex items-center gap-2 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                >
+                  <Plus size={16} />
+                  <span>Create Blood Request</span>
+                </Link>
+              </div>
+            </div>
+
+            {/* 4 Executive Metric Cards Row */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/70 flex items-center justify-between transition-all hover:bg-white hover:shadow-md">
+                <div className="flex items-center gap-3.5">
+                  <div className="p-3 rounded-2xl bg-slate-100 text-slate-700 border border-slate-200">
+                    <ClipboardList className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="text-base font-black text-slate-850 tracking-tight">
-                      Request Summary
-                    </h3>
-                    <p className="text-[11px] font-bold text-slate-400 mt-0.5">
-                      Real-time emergency allocation breakdown
-                    </p>
+                    <span className="block text-[11px] font-black text-slate-400 uppercase tracking-wider">Total Raised</span>
+                    <span className="text-2xl font-black text-slate-850 mt-0.5 block">{stats.totalRequests}</span>
                   </div>
                 </div>
-
-                <span className="px-3 py-1 bg-red-50 text-red-700 border border-red-200/80 rounded-full font-black text-[10px] uppercase tracking-wider shadow-2xs">
-                  Live Status
+                <span className="text-xs font-black text-slate-500 bg-white px-2.5 py-1 rounded-xl border border-slate-200">
+                  Requests
                 </span>
               </div>
 
-              {/* 4 Premium Specimen Cards */}
-              <div className="space-y-3">
-                <div className="flex justify-between items-center p-3.5 rounded-2xl bg-slate-50/90 border border-slate-200/60 transition-all hover:bg-white hover:shadow-md">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-xl bg-slate-100 text-slate-600">
-                      <ClipboardList className="w-4 h-4" />
-                    </div>
-                    <span className="text-xs font-extrabold text-slate-700 uppercase tracking-wider">Total Requests Raised</span>
+              <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200/80 flex items-center justify-between transition-all hover:bg-amber-50 hover:shadow-md">
+                <div className="flex items-center gap-3.5">
+                  <div className="p-3 rounded-2xl bg-amber-100 text-amber-700 border border-amber-200">
+                    <Clock className="w-5 h-5 animate-pulse" />
                   </div>
-                  <span className="text-sm font-black text-slate-850 bg-white px-3 py-1 rounded-xl border border-slate-200 shadow-2xs">
-                    {stats.totalRequests}
-                  </span>
-                </div>
-
-                <div className="flex justify-between items-center p-3.5 rounded-2xl bg-amber-50/60 border border-amber-200/70 transition-all hover:bg-amber-50 hover:shadow-md">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-xl bg-amber-100 text-amber-700">
-                      <Clock className="w-4 h-4 animate-pulse" />
-                    </div>
-                    <span className="text-xs font-extrabold text-amber-950 uppercase tracking-wider">Pending Approvals</span>
+                  <div>
+                    <span className="block text-[11px] font-black text-amber-800 uppercase tracking-wider">Pending</span>
+                    <span className="text-2xl font-black text-amber-900 mt-0.5 block">{stats.pendingRequests}</span>
                   </div>
-                  <span className="text-sm font-black text-amber-800 bg-amber-100 px-3 py-1 rounded-xl border border-amber-200 shadow-2xs">
-                    {stats.pendingRequests}
-                  </span>
                 </div>
-
-                <div className="flex justify-between items-center p-3.5 rounded-2xl bg-emerald-50/60 border border-emerald-200/70 transition-all hover:bg-emerald-50 hover:shadow-md">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-xl bg-emerald-100 text-emerald-700">
-                      <CheckCircle className="w-4 h-4" />
-                    </div>
-                    <span className="text-xs font-extrabold text-emerald-950 uppercase tracking-wider">Approved & Fulfilled</span>
-                  </div>
-                  <span className="text-sm font-black text-emerald-800 bg-emerald-100 px-3 py-1 rounded-xl border border-emerald-200 shadow-2xs">
-                    {stats.acceptedRequests}
-                  </span>
-                </div>
-
-                <div className="flex justify-between items-center p-3.5 rounded-2xl bg-rose-50/60 border border-rose-200/70 transition-all hover:bg-rose-50 hover:shadow-md">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-xl bg-rose-100 text-rose-700">
-                      <XCircle className="w-4 h-4" />
-                    </div>
-                    <span className="text-xs font-extrabold text-rose-950 uppercase tracking-wider">Rejected / Cancelled</span>
-                  </div>
-                  <span className="text-sm font-black text-rose-800 bg-rose-100 px-3 py-1 rounded-xl border border-rose-200 shadow-2xs">
-                    {stats.rejectedRequests}
-                  </span>
-                </div>
+                <span className="text-xs font-black text-amber-800 bg-amber-100 px-2.5 py-1 rounded-xl border border-amber-200">
+                  Action Needed
+                </span>
               </div>
 
-              {/* Fulfillment Gauge */}
-              <div className="mt-5 p-4 bg-gradient-to-r from-slate-50 to-rose-50/50 border border-slate-200/80 rounded-2xl shadow-2xs">
-                <div className="flex justify-between items-center text-xs font-black uppercase tracking-wider mb-2">
-                  <span className="text-slate-600">Lab Fulfillment Efficiency</span>
-                  <span className="text-rose-600 font-black">{stats.fulfillmentRate}% Success Ratio</span>
+              <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 flex items-center justify-between transition-all hover:bg-emerald-50 hover:shadow-md">
+                <div className="flex items-center gap-3.5">
+                  <div className="p-3 rounded-2xl bg-emerald-100 text-emerald-700 border border-emerald-200">
+                    <CheckCircle className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <span className="block text-[11px] font-black text-emerald-800 uppercase tracking-wider">Approved</span>
+                    <span className="text-2xl font-black text-emerald-900 mt-0.5 block">{stats.acceptedRequests}</span>
+                  </div>
                 </div>
-                <div className="w-full bg-slate-200/80 h-2.5 rounded-full overflow-hidden p-0.5 border border-slate-200/60 shadow-inner">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-red-600 via-rose-600 to-red-700 transition-all duration-700 shadow-xs"
-                    style={{ width: `${Math.min(100, Number(stats.fulfillmentRate || 0))}%` }}
-                  />
+                <span className="text-xs font-black text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded-xl border border-emerald-200">
+                  Fulfilled
+                </span>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-rose-50/70 border border-rose-200/80 flex items-center justify-between transition-all hover:bg-rose-50 hover:shadow-md">
+                <div className="flex items-center gap-3.5">
+                  <div className="p-3 rounded-2xl bg-rose-100 text-rose-700 border border-rose-200">
+                    <XCircle className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <span className="block text-[11px] font-black text-rose-800 uppercase tracking-wider">Rejected</span>
+                    <span className="text-2xl font-black text-rose-900 mt-0.5 block">{stats.rejectedRequests}</span>
+                  </div>
                 </div>
+                <span className="text-xs font-black text-rose-800 bg-rose-100 px-2.5 py-1 rounded-xl border border-rose-200">
+                  Cancelled
+                </span>
               </div>
             </div>
 
-            <Link
-              to="/hospital/blood-request-create"
-              className="w-full mt-6 py-3.5 px-5 bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-700 hover:to-rose-800 text-white font-extrabold text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-red-600/25 border border-red-500/30 flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-95 cursor-pointer"
-            >
-              <Plus size={16} />
-              <span>Create Blood Request</span>
-            </Link>
+            {/* Full-Width Fulfillment Success Bar */}
+            <div className="p-4 sm:p-5 bg-gradient-to-r from-slate-50 via-rose-50/30 to-slate-50 border border-slate-200/80 rounded-2xl">
+              <div className="flex justify-between items-center text-xs font-black uppercase tracking-wider mb-2">
+                <span className="text-slate-700">Lab Allocation & Fulfillment Efficiency</span>
+                <span className="text-rose-600 font-black">{stats.fulfillmentRate}% Success Ratio</span>
+              </div>
+              <div className="w-full bg-slate-200/80 h-3 rounded-full overflow-hidden p-0.5 border border-slate-200/60 shadow-inner">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-red-600 via-rose-600 to-red-700 transition-all duration-700 shadow-xs"
+                  style={{ width: `${Math.min(100, Number(stats.fulfillmentRate || 0))}%` }}
+                />
+              </div>
+            </div>
           </div>
         </div>
 
