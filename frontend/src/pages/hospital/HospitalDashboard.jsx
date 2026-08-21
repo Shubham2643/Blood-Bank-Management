@@ -196,16 +196,16 @@ const HospitalDashboard = () => {
 
   const getBloodTypeBg = (bloodType) => {
     const colors = {
-      "A+": "bg-red-50 text-red-700 border-red-200",
-      "A-": "bg-red-50 text-red-600 border-red-200",
-      "B+": "bg-blue-50 text-blue-700 border-blue-200",
-      "B-": "bg-blue-50 text-blue-600 border-blue-200",
-      "O+": "bg-emerald-50 text-emerald-700 border-emerald-200",
-      "O-": "bg-emerald-50 text-emerald-600 border-emerald-200",
-      "AB+": "bg-purple-50 text-purple-700 border-purple-200",
-      "AB-": "bg-purple-50 text-purple-650 border-purple-200"
+      "A+": "bg-gradient-to-br from-red-600 to-rose-700 text-white shadow-red-600/30 border-red-400/40",
+      "A-": "bg-gradient-to-br from-rose-500 to-pink-600 text-white shadow-rose-500/30 border-rose-400/40",
+      "B+": "bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-blue-600/30 border-blue-400/40",
+      "B-": "bg-gradient-to-br from-sky-500 to-blue-600 text-white shadow-sky-500/30 border-sky-400/40",
+      "O+": "bg-gradient-to-br from-emerald-600 to-teal-700 text-white shadow-emerald-600/30 border-emerald-400/40",
+      "O-": "bg-gradient-to-br from-teal-500 to-emerald-600 text-white shadow-teal-500/30 border-teal-400/40",
+      "AB+": "bg-gradient-to-br from-purple-600 to-violet-700 text-white shadow-purple-600/30 border-purple-400/40",
+      "AB-": "bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-indigo-500/30 border-indigo-400/40"
     };
-    return colors[bloodType] || "bg-slate-50 text-slate-700 border-slate-200";
+    return colors[bloodType] || "bg-gradient-to-br from-slate-600 to-slate-800 text-white shadow-slate-600/30 border-slate-400/40";
   };
 
   const getStockStatusConfig = (quantity, expiryDate) => {
@@ -582,35 +582,51 @@ const HospitalDashboard = () => {
                   const percentage = Math.min((item.quantity / maxQty) * 100, 100);
 
                   return (
-                    <div key={item._id} className="p-4 sm:p-5 border border-slate-200/70 rounded-2xl bg-gradient-to-b from-slate-50/80 via-white to-slate-50/30 hover:border-red-200 hover:shadow-xl transition-all duration-300 flex flex-col justify-between group">
-                      <div className="flex justify-between items-start mb-3">
-                        <div className="flex items-center gap-3">
-                          <span className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-base shadow-md border-2 border-white ring-2 group-hover:scale-105 transition-transform ${getBloodTypeBg(item.bloodGroup)}`}>
+                    <div
+                      key={item._id}
+                      className="relative p-5 rounded-3xl bg-gradient-to-b from-white via-slate-50/50 to-white border border-slate-200/80 shadow-md shadow-slate-200/50 hover:shadow-2xl hover:shadow-red-500/10 hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between group overflow-hidden"
+                    >
+                      <div className="absolute -top-10 -right-10 w-28 h-28 rounded-full bg-gradient-to-br from-red-500/10 to-rose-500/5 blur-2xl group-hover:scale-150 transition-transform duration-500 pointer-events-none" />
+
+                      <div>
+                        {/* Header: 3D Blood Specimen Circle & Status Badge */}
+                        <div className="flex justify-between items-start mb-4 relative z-10">
+                          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-base shadow-lg border-2 border-white ring-2 ring-slate-100 group-hover:scale-110 transition-transform ${getBloodTypeBg(item.bloodGroup)}`}>
                             {item.bloodGroup}
-                          </span>
-                          <div>
-                            <span className="block font-black text-slate-850 text-lg leading-tight">{item.quantity} Units</span>
-                            <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Whole Blood Reserve</span>
                           </div>
+                          
+                          <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border shadow-2xs ${status.color}`}>
+                            {status.label}
+                          </span>
                         </div>
-                        <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border shadow-2xs ${status.color}`}>
-                          {status.label}
+
+                        {/* Units & Category Title */}
+                        <div className="relative z-10">
+                          <div className="flex items-baseline gap-1.5">
+                            <span className="text-2xl font-black text-slate-850 tracking-tight">{item.quantity}</span>
+                            <span className="text-xs font-black text-slate-400 uppercase tracking-wider">Units</span>
+                          </div>
+                          <span className="block text-[10px] font-black text-slate-400 uppercase tracking-wider mt-0.5">Whole Blood Reserve</span>
+                        </div>
+
+                        {/* Capacity Fill Gauge Bar */}
+                        <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden mt-4 p-0.5 border border-slate-200/60 shadow-inner relative z-10">
+                          <div 
+                            className={`h-full rounded-full transition-all duration-700 shadow-md ${
+                              item.quantity < 5 ? "bg-gradient-to-r from-red-500 to-rose-600 shadow-red-500/30" : item.quantity < 10 ? "bg-gradient-to-r from-amber-500 to-orange-500 shadow-amber-500/30" : "bg-gradient-to-r from-emerald-500 to-teal-600 shadow-emerald-500/30"
+                            }`}
+                            style={{ width: `${percentage}%` }}
+                          />
+                        </div>
+                      </div>
+                      
+                      {/* Footer Info */}
+                      <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-100 text-[10px] font-bold text-slate-400 relative z-10">
+                        <span className="flex items-center gap-1">
+                          <CalendarDays size={12} className="text-slate-400" />
+                          <span>Expires: {new Date(item.expiryDate).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</span>
                         </span>
-                      </div>
-                      
-                      {/* Visual Capacity Fill Bar */}
-                      <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden mt-4 p-0.5 border border-slate-200/60 shadow-inner">
-                        <div 
-                          className={`h-full rounded-full transition-all duration-700 shadow-xs ${
-                            item.quantity < 5 ? "bg-gradient-to-r from-red-500 to-rose-600" : item.quantity < 10 ? "bg-gradient-to-r from-amber-500 to-orange-500" : "bg-gradient-to-r from-emerald-500 to-teal-600"
-                          }`}
-                          style={{ width: `${percentage}%` }}
-                        />
-                      </div>
-                      
-                      <div className="flex items-center justify-between mt-3 text-[10px] text-slate-400 font-bold">
-                        <span>Expires: {new Date(item.expiryDate).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</span>
-                        <span className="text-slate-600 font-black">{Math.round(percentage)}% Capacity</span>
+                        <span className="text-slate-700 font-black px-2 py-0.5 bg-slate-100/90 rounded-md border border-slate-200/70">{Math.round(percentage)}% Capacity</span>
                       </div>
                     </div>
                   );
